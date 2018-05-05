@@ -1,12 +1,44 @@
 import { EventEmitter } from 'events'
-import Account from './Account'
-import Delivers from './Delivers'
-import Inventory from './Inventory'
-import Orders from './Orders'
+import mongoose from 'mongoose'
+import Store from '@/lib/Store'
+import Account from '@/components/Account'
+import Delivers from '@/components/Delivers'
+import Inventory from '@/components/Inventory'
+import Orders from '@/components/Orders'
+
+export const NodeEachComponentsScheme = new mongoose.Schema(
+  {
+    enable: { type: Boolean, default: true },
+    options: mongoose.Schema.Types.Mixed,
+    id: mongoose.Schema.Types.ObjectId
+  },
+  { _id: false }
+)
+
+export const NodeComponentsScheme = new mongoose.Schema(
+  {
+    Input: NodeEachComponentsScheme,
+    Output: NodeEachComponentsScheme,
+    Inventory: NodeEachComponentsScheme,
+    BiddingMarketProvider: NodeEachComponentsScheme,
+    BiddingMarketReceiver: NodeEachComponentsScheme
+  },
+  { _id: false }
+)
+
+export const NodeScheme = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true
+  },
+  components: NodeComponentsScheme
+})
+
+export const NodeStore = mongoose.model('NodeStore', NodeScheme)
 
 let nodeId = 0
 
-export function OrderPackage({ fromNodeName, toNodeName, goodsList }) {
+export function OrderPackage ({ fromNodeName, toNodeName, goodsList }) {
   return {
     fromNodeName: fromNodeName || '',
     toNodeName: toNodeName || '',
@@ -18,7 +50,7 @@ export function OrderPackage({ fromNodeName, toNodeName, goodsList }) {
 /**
  * @param {object} packageContent `fromNodeid`, `toNodeid`, `goodsList`.
  */
-export function DeliverPackage({ fromNodeName, toNodeName, goodsList }) {
+export function DeliverPackage ({ fromNodeName, toNodeName, goodsList }) {
   return {
     fromNodeName: fromNodeName || '',
     toNodeName: toNodeName || '',
@@ -28,7 +60,7 @@ export function DeliverPackage({ fromNodeName, toNodeName, goodsList }) {
 }
 
 export default class Node extends EventEmitter {
-  constructor(engine, options) {
+  constructor (engine, options) {
     super()
     this.context = {}
     this.actions = {}
@@ -44,7 +76,7 @@ export default class Node extends EventEmitter {
     this.nodeName = options.nodeName || 'UnknownNodeName'
   }
 
-  releaseOrder(orderPackage) {
+  releaseOrder (orderPackage) {
     let context = this.context
 
     return new Promise((resolve, reject) => {
@@ -52,13 +84,13 @@ export default class Node extends EventEmitter {
     })
   }
 
-  receiveOrder(orderPackage) {
+  receiveOrder (orderPackage) {
     return new Promise((resolve, reject) => {
       this.emit('on-receive-order')
     })
   }
 
-  import(deliverPackage) {
+  import (deliverPackage) {
     return new Promise((resolve, reject) => {
       this.emit('on-import')
     })
@@ -68,7 +100,7 @@ export default class Node extends EventEmitter {
    * Export goods to another node.
    * @param {DeliverPackage} deliverPackage
    */
-  export(deliverPackage) {
+  export (deliverPackage) {
     return new Promise((resolve, reject) => {
       if (
         deliverPackage.fromNodeName === this.nodeName &&
@@ -83,19 +115,19 @@ export default class Node extends EventEmitter {
   /**
    * 計算每日倉儲成本。
    */
-  settleDailyAccount() {}
+  settleDailyAccount () {}
 
   /**
    * Dump all information to a object.
    */
-  dump() {
+  dump () {
     return {}
   }
 
   /**
    * Load from DB.
    */
-  load() {
+  load () {
     return new Promise((resolve, reject) => {})
   }
 }

@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events'
 import _ from 'lodash'
-import Node from './Node'
+import Node from '@/Node'
 
 export const GAME_STAGE = {
   PREPARE: 'PREPARE',
@@ -13,17 +13,14 @@ export const GAME_STAGE = {
 export const GAMEENGINE_OPTIONS_DEFAULT = { dayLength: 5, gragh: [] }
 
 export default class Engine extends EventEmitter {
-  constructor(server, options) {
+  constructor (server, options) {
     super()
     if (!server) {
       console.error('Engine:constructor()', '`server` is required.')
       return
     }
     this.server = server
-    this.options = Object.assign(
-      options || {},
-      _.cloneDeep(GAMEENGINE_OPTIONS_DEFAULT)
-    )
+    this.options = Object.assign(options || {}, _.cloneDeep(GAMEENGINE_OPTIONS_DEFAULT))
 
     this.gragh = this.options.gragh
     this.nodes = new Map()
@@ -37,11 +34,11 @@ export default class Engine extends EventEmitter {
     this._timer = { expectedTimeChange: 0, timerId: null }
   }
 
-  constructGragh(gragh) {}
+  constructGragh (gragh) {}
 
-  load() {}
+  load () {}
 
-  dump() {
+  dump () {
     return {
       gameStage: this.gameStage,
       gameDay: this.gameDay,
@@ -50,9 +47,9 @@ export default class Engine extends EventEmitter {
     }
   }
 
-  remove() {}
+  remove () {}
 
-  nextStage() {
+  nextStage () {
     console.log('currentStage:', this.gameStage)
     switch (this.gameStage) {
       case GAME_STAGE.PREPARE:
@@ -74,26 +71,17 @@ export default class Engine extends EventEmitter {
     }
   }
 
-  nextDay() {
+  nextDay () {
     if (this.gameDay === this.dayLength) {
-      console.warn(
-        'Engine:nextDay()',
-        'The game has reach its day length limit.'
-      )
+      console.warn('Engine:nextDay()', 'The game has reach its day length limit.')
       return
     }
     if (this.gameStage !== GAME_STAGE.START) {
-      console.warn(
-        'Engine:nextDay()',
-        'nextDay() can only operate during `START` stage.'
-      )
+      console.warn('Engine:nextDay()', 'nextDay() can only operate during `START` stage.')
       return
     }
     if (this.isWorking === true) {
-      console.warn(
-        'Engine:nextDay()',
-        'nextDay() can only operate during off work.'
-      )
+      console.warn('Engine:nextDay()', 'nextDay() can only operate during off work.')
       return
     }
 
@@ -106,7 +94,7 @@ export default class Engine extends EventEmitter {
     this.startTicking()
   }
 
-  startTicking() {
+  startTicking () {
     this.emit('game-time-change', this.gameTime, this)
 
     setInterval(() => {
@@ -119,8 +107,8 @@ export default class Engine extends EventEmitter {
     }, adjustedNextTickMS)
   }
 
-  pause() {}
-  resume() {}
+  pause () {}
+  resume () {}
 }
 
 let server = {}

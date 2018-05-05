@@ -2,18 +2,19 @@
   "name": "ieemgame",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
+  "main": "./src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "set NODE_ENV=develop && babel-node server.js --presets es2015,stage-2",
-    "start": "set NODE_ENV=production && babel-node server.js --presets es2015,stage-2",
-    "start-db": "mongod --dbpath \"./db\" --port 16622"
+    "dev": "set NODE_ENV=development&&babel-node ./src/index.js",
+    "start": "set NODE_ENV=production&&babel-node ./src/index.js",
+    "start-db": "mongod --dbpath \"./db\""
   },
   "author": "pp253",
   "license": "Apache-2.0",
   "dependencies": {
     "body-parser": "^1.18.2",
     "compression": "^1.7.2",
+    "cors": "^2.8.4",
     "express": "^4.16.3",
     "express-session": "^1.15.6",
     "express-socket.io-session": "^1.3.3",
@@ -27,9 +28,8 @@
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
-    "babel-preset-es2015": "^6.24.1",
-    "babel-preset-stage-2": "^6.24.1",
-    "babel-register": "^6.26.0",
-    "babel-env": "^2.4.1"
+    "babel-env": "^2.4.1",
+    "babel-plugin-root-import": "^5.1.0",
+    "babel-register": "^6.26.0"
   }
 }

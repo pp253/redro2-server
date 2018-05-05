@@ -9,11 +9,16 @@ import bodyParser from 'body-parser'
 import expressValidator from 'express-validator'
 import compression from 'compression'
 import cors from 'cors'
+import mongoose from 'mongoose'
 // import memwatch from 'memwatch-next'
-import routes from './routes'
-import { PRODUCTION } from './src/lib/utils'
+import routes from '@/routes'
+import { PRODUCTION } from '@/lib/utils'
+import Node from '@/Node'
 
 console.log(`ENV: ${PRODUCTION ? 'production' : 'development'}`)
+
+// Connecting to MongoDB
+mongoose.connect(`mongodb://localhost/redro2`)
 
 const app = express()
 
@@ -59,7 +64,6 @@ app.use('/', express.static('public'))
 routes(app)
 
 if (PRODUCTION) {
-  // Listening
   let httpsServer = https.createServer(
     {
       key: fs.readFileSync(path.join(__dirname, '/secret/private.key')),
@@ -69,6 +73,7 @@ if (PRODUCTION) {
     app
   )
 
+  // Listening
   httpsServer.listen(app.get('port'), () => {
     console.log('Start to listen on PORT %d ...', app.get('port'))
   })

@@ -1,6 +1,5 @@
 import process from 'process'
 import moment from 'moment'
-import { Exception } from './debug'
 
 /**
  * Using `set NODE_ENV=development` or `set NODE_ENV=production` for
@@ -10,7 +9,7 @@ export const PRODUCTION = !(process.env.NODE_ENV === 'development')
 
 export function toArray(obj) {
   if (typeof obj !== 'object') {
-    throw new Exception('toArray: obj should be an object.')
+    throw new Error('toArray: obj should be an object.')
   }
 
   let arr = []
@@ -56,6 +55,12 @@ export function format(str, ...argus) {
     result = result.slice(0, index) + text + result.slice(index + length)
   }
   return result
+}
+
+export function timeout(duration) {
+  return new Promise(resolve => {
+    setTimeout(resolve, duration)
+  })
 }
 
 export class Timer {
