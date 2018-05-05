@@ -7,7 +7,7 @@ import mongoose from 'mongoose'
  * if StoreContent._id exists, Store will load that from db.
  */
 export default class Store extends EventEmitter {
-  constructor() {
+  constructor () {
     super()
     this.state = {}
     this.mutations = {}
@@ -20,12 +20,12 @@ export default class Store extends EventEmitter {
    *
    * store.load(Model, StoreContent)
    * if StoreContent._id exists, Store will load that from db.
-   * 
+   *
    * @param {Model} Model
    * @param {StoreContent} StoreContent
    * @returns {Promise<Store>} Store
    */
-  load(Model, StoreContent) {
+  load (Model, StoreContent) {
     return new Promise((resolve, reject) => {
       if (this._loaded === true) {
         throw new Error(`Store:load() Store has been loaded.`)
@@ -63,7 +63,7 @@ export default class Store extends EventEmitter {
             resolve(this)
           })
           .catch(err => {
-            throw err
+            reject(err)
           })
       }
     })
@@ -76,30 +76,34 @@ export default class Store extends EventEmitter {
    * @param {any} payload
    * @param {Map<string, any>} options
    *  `save` {Boolean} saves after commit. Defaults to `true`.
-   * @returns {Promise<Store>} the store after saving.
+   * @returns {Store|Promise<Store>} the store after saving.
    */
-  commit(mutation, payload, options) {
-    return new Promise((resolve, reject) => {
-      if (typeof mutation !== 'string' || !(mutation in this.mutations)) {
-        throw new Error('Store:commit()' + `mutation ${mutation} is not found or not being a string.`)
-      }
-      options = Object.assign({}, { save: true }, options)
+  commit (mutation, payload, options) {
+    if (typeof mutation !== 'string' || !(mutation in this.mutations)) {
+      throw new Error(
+          'Store:commit()' + `mutation ${mutation} is not found or not being a string.`
+        )
+    }
+    options = Object.assign({}, { save: true }, options)
 
-      this.mutations[mutation](this.state, payload)
+    let mutationFunction = this.mutations[mutation]
+    mutationFunction(this.state, payload)
 
-      if (options.save === false) {
-        resolve(this)
-      } else {
+    if (options.save === false) {
+      return this
+    } else {
+      return new Promise((resolve, reject) => {
         this.state
           .save()
           .then(state => {
+            this.state = state
             resolve(this)
           })
           .catch(err => {
-            throw err
+            reject(err)
           })
-      }
-    })
+      })
+    }
   }
 
   /**
@@ -110,13 +114,13 @@ export default class Store extends EventEmitter {
    * @param {Map<string, any>} options
    * @returns {Promise<Store>} the store after saving.
    */
-  dispatch(action, payload, options) {
+  dispatch (action, payload, options) {
     return new Promise((resolve, reject) => {
       if (typeof action !== 'string' || !(action in this.actions)) {
         throw new Error('Store:dispatch()' + `action ${action} is not found or not being a string.`)
       }
-
-      this.actions[action](
+      let actionFunction = this.actions[action]
+      actionFunction(
         {
           state: this.state,
           getters: this.getters,
@@ -130,17 +134,19 @@ export default class Store extends EventEmitter {
         options
       )
         .then(() => {
-          this.state.save().then(state => {
-            resolve(this)
-          })
+          return this.state.save()
+        })
+        .then(state => {
+          this.state = state
+          resolve(this)
         })
         .catch(err => {
-          throw err
+          reject(err)
         })
     })
   }
 
-  convertGetters(getters) {
+  convertGetters (getters) {
     let map = {}
     for (let key in getters) {
       if (typeof getters[key] !== 'function') {
@@ -151,7 +157,7 @@ export default class Store extends EventEmitter {
     return map
   }
 
-  toObject() {
+  toObject () {
     return this.state.toObject()
   }
 }
