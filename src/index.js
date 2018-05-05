@@ -13,6 +13,7 @@ import mongoose from 'mongoose'
 // import memwatch from 'memwatch-next'
 import routes from '@/routes'
 import { PRODUCTION } from '@/lib/utils'
+import socket from 'socket.io'
 import Node from '@/Node'
 
 console.log(`ENV: ${PRODUCTION ? 'production' : 'development'}`)
@@ -47,15 +48,11 @@ app.set('views', './views')
 // Session
 app.use(
   session({
-    secret: 'nthu-select-course',
+    secret: 'redro2-zxcvbasdfg',
     resave: false,
     saveUninitialized: false
   })
 )
-
-// Setting
-app.set('port', PRODUCTION ? 443 : 80)
-app.set('title', 'NTHU SELECT COURSE')
 
 // Static
 app.use('/', express.static('public'))
@@ -74,8 +71,13 @@ if (PRODUCTION) {
   )
 
   // Listening
-  httpsServer.listen(app.get('port'), () => {
-    console.log('Start to listen on PORT %d ...', app.get('port'))
+  httpsServer.listen(443, () => {
+    console.log('Start to listen on PORT %d ...', 443)
+  })
+
+  const io = socket(httpsServer)
+  io.on('connection', e => {
+    console.log(e)
   })
 
   // Auto redirect from port 80 to 443
@@ -88,8 +90,13 @@ if (PRODUCTION) {
     })
     .listen(80)
 } else {
-  app.listen(app.get('port'), () => {
-    console.log('Start to listen on PORT %d ...', app.get('port'))
+  const httpServer = app.listen(80, () => {
+    console.log('Start to listen on PORT %d ...', 80)
+  })
+
+  const io = socket(httpServer)
+  io.on('connection', e => {
+    console.log(e)
   })
 
   /*
