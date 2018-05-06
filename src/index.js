@@ -10,11 +10,10 @@ import expressValidator from 'express-validator'
 import compression from 'compression'
 import cors from 'cors'
 import mongoose from 'mongoose'
+import socket from 'socket.io'
 // import memwatch from 'memwatch-next'
 import routes from '@/routes'
 import { PRODUCTION } from '@/lib/utils'
-import socket from 'socket.io'
-import Node from '@/Node'
 
 console.log(`ENV: ${PRODUCTION ? 'production' : 'development'}`)
 
@@ -81,14 +80,12 @@ if (PRODUCTION) {
   })
 
   // Auto redirect from port 80 to 443
-  http
-    .createServer((req, res) => {
-      res.writeHead(301, {
-        Location: 'https://' + req.headers['host'] + req.url
-      })
-      res.end()
+  http.createServer((req, res) => {
+    res.writeHead(301, {
+      Location: 'https://' + req.headers['host'] + req.url
     })
-    .listen(80)
+    res.end()
+  }).listen(80)
 } else {
   const httpServer = app.listen(80, () => {
     console.log('Start listening on PORT %d ...', 80)

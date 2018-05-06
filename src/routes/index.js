@@ -1,5 +1,6 @@
 // import response from '../src/api/response'
 // import validation from '../src/api/validator'
+import Server from '@/Server'
 
 /*
 function apiMethodWrapper(apiFunc, apiArgus) {
@@ -28,7 +29,7 @@ function apiMethodWrapper(apiFunc, apiArgus) {
   }
 }
 */
-export default function initialize(app) {
+export default function initialize (app) {
   app.all('*', (req, res, next) => {
     console.log(req.ip, req.originalUrl)
     next()
@@ -53,11 +54,11 @@ export default function initialize(app) {
     }
   })
 
-  app.get('/echo', function(req, res, next) {
+  app.get('/echo', function (req, res, next) {
     res.send('echo')
   })
 
-  app.get('*', function(req, res, next) {
+  app.get('*', function (req, res, next) {
     res.status(404).send('404 NOT FOUND')
   })
 }
