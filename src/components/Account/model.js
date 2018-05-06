@@ -71,7 +71,7 @@ export const AccountSchema = new mongoose.Schema({
      * OperatingCosts
      */
     CostOfSales: AccountLedgerSchema, // 銷售成本=進料成本+運輸成本
-    CostOfWarehousingSales: AccountLedgerSchema, // 倉儲成本
+    CostOfWarehousing: AccountLedgerSchema, // 倉儲成本
 
     /**
      * OperatingExpenses

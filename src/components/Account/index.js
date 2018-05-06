@@ -22,7 +22,7 @@ export default class Account extends EventEmitter {
   load (node, options) {
     return new Promise((resolve, reject) => {
       if (this._loaded) {
-        throw new Error('Node:load() Node has been loaded before.')
+        throw new Error('Account:load() Node has been loaded before.')
       }
       this._loaded = true
 
@@ -31,22 +31,34 @@ export default class Account extends EventEmitter {
 
       let state = {}
       store(state)
-      .then((store) => {
-        this.store = store
-        resolve(this)
-      })
+      .then((store) => { resolve(this) })
       .catch(err => { reject(err) })
     })
   }
 
-  add (accountTransactionPack) {
+  /*
+    Account.add({
+      credit: [{
+        amount: 0,
+        classification: 'Cash'
+      }],
+      debit: [{
+        amount: 0,
+        classification: 'Cash'
+      }],
+      memo: '',
+      time: '',
+      gameTime: ''
+    })
+  */
+  add (accountTransaction) {
     return new Promise((resolve, reject) => {
       // check balance
-      if (!accountTransactionPack.unbalance || accountTransactionPack.unbalance === true) {
-        let debitAmount = accountTransactionPack.debit.reduce((acc, item) => {
+      if (!accountTransaction.unbalance || accountTransaction.unbalance === true) {
+        let debitAmount = accountTransaction.debit.reduce((acc, item) => {
           return acc + item.amount
         }, 0)
-        let creditAmount = accountTransactionPack.credit.reduce((acc, item) => {
+        let creditAmount = accountTransaction.credit.reduce((acc, item) => {
           return acc + item.amount
         }, 0)
 
@@ -55,13 +67,13 @@ export default class Account extends EventEmitter {
         }
       }
 
-      this.store.dispatch('addTransaction', accountTransactionPack)
+      this.store.dispatch('addTransaction', accountTransaction)
       .then(() => { resolve(this) })
       .catch(err => { reject(err) })
     })
   }
 
-  balance (classification) {
+  getBalance (classification) {
     if (!(classification in this.store.ledger)) {
       return 0 // Not an error, 因為這只是詢問是否有這個科目的剩餘金額
     }
@@ -75,5 +87,9 @@ export default class Account extends EventEmitter {
 
   getLedger (classification) {
     return _.cloneDeep(this.store.ledger[classification])
+  }
+
+  toObject () {
+    return this.store.toObject()
   }
 }

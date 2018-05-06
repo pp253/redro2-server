@@ -3,7 +3,8 @@ import AccountModel from './model'
 
 export const STORE_CONTENT = {
   state: {
-    journal: []
+    journal: [],
+    ledger: {}
   },
   getters: {},
   mutations: {
