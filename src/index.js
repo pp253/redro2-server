@@ -19,7 +19,7 @@ import Node from '@/Node'
 console.log(`ENV: ${PRODUCTION ? 'production' : 'development'}`)
 
 // Connecting to MongoDB
-mongoose.connect(`mongodb://localhost/redro2`)
+mongoose.connect(`mongodb://localhost/redro2`, {useMongoClient: true})
 
 const app = express()
 
@@ -72,7 +72,7 @@ if (PRODUCTION) {
 
   // Listening
   httpsServer.listen(443, () => {
-    console.log('Start to listen on PORT %d ...', 443)
+    console.log('Start listening on PORT %d ...', 443)
   })
 
   const io = socket(httpsServer)
@@ -91,7 +91,7 @@ if (PRODUCTION) {
     .listen(80)
 } else {
   const httpServer = app.listen(80, () => {
-    console.log('Start to listen on PORT %d ...', 80)
+    console.log('Start listening on PORT %d ...', 80)
   })
 
   const io = socket(httpServer)
