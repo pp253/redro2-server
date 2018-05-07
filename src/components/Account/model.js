@@ -31,7 +31,7 @@ export const AccountTransactionSchema = new mongoose.Schema({
 
 export const AccountLedgerItemSchema = new mongoose.Schema({
   amount: {type: Number, default: 0},
-  classification: {type: String, default: ''},
+  classification: {type: String, required: true},
   /**
    * side = `debit` | `credit`
    */
@@ -43,6 +43,7 @@ export const AccountLedgerItemSchema = new mongoose.Schema({
 
 export const AccountLedgerSchema = new mongoose.Schema({
   items: [AccountLedgerItemSchema],
+  classification: {type: String, required: true},
   /**
    * Balance = Debit - Credit
    */
@@ -59,7 +60,6 @@ export const AccountSchema = new mongoose.Schema({
      * Assets
      */
     Cash: AccountLedgerSchema, // 現金
-    RawMaterials: AccountLedgerSchema, // 原物料
     Inventory: AccountLedgerSchema, // 存貨
     AccountsReceivable: AccountLedgerSchema, // 應收帳款
 
@@ -76,8 +76,8 @@ export const AccountSchema = new mongoose.Schema({
     /**
      * OperatingCosts
      */
-    CostOfSales: AccountLedgerSchema, // 銷售成本=進料成本+運輸成本
-    CostOfWarehousing: AccountLedgerSchema, // 倉儲成本
+    CostOfSales: AccountLedgerSchema, // 銷售成本=進料成本
+    CostOfWarehousing: AccountLedgerSchema, // 倉儲成本+運輸成本
 
     /**
      * OperatingExpenses
