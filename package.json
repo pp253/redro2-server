@@ -2,17 +2,19 @@
   "name": "ieemgame",
   "version": "1.0.0",
   "description": "",
-  "main": "./src/index.js",
+  "main": "./src/main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "set NODE_ENV=development&&babel-node ./src/index.js",
-    "start": "set NODE_ENV=production&&babel-node ./src/index.js",
-    "start-db": "mongod --dbpath \"./db\""
+    "dev": "set NODE_ENV=development&&babel-node ./src/main.js",
+    "start": "set NODE_ENV=production&&babel-node ./src/main.js",
+    "start-db": "mongod --dbpath \"./db\"",
+    "unit": "mocha test/unit/* --require babel-core/register --single-run",
+    "test": "npm run unit"
   },
   "author": "pp253",
   "license": "Apache-2.0",
   "dependencies": {
     "body-parser": "^1.18.2",
+    "chai": "^4.1.2",
     "compression": "^1.7.2",
     "cors": "^2.8.4",
     "express": "^4.16.3",
