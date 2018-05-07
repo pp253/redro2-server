@@ -2,17 +2,17 @@ import { EventEmitter } from 'events'
 import _ from 'lodash'
 import store from './store'
 
-export default class Input extends EventEmitter {
+export default class IO extends EventEmitter {
   constructor () {
     super()
-    this.type = 'Input'
+    this.type = 'IO'
     this._loaded = false
   }
 
   load (node, options) {
     return new Promise((resolve, reject) => {
       if (this._loaded) {
-        throw new Error('Input:load() Node has been loaded before.')
+        throw new Error('IO:load() Node has been loaded before.')
       }
       this._loaded = true
 
@@ -36,15 +36,15 @@ export default class Input extends EventEmitter {
     })
   }
 
-  import (inputJournalItem) {
+  import (ioJournalItem) {
     return new Promise((resolve, reject) => {
-      let ij = _.cloneDeep(inputJournalItem)
+      let ij = _.cloneDeep(ioJournalItem)
 
       // Available Importers check
       if (this.store.state.rejectNotAvailableImpoters === true) {
         let fromId = ij.from
         if (this.store.state.availableImporters.find(item => item.id === fromId) === undefined) {
-          throw new Error('Input:import() Importer is not available.')
+          throw new Error('IO:import() Importer is not available.')
         }
       }
 
@@ -54,7 +54,7 @@ export default class Input extends EventEmitter {
         for (let inputJournalGoodItem of list) {
           let good = inputJournalGoodItem.good
           if (this.store.state.availableImportGoods.find(item => item.good === good) === undefined) {
-            throw new Error('Input:import() Good imported is not available.')
+            throw new Error('IO:import() Goods imported is not available.')
           }
         }
       }
@@ -70,7 +70,7 @@ export default class Input extends EventEmitter {
             it.left = it.limit
           }
           if (it.left < unit) {
-            throw new Error('Input:import() Good imported has reach the limitation.')
+            throw new Error('IO:import() Good imported has reach the limitation.')
           }
           it.left -= unit
         }
@@ -82,7 +82,7 @@ export default class Input extends EventEmitter {
         let balanceOfCash = Account.getBalance('Cash')
         let sumOfCost = (ij.price ? ij.price : 0) + (ij.deliveringCost ? ij.deliveringCost : 0)
         if (balanceOfCash < sumOfCost) {
-          throw new Error('Input:import() The price and delivering cost is unaffordable.')
+          throw new Error('IO:import() The price and delivering cost is unaffordable.')
         }
 
         // Add to account
@@ -107,6 +107,10 @@ export default class Input extends EventEmitter {
       })
       .catch(err => { reject(err) })
     })
+  }
+
+  export (ioJournalItem) {
+
   }
 
   getJournal (good) {

@@ -1,5 +1,5 @@
 import Store from '@/lib/Store'
-import InputModel from './model'
+import IOModel from './model'
 
 export const STORE_CONTENT = {
   state: {
@@ -34,5 +34,5 @@ export const STORE_CONTENT = {
 export default function store (state) {
   let st = new Store()
   let content = Object.assign({}, STORE_CONTENT, {state: state})
-  return st.load(InputModel, content)
+  return st.load(IOModel, content)
 }
