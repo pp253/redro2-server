@@ -1,5 +1,7 @@
 import mongoose from 'mongoose'
 
+export const PriceType = {type: Number, default: 0}
+
 export const TimeType = {type: Date, default: Date.now}
 
 export const GameTimeSchema = new mongoose.Schema({
