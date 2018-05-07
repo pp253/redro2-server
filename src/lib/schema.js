@@ -1,5 +1,10 @@
 import mongoose from 'mongoose'
 
+export const TRANSPORTATION_STATUS = {
+  DELIVERING: 'DELIVERING',
+  COMPLETED: 'COMPLETED'
+}
+
 export const PriceType = {type: Number, default: 0}
 
 export const TimeType = {type: Date, default: Date.now}
