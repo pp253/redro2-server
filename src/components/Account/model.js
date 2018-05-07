@@ -60,11 +60,13 @@ export const AccountSchema = new mongoose.Schema({
      */
     Cash: AccountLedgerSchema, // 現金
     RawMaterials: AccountLedgerSchema, // 原物料
+    Inventory: AccountLedgerSchema, // 存貨
+    AccountsReceivable: AccountLedgerSchema, // 應收帳款
 
     /**
      * Liability
      */
-    // empty
+    AccountsPayable: AccountLedgerSchema, // 應付帳款
 
     /**
      * OperatingIncome
@@ -80,13 +82,13 @@ export const AccountSchema = new mongoose.Schema({
     /**
      * OperatingExpenses
      */
-    SalaryAndWages: AccountLedgerSchema,
+    SalaryAndWages: AccountLedgerSchema, // 薪資成本
 
     /**
      * NonOperatingIncomeAndExpenses
      */
-    NonOperatingIncome: AccountLedgerSchema,
-    NonOperatingExpenses: AccountLedgerSchema,
+    NonOperatingIncome: AccountLedgerSchema, // 營業外收入
+    NonOperatingExpenses: AccountLedgerSchema, // 營業外支出
     IncomeFromCounterPartyDefault: AccountLedgerSchema, // 違約金收入
     CounterPartyDefault: AccountLedgerSchema // 違約金支出
   }
