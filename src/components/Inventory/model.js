@@ -4,6 +4,8 @@ import * as schema from '@/lib/schema'
 export const StorageGoodJournalItemSchema = new mongoose.Schema({
   good: {type: String, required: true},
   unit: {type: Number, required: true},
+  price: {type: Number, default: 0},
+  left: {type: Number, default: 0},
   memo: String,
   time: {type: Date, default: Date.now},
   gameTime: schema.GameTimeSchema
