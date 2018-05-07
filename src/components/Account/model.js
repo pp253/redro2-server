@@ -13,7 +13,11 @@ export const AccountsClassification = {
 
 export const AccountItemSchema = new mongoose.Schema({
   amount: {type: Number, default: 0},
-  classification: {type: String, default: ''}
+  classification: {type: String, default: ''},
+  /**
+   * 資產、負債科目應計交易對象，以便追蹤，尤其是負債或應付帳款時更應。
+   */
+  counterObject: schema.CounterObjectSchema
 })
 
 export const AccountTransactionSchema = new mongoose.Schema({
