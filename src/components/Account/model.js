@@ -77,7 +77,8 @@ export const AccountSchema = new mongoose.Schema({
      * OperatingCosts
      */
     CostOfSales: AccountLedgerSchema, // 銷售成本=進料成本
-    CostOfWarehousing: AccountLedgerSchema, // 倉儲成本+運輸成本
+    CostOfTransportation: AccountLedgerSchema, // 運輸成本 (原本應該算到銷售成本，但為了要彰顯出運輸成本，所以獨立計算)
+    CostOfWarehousing: AccountLedgerSchema, // 倉儲成本
 
     /**
      * OperatingExpenses
@@ -92,9 +93,10 @@ export const AccountSchema = new mongoose.Schema({
     IncomeFromCounterPartyDefault: AccountLedgerSchema, // 違約金收入
     CounterPartyDefault: AccountLedgerSchema // 違約金支出
   }
-},
-// Fix a bug https://github.com/Automattic/mongoose/issues/5574
-{usePushEach: true})
+}, {
+  // Fix a bug https://github.com/Automattic/mongoose/issues/5574
+  usePushEach: true
+})
 
 const AccountModel = mongoose.model('account', AccountSchema)
 export default AccountModel

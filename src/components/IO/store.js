@@ -3,16 +3,28 @@ import IOModel from './model'
 
 export const STORE_CONTENT = {
   state: {
-    journal: [],
+    enableImport: true,
+    importJournal: [],
     availableImporters: [],
     availableImportGoods: [],
     hasImportLimit: false,
     rejectNotAvailableImpoters: true,
-    rejectNotAvailableGoods: true
+    rejectNotAvailableImportGoods: true,
+
+    enableExport: true,
+    exportJournal: [],
+    availableExporters: [],
+    availableExportGoods: [],
+    hasExportLimit: false,
+    rejectNotAvailableExpoters: true,
+    rejectNotAvailableExportGoods: true,
+
+    transportationCost: 100,
+    transportationUnitPerBatch: 4
   },
   getters: {},
   mutations: {
-    ADD_INPUT: (state, inputJournalItem) => {
+    ADD_IMPORT: (state, inputJournalItem) => {
       if (!state.journal) {
         state.journal = []
       }
@@ -20,6 +32,9 @@ export const STORE_CONTENT = {
     },
     SET_HAS_IMPORT_LIMIT: (state, payload) => {
       state.hasImportLimit = payload.hasImportLimit
+    },
+    SET_HAS_EXPORT_LIMIT: (state, payload) => {
+      state.hasExportLimit = payload.hasExportLimit
     }
   },
   actions: {

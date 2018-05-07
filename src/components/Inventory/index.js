@@ -30,6 +30,9 @@ export default class Inventory extends EventEmitter {
          */
         if (this.store.state.hasStorageCost && this.node.Account) {
           this.node.engine.on('game-offwork', (engineTime) => {
+            if (!this.store.state.hasStorageCost || !this.node.Account) {
+              return
+            }
             let Account = this.node.Account
             let sumOfCost = 0
             for (let storageItem of this.store.state.storage) {
@@ -58,35 +61,133 @@ export default class Inventory extends EventEmitter {
     })
   }
 
-  import (storageGoodJournalItem) {
+  /**
+   *
+   * @param {IOJournalItem} IOJournalItem
+   */
+  import (IOJournalItem) {
     return new Promise((resolve, reject) => {
-      let sg = _.cloneDeep(storageGoodJournalItem)
-      this.store.commit('ADD_STORAGE', sg)
-      .then((store) => { resolve(this) })
+      let ioji = _.cloneDeep(IOJournalItem)
+      let price = ioji.price
+      this.store.commit('ADD_STORAGES', ioji.list)
+      .then((store) => {
+        if (this.node.Account) {
+          this.node.Account.add({
+            credit: [{
+              amount: price,
+              classification: 'Inventory'
+            }],
+            debit: [{
+              amount: price,
+              classification: 'AccountsPayable'
+            }],
+            memo: 'Purchasing Inventory',
+            time: ioji.time,
+            gameTime: ioji.gameTime
+          })
+          .then(() => { resolve(this) })
+        } else {
+          resolve(this)
+        }
+      })
       .catch(err => { reject(err) })
     })
   }
 
-  export (storageGoodJournalItem) {
+  /**
+   *
+   * @param {IOJournalItem} IOJournalItem
+   */
+  export (IOJournalItem) {
     return new Promise((resolve, reject) => {
-      let sg = _.cloneDeep(storageGoodJournalItem)
-      sg.unit = -sg.unit
-      this.store.commit('ADD_STORAGE', sg)
-      .then((store) => { resolve(this) })
+      let ioji = _.cloneDeep(IOJournalItem)
+      let sumOfCostOfSales = 0
+
+      // Check the storage unit
+      for (let stocksItem of ioji.list) {
+        let su = this.getStorageUnit(stocksItem.good)
+        if (su < stocksItem.unit) {
+          throw new RangeError('Inventory:export() Out of stocks.')
+        }
+        sumOfCostOfSales += this.getCostOfSales(stocksItem.good, stocksItem.unit)
+      }
+
+      this.store.commit('TAKE_STORAGES', ioji.list)
+      .then((store) => {
+        if (this.node.Account) {
+          this.node.Account.add({
+            credit: [{
+              amount: sumOfCostOfSales,
+              classification: 'CostOfSales'
+            }],
+            debit: [{
+              amount: sumOfCostOfSales,
+              classification: 'Inventory'
+            }],
+            memo: 'Selling Inventory',
+            time: ioji.time,
+            gameTime: ioji.gameTime
+          })
+          .then(() => { resolve(this) })
+        } else {
+          resolve(this)
+        }
+      })
       .catch(err => { reject(err) })
     })
   }
 
+  /**
+   *
+   * @param {String} good
+   * @returns {StorageItem}
+   */
   getStorage (good) {
     return this.store.storage.find(item => item.good === good)
   }
 
+  /**
+   *
+   * @param {String} good
+   * @returns {Number} unit
+   */
+  getStorageUnit (good) {
+    let s = this.getStorage()
+    if (s === undefined) {
+      return 0
+    }
+    return s.unit
+  }
+
+  getCostOfSales (good, unit) {
+    let su = this.getStorageUnit(good)
+    if (su < unit) {
+      throw new Error('Inventory:getCostOfSales() Out of stocks.')
+    }
+
+    let s = this.getStorage()
+    let left = unit
+    let costOfSales = 0
+    for (let leftIdx = s.stocks.indexOf(item => item.left > 0); leftIdx < s.stocks.length; leftIdx++) {
+      let lit = s.stocks[leftIdx]
+      if (left - lit.left > 0) {
+        left -= lit.left
+        costOfSales += lit.left * lit.unitPrice
+      } else {
+        left = 0
+        costOfSales += left * lit.unitPrice
+        break
+      }
+    }
+    return costOfSales
+  }
+
   getJournal (good) {
-    let it = this.getStorage(good)
-    if (!it) {
+    let s = this.getStorage(good)
+    if (!s) {
       return []
     }
-    return _.cloneDeep(it.journal)
+    return _.cloneDeep(s.journal)
   }
 
   toObject () {

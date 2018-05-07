@@ -26,6 +26,12 @@ export default class IO extends EventEmitter {
         }
         availableImportGood.left = availableImportGood.limit
       }
+      for (let availableExportGood of state.availableExportGoods) {
+        if (availableExportGood.left !== undefined) {
+          continue
+        }
+        availableExportGood.left = availableExportGood.limit
+      }
 
       store(state)
       .then((store) => {
@@ -89,7 +95,7 @@ export default class IO extends EventEmitter {
         Account.add({
           credit: [{
             amount: sumOfCost,
-            classification: 'CostOfSales'
+            classification: 'Inventory'
           }],
           debit: [{
             amount: sumOfCost,
@@ -101,7 +107,11 @@ export default class IO extends EventEmitter {
         })
       }
 
-      this.store.commit('ADD_INPUT', ij)
+      if (this.node.Inventory) {
+
+      }
+
+      this.store.commit('ADD_IMPORT', ij)
       .then((store) => {
         resolve(this)
       })

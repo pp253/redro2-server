@@ -1,20 +1,16 @@
 import mongoose from 'mongoose'
-import * as schema from '@/lib/schema'
 
-export const StorageGoodJournalItemSchema = new mongoose.Schema({
+export const StocksItemSchema = new mongoose.Schema({
   good: {type: String, required: true},
   unit: {type: Number, required: true},
-  price: {type: Number, default: 0},
-  left: {type: Number, default: 0},
-  memo: String,
-  time: {type: Date, default: Date.now},
-  gameTime: schema.GameTimeSchema
+  unitPrice: {type: Number, default: 0},
+  left: {type: Number}
 })
 
 export const StorageItemSchema = new mongoose.Schema({
   good: {type: String, required: true},
   unit: {type: Number, required: true},
-  journal: [StorageGoodJournalItemSchema]
+  stocks: [StocksItemSchema]
 }, {_id: false})
 
 export const StorageCostItemSchema = new mongoose.Schema({
@@ -26,9 +22,10 @@ export const InventorySchema = new mongoose.Schema({
   storage: [StorageItemSchema], // 類似分類帳
   storageCost: [StorageCostItemSchema],
   hasStorageCost: {type: Boolean, default: true}
-},
-// Fix a bug https://github.com/Automattic/mongoose/issues/5574
-{usePushEach: true})
+}, {
+  // Fix a bug https://github.com/Automattic/mongoose/issues/5574
+  usePushEach: true
+})
 
 const InventoryModel = mongoose.model('inventory', InventorySchema)
 export default InventoryModel

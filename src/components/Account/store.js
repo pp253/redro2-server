@@ -33,6 +33,9 @@ export const STORE_CONTENT = {
     }
   },
   actions: {
+    /**
+     * 同時新增到日記簿及分類簿
+     */
     addTransaction: (context, transaction) => {
       // Journal
       context.commit('ADD_JOURNAL_TRANSACTION', transaction)
