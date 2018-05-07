@@ -2,7 +2,7 @@ import { EventEmitter } from 'events'
 import store from './store'
 import Account from '@/components/Account'
 import Inventory from '@/components/Inventory'
-import Input from '@/components/Input'
+import IO from '@/components/IO'
 
 export default class Node extends EventEmitter {
   constructor () {
