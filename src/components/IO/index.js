@@ -2,6 +2,7 @@ import { EventEmitter } from 'events'
 import _ from 'lodash'
 import store from './store'
 import Node from '@/Node'
+import { PRODUCTION } from '@/lib/utils'
 
 export default class IO extends EventEmitter {
   constructor () {
@@ -12,7 +13,7 @@ export default class IO extends EventEmitter {
 
   load (node, options) {
     return new Promise((resolve, reject) => {
-      if (!(node instanceof Node)) {
+      if (PRODUCTION && !(node instanceof Node)) {
         throw new Error('IO:load() `node` should be instance of Node.')
       }
       if (this._loaded) {
@@ -203,5 +204,9 @@ export default class IO extends EventEmitter {
 
   toObject () {
     return this.store.toObject()
+  }
+
+  getId () {
+    return this.store.state._id
   }
 }

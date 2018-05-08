@@ -1,17 +1,8 @@
 import { EventEmitter } from 'events'
 import _ from 'lodash'
-import {Pack} from '@/lib/pack'
 import store from './store'
 import Node from '@/Node'
-
-export function AccountTransactionPack ({debitItems, creditItems, memo, unbalance}) {
-  return Pack({
-    debit: debitItems,
-    credit: creditItems,
-    memo: memo || '',
-    unbalance: unbalance || false
-  })
-}
+import { PRODUCTION } from '@/lib/utils';
 
 export default class Account extends EventEmitter {
   constructor () {
@@ -22,7 +13,7 @@ export default class Account extends EventEmitter {
 
   load (node, options) {
     return new Promise((resolve, reject) => {
-      if (!(node instanceof Node)) {
+      if (PRODUCTION && !(node instanceof Node)) {
         throw new Error('Inventory:load() `node` should be instance of Node.')
       }
       if (this._loaded) {
@@ -104,5 +95,9 @@ export default class Account extends EventEmitter {
 
   toObject () {
     return this.store.toObject()
+  }
+
+  getId () {
+    return this.store.state._id
   }
 }
