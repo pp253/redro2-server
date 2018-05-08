@@ -55,8 +55,6 @@ export default class Engine extends EventEmitter {
 
   constructGragh (gragh) {}
 
-  remove () {}
-
   nextStage () {
     return new Promise((resolve, reject) => {
       let ns = ENGINE_STAGE.CONSTRUCTED
@@ -144,6 +142,10 @@ export default class Engine extends EventEmitter {
       }, adjustedNextTickMS)
     })
   }
+
+  remove () {}
+  pause () {}
+  resume () {}
 
   /**
    * gameTimeAdd(GameTime, diff)
