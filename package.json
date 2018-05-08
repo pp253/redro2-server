@@ -8,7 +8,8 @@
     "start": "set NODE_ENV=production&&babel-node ./src/main.js",
     "start-db": "mongod --dbpath \"./db\"",
     "unit": "mocha test/unit/* --require babel-core/register --single-run",
-    "test": "npm run unit"
+    "test": "npm run unit",
+    "debug": "babel-node src/main --inspect --debug-brk --nolazy src/main"
   },
   "author": "pp253",
   "license": "Apache-2.0",
