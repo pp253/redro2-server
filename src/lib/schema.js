@@ -1,5 +1,13 @@
 import mongoose from 'mongoose'
 
+export const ENGINE_STAGE = {
+  PREPARE: 'PREPARE',
+  READY: 'READY',
+  START: 'START',
+  FINAL: 'FINAL',
+  END: 'END'
+}
+
 export const TRANSPORTATION_STATUS = {
   DELIVERING: 'DELIVERING',
   COMPLETED: 'COMPLETED'
