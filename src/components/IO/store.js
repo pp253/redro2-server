@@ -5,18 +5,14 @@ export const STORE_CONTENT = {
   state: {
     enableImport: true,
     importJournal: [],
-    availableImporters: [],
     availableImportGoods: [],
     hasImportLimit: false,
-    rejectNotAvailableImpoters: true,
     rejectNotAvailableImportGoods: true,
 
     enableExport: true,
     exportJournal: [],
-    availableExporters: [],
     availableExportGoods: [],
     hasExportLimit: false,
-    rejectNotAvailableExpoters: true,
     rejectNotAvailableExportGoods: true,
 
     transportationCost: 100,

@@ -21,26 +21,17 @@ export const AvailableIOGoodSchema = new mongoose.Schema({
   left: {type: Number, default: 0}
 }, {_id: false})
 
-export const AvailableIOCounterObjectSchema = new mongoose.Schema({
-  type: {type: String, required: true},
-  id: {type: mongoose.Schema.Types.ObjectId, required: true}
-}, {_id: false})
-
 export const IOSchema = new mongoose.Schema({
   enableImport: {type: Boolean, default: true},
   importJournal: [IOJournalItemSchema],
-  availableImporters: [AvailableIOCounterObjectSchema],
   availableImportGoods: [AvailableIOGoodSchema],
   hasImportLimit: {type: Boolean, default: false},
-  rejectNotAvailableImpoters: {type: Boolean, default: true},
   rejectNotAvailableImportGoods: {type: Boolean, default: true},
 
   enableExport: {type: Boolean, default: true},
   exportJournal: [IOJournalItemSchema],
-  availableExporters: [AvailableIOCounterObjectSchema],
   availableExportGoods: [AvailableIOGoodSchema],
   hasExportLimit: {type: Boolean, default: false},
-  rejectNotAvailableExpoters: {type: Boolean, default: true},
   rejectNotAvailableExportGoods: {type: Boolean, default: true},
 
   transportationCost: {type: Number, default: 0},

@@ -46,14 +46,6 @@ export default class IO extends EventEmitter {
     return new Promise((resolve, reject) => {
       let ij = _.cloneDeep(ioJournalItem)
 
-      // Available Importers check
-      if (this.store.state.rejectNotAvailableImpoters === true) {
-        let fromId = ij.from
-        if (this.store.state.availableImporters.find(item => item.id === fromId) === undefined) {
-          throw new Error('IO:import() Importer is not available.')
-        }
-      }
-
       // Available Goods check
       if (this.store.state.rejectNotAvailableGoods === true) {
         let list = ij.list
