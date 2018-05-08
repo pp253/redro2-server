@@ -4,12 +4,7 @@ import NodeModel from './model'
 export const STORE_CONTENT = {
   state: {
     name: 'UnknownNodeName',
-    components: {
-      Input: { enable: true },
-      Output: { enable: true },
-      Account: { enable: true },
-      Inventory: { enable: true }
-    }
+    components: []
   },
   getters: {},
   mutations: {
@@ -17,19 +12,15 @@ export const STORE_CONTENT = {
       state.name = payload.name
     },
     CHANGE_COMPONENT_ID: (state, payload) => {
-      if (!payload || !payload.componentName || !(payload.componentName in state.components)) {
-        throw new Error(
-          'Node.store Payload is not exist, or payload.componentName is not in the state.components'
-        )
-      }
-      state.components[payload.componentName].id = payload.id
+      let c = state.components.find(component => component.type === payload.type)
+      c.id = payload.id
     }
   },
   actions: {
     changeComponentsId: (context, payload) => {
       for (let component of payload) {
         context.commit('CHANGE_COMPONENT_ID', {
-          componentName: component.type,
+          type: component.type,
           id: component.store.state._id
         })
       }
