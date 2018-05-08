@@ -2,7 +2,7 @@ import { EventEmitter } from 'events'
 import _ from 'lodash'
 import store from './store'
 import Node from '@/Node'
-import { PRODUCTION } from '@/lib/utils';
+import { PRODUCTION } from '@/lib/utils'
 
 export default class Account extends EventEmitter {
   constructor () {
