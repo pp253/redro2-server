@@ -1,6 +1,36 @@
 import mongoose from 'mongoose'
+import _ from 'lodash'
+
+/*
+{
+  type: '',
+  target: this
+}
+*/
+export class Event {
+  constructor (options) {
+    this.type = options.type
+    this.target = options.target
+    this.time = Date.now()
+  }
+}
+
+/*
+{
+  gameTime: _.cloneDeep(this.store.state.gameTime),
+  stage: this.store.state.stage
+}
+*/
+export class EngineEvent extends Event {
+  constructor (options) {
+    super(options)
+    this.gameTime = options.gameTime
+    this.stage = options.stage
+  }
+}
 
 export const ENGINE_STAGE = {
+  CONSTRUCTED: 'CONSTRUCTED',
   PREPARE: 'PREPARE',
   READY: 'READY',
   START: 'START',
