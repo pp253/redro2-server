@@ -63,11 +63,11 @@ export default class Inventory extends EventEmitter {
 
   /**
    *
-   * @param {IOJournalItem} IOJournalItem
+   * @param {IOJournalItem} ioJournalItem
    */
-  import (IOJournalItem) {
+  import (ioJournalItem) {
     return new Promise((resolve, reject) => {
-      let ioji = _.cloneDeep(IOJournalItem)
+      let ioji = _.cloneDeep(ioJournalItem)
       let price = ioji.price
       this.store.commit('ADD_STORAGES', ioji.list)
       .then((store) => {
@@ -75,11 +75,13 @@ export default class Inventory extends EventEmitter {
           this.node.Account.add({
             credit: [{
               amount: price,
-              classification: 'Inventory'
+              classification: 'Inventory',
+              counterObject: ioji.from
             }],
             debit: [{
               amount: price,
-              classification: 'AccountsPayable'
+              classification: 'AccountsPayable',
+              counterObject: ioji.from
             }],
             memo: 'Purchasing Inventory',
             time: ioji.time,
@@ -96,11 +98,11 @@ export default class Inventory extends EventEmitter {
 
   /**
    *
-   * @param {IOJournalItem} IOJournalItem
+   * @param {IOJournalItem} ioJournalItem
    */
-  export (IOJournalItem) {
+  export (ioJournalItem) {
     return new Promise((resolve, reject) => {
-      let ioji = _.cloneDeep(IOJournalItem)
+      let ioji = _.cloneDeep(ioJournalItem)
       let sumOfCostOfSales = 0
 
       // Check the storage unit
@@ -118,11 +120,13 @@ export default class Inventory extends EventEmitter {
           this.node.Account.add({
             credit: [{
               amount: sumOfCostOfSales,
-              classification: 'CostOfSales'
+              classification: 'CostOfSales',
+              counterObject: ioji.from
             }],
             debit: [{
               amount: sumOfCostOfSales,
-              classification: 'Inventory'
+              classification: 'Inventory',
+              counterObject: ioji.from
             }],
             memo: 'Selling Inventory',
             time: ioji.time,
