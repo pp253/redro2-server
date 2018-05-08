@@ -17,20 +17,24 @@ export default class IO extends EventEmitter {
       this._loaded = true
 
       this.node = node
-      this.options = _.cloneDeep(options)
+      this.options = _.cloneDeep(options) || {}
 
       let state = this.options
-      for (let availableImportGood of state.availableImportGoods) {
-        if (availableImportGood.left !== undefined) {
-          continue
+      if (state.availableImportGoods) {
+        for (let availableImportGood of state.availableImportGoods) {
+          if (availableImportGood.left !== undefined) {
+            continue
+          }
+          availableImportGood.left = availableImportGood.limit
         }
-        availableImportGood.left = availableImportGood.limit
       }
-      for (let availableExportGood of state.availableExportGoods) {
-        if (availableExportGood.left !== undefined) {
-          continue
+      if (state.availableExportGoods) {
+        for (let availableExportGood of state.availableExportGoods) {
+          if (availableExportGood.left !== undefined) {
+            continue
+          }
+          availableExportGood.left = availableExportGood.limit
         }
-        availableExportGood.left = availableExportGood.limit
       }
 
       store(state)
