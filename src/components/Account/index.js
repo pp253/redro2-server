@@ -1,5 +1,4 @@
 import { EventEmitter } from 'events'
-import _ from 'lodash'
 import {Pack} from '@/lib/pack'
 import store from './store'
 
@@ -51,11 +50,13 @@ export default class Account extends EventEmitter {
     Account.add({
       credit: [{
         amount: 0,
-        classification: 'Cash'
+        classification: 'Cash',
+        counterObject: ''
       }],
       debit: [{
         amount: 0,
-        classification: 'Cash'
+        classification: 'Cash',
+        counterObject: ''
       }],
       memo: '',
       time: '',
@@ -89,15 +90,19 @@ export default class Account extends EventEmitter {
       return 0 // Not an error, 因為這只是詢問是否有這個科目的剩餘金額
     }
 
-    return this.store.ledger[classification].balance
+    return this.getLedger(classification).balance
   }
 
   getJournal () {
-    return _.cloneDeep(this.store.journal)
+    return this.store.journal
   }
 
   getLedger (classification) {
-    return _.cloneDeep(this.store.ledger[classification])
+    return this.store.ledger[classification]
+  }
+
+  isBankrupt () {
+    return (this.getBalance('Cash') + this.getBalance('AccountsReceivable') - this.getBalance('AccountsPayable')) > 0
   }
 
   toObject () {
