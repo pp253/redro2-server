@@ -5,9 +5,9 @@ import Inventory from '@/components/Inventory'
 import IO from '@/components/IO'
 
 export const COMPONENTS = {
-  Inventory,
-  IO,
-  Account
+  Inventory: Inventory,
+  IO: IO,
+  Account: Account
 }
 
 export default class Node extends EventEmitter {
@@ -41,8 +41,7 @@ export default class Node extends EventEmitter {
             if (component.enable === false) {
               continue
             }
-
-            this[component.type] = new COMPONENTS[component.type]() // TODO
+            this[component.type] = new COMPONENTS[component.type]()
             let job = this[component.type].load(this, component.options)
             jobSeq.push(job)
           }
@@ -50,7 +49,7 @@ export default class Node extends EventEmitter {
           return Promise.all(jobSeq)
         })
         .then(jobSeqResult => {
-          return this.store.dispatch('changeComponentsId', jobSeqResult)
+          return this.store.dispatch('setComponentsId', jobSeqResult)
         })
         .then(() => {
           resolve(this)
@@ -61,5 +60,9 @@ export default class Node extends EventEmitter {
 
   toObject () {
     return this.store.toObject()
+  }
+
+  getId () {
+    return this.store.state._id
   }
 }
