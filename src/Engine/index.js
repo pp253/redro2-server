@@ -139,22 +139,6 @@ export default class Engine extends EventEmitter {
 
     timeout(1000)
     .then(() => { this.nextTick() })
-
-    return new Promise((resolve, reject) => {
-      let now = Date.now()
-      let adjustedNextTickMS = 1000
-
-      this.emit('game-time-change', this.gameTime, this)
-
-      setInterval(() => {
-        this.emit('game-time-change')
-
-      // setInterval recursively.
-        setInterval(() => {
-          this.emit('game-time-change')
-        }, adjustedNextTickMS)
-      }, adjustedNextTickMS)
-    })
   }
 
   nextTick () {
@@ -173,11 +157,13 @@ export default class Engine extends EventEmitter {
     let now = Date.now()
     let adjustedNextTickMS = 1000
 
-    timeout(1000)
+    timeout(adjustedNextTickMS)
     .then(() => { this.nextTick() })
   }
 
-  nextTickToOffWork () {}
+  nextTickToOffWork () {
+
+  }
 
   remove () {}
   pause () {}
