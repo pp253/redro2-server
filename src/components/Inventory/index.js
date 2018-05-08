@@ -17,7 +17,7 @@ export default class Inventory extends EventEmitter {
       this._loaded = true
 
       this.node = node
-      this.options = options
+      this.options = _.cloneDeep(options) || {}
 
       let state = {}
       store(state)
