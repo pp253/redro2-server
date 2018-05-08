@@ -1,5 +1,4 @@
 /* eslint-env node, mocha */
-import mongoose from 'mongoose'
 import {assert, expect} from 'chai'
 import Account from '@/components/Account'
 
@@ -30,17 +29,6 @@ const CASH_ACTUAL_AMOUNT = 200
 
 describe('Account', function () {
   let account
-
-  before(function (done) {
-    mongoose.Promise = Promise
-    mongoose.connect(`mongodb://localhost/redro2_test`, {useMongoClient: true})
-    .then(() => { done() })
-  })
-
-  after(function (done) {
-    mongoose.disconnect()
-    .then(account => { done() })
-  })
 
   describe('#constructor()', function () {
     it('should be marked as type Account.', function (done) {
@@ -122,7 +110,7 @@ describe('Account', function () {
   })
 
   describe('#toObject()', function () {
-    it('should return a object.', function (done) {
+    it('should return an object.', function (done) {
       let obj = account.toObject()
       assert.isObject(obj)
       done()

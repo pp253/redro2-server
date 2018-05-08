@@ -1,12 +1,11 @@
 /* eslint-env node, mocha */
-import mongoose from 'mongoose'
 import {assert, expect} from 'chai'
 import Node from '@/Node'
 
 const DUMMY_ENGINE = {}
 
 const NODE_OPTIONS = {
-  name: 'SAMPLE_NODE',
+  name: 'SAMPLE_ENGINE',
   components: [
     {
       type: 'Account',
@@ -26,17 +25,6 @@ const NODE_OPTIONS = {
 describe('Node', function () {
   let node
 
-  before(function (done) {
-    mongoose.Promise = Promise
-    mongoose.connect(`mongodb://localhost/redro2_test`, {useMongoClient: true})
-    .then(() => { done() })
-  })
-
-  after(function (done) {
-    mongoose.disconnect()
-    .then(account => { done() })
-  })
-
   describe('#constructor()', function () {
     it('should be marked as type Node.', function (done) {
       node = new Node()
@@ -55,7 +43,7 @@ describe('Node', function () {
   })
 
   describe('#toObject()', function () {
-    it('should return a object.', function (done) {
+    it('should return an object.', function (done) {
       let obj = node.toObject()
       assert.isObject(obj)
       done()
