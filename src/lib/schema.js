@@ -1,5 +1,4 @@
 import mongoose from 'mongoose'
-import _ from 'lodash'
 
 /*
 {
@@ -48,18 +47,9 @@ export const PriceType = {type: Number, default: 0}
 export const TimeType = {type: Date, default: Date.now}
 
 export const GameTimeSchema = new mongoose.Schema({
-  day: {
-    type: Number,
-    default: 0
-  },
-  time: {
-    type: Number,
-    default: 0
-  },
-  isWorking: {
-    type: Boolean,
-    default: false
-  }
+  day: {type: Number, default: 0},
+  time: {type: Number, default: 0},
+  isWorking: {type: Boolean, default: false}
 }, {_id: false})
 
 export const CounterObjectSchema = new mongoose.Schema({
