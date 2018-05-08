@@ -1,5 +1,6 @@
 import process from 'process'
 import moment from 'moment'
+import _ from 'lodash'
 
 /**
  * Using `set NODE_ENV=development` or `set NODE_ENV=production` for
@@ -7,7 +8,7 @@ import moment from 'moment'
  */
 export const PRODUCTION = !(process.env.NODE_ENV === 'development')
 
-export function toArray(obj) {
+export function toArray (obj) {
   if (typeof obj !== 'object') {
     throw new Error('toArray: obj should be an object.')
   }
@@ -33,7 +34,7 @@ export function toArray(obj) {
  * @param {String} str String to formatted.
  * @param {Object | String[]} argus Arguments for formatting.
  */
-export function format(str, ...argus) {
+export function format (str, ...argus) {
   if (typeof str !== 'string') {
     throw Exception('format: str should be a string.')
   }
@@ -57,14 +58,14 @@ export function format(str, ...argus) {
   return result
 }
 
-export function timeout(duration) {
+export function timeout (duration) {
   return new Promise(resolve => {
     setTimeout(resolve, duration)
   })
 }
 
 export class Timer {
-  constructor(name, log) {
+  constructor (name, log) {
     this.history = []
     this.laps = []
     this.counting = false
@@ -74,7 +75,7 @@ export class Timer {
     return this
   }
 
-  resume() {
+  resume () {
     if (!this.counting) {
       const t = Date.now()
       const c = this.count()
@@ -94,7 +95,7 @@ export class Timer {
     return this
   }
 
-  pause() {
+  pause () {
     if (this.counting) {
       const t = Date.now()
       const c = this.count()
@@ -115,17 +116,17 @@ export class Timer {
     return this
   }
 
-  start() {
+  start () {
     this.resume()
     return this
   }
 
-  stop() {
+  stop () {
     this.pause()
     return this
   }
 
-  lap() {
+  lap () {
     const t = Date.now()
     const c = this.count()
     this.laps.push({
@@ -142,7 +143,7 @@ export class Timer {
     return this
   }
 
-  reset() {
+  reset () {
     this.history = []
     this.laps = []
     this._duration = 0
@@ -151,7 +152,7 @@ export class Timer {
     return this
   }
 
-  count() {
+  count () {
     if (this.counting) {
       const lastLog = this.history[this.history.length - 1]
       return Date.now() - lastLog.time + this._duration
@@ -160,7 +161,7 @@ export class Timer {
     }
   }
 
-  toString() {
+  toString () {
     let str = ''
     return str
   }
