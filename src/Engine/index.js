@@ -110,6 +110,39 @@ export default class Engine extends EventEmitter {
 
   pause () {}
   resume () {}
+
+  /**
+   * gameTimeAdd(GameTime, diff)
+   * gameTimeAdd(diff)
+   *
+   * @param {GameTime} gameTime
+   * @param {Number} diff
+   */
+  gameTimeAdd (gameTime, diff = 0) {
+    if (typeof gameTime === 'number') {
+      diff = gameTime
+      gameTime = this.store.state.gameTime
+    }
+
+    let gameDays = this.store.state.gameDays
+    let dayLength = this.store.state.dayLength
+
+    let day = gameTime.day + parseInt((gameTime.time + diff) / dayLength)
+
+    if (day > gameDays) {
+      return {
+        day: day,
+        time: (gameTime.time + diff) % dayLength,
+        isWorking: true
+      }
+    } else {
+      return {
+        day: gameDays,
+        time: dayLength,
+        isWorking: false
+      }
+    }
+  }
 }
 
 let server = {}
