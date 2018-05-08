@@ -3,9 +3,16 @@ import * as schema from '@/lib/schema'
 import { NodeScheme } from '@/Node/model'
 
 export const EngineSchema = new mongoose.Schema({
+  name: {type: String, default: 'UnknownEngineName'},
   nodes: [NodeScheme],
   stage: {type: String, default: schema.ENGINE_STAGE.CONSTRUCTED},
-  gameTime: schema.GameTimeSchema,
+  gameTime: {
+    type: schema.GameTimeSchema,
+    default: {
+      day: 0,
+      time: 0,
+      isWorking: false
+    }},
   gameDays: {type: Number, default: 0},
   dayLength: {type: Number, default: 0}
 }, {

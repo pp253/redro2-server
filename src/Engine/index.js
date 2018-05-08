@@ -3,7 +3,7 @@ import _ from 'lodash'
 import store from './store'
 import Server from '@/Server'
 import Node from '@/Node'
-import { timeout } from '@/lib/utils'
+import { timeout, PRODUCTION } from '@/lib/utils'
 import {ENGINE_STAGE, EngineEvent} from '@/lib/schema'
 
 export const ENGINE_EVENTS = {
@@ -29,7 +29,7 @@ export default class Engine extends EventEmitter {
 
   load (server, options) {
     return new Promise((resolve, reject) => {
-      if (!(server instanceof Server)) {
+      if (PRODUCTION && !(server instanceof Server)) {
         throw new Error('Engine:load() `server` should be instance of Server.')
       }
       if (this._loaded) {
@@ -49,7 +49,15 @@ export default class Engine extends EventEmitter {
         /**
          * LOAD THE NODES HERE!!!!!!!!
          */
-
+        let jobSeq = []
+        for (let node of this.store.state.nodes) {
+          let newNode = new Node()
+          let job = newNode.load(this, node)
+          jobSeq.push(job)
+        }
+        return Promise.all(jobSeq)
+      })
+      .then(() => {
         resolve(this)
       })
       .catch(err => { reject(err) })
@@ -87,7 +95,7 @@ export default class Engine extends EventEmitter {
           this._newEngineEvent(ENGINE_EVENTS.GAME_STAGE_CHANGE))
 
         if (ns === ENGINE_STAGE.START) {
-          return this.nextDay()
+          this.nextDay().then(() => { resolve(this) })
         }
 
         resolve(this)
@@ -130,39 +138,66 @@ export default class Engine extends EventEmitter {
   }
 
   startTicking () {
-    this._timer.startTime = Date.now()
-
     this.emit(ENGINE_EVENTS.GAME_TIME_CHANGE,
       this._newEngineEvent(ENGINE_EVENTS.GAME_TIME_CHANGE))
     let eventName = ENGINE_EVENTS.GAME_DAY_X_TIME_Y(this.getGameTime().day, 0)
     this.emit(eventName, this._newEngineEvent(eventName))
 
+    this._timer.startTime = Date.now()
+
     timeout(1000)
-    .then(() => { this.nextTick() })
+    .then(() => { this._nextTick() })
   }
 
-  nextTick () {
+  _nextTick () {
     this.emit(ENGINE_EVENTS.GAME_TIME_CHANGE,
       this._newEngineEvent(ENGINE_EVENTS.GAME_TIME_CHANGE))
     let gameTime = this.getGameTime()
-    let eventName = ENGINE_EVENTS.GAME_DAY_X_TIME_Y(gameTime.day, gameTime.time + 1)
+    let nextTime = gameTime.time + 1
+    let eventName = ENGINE_EVENTS.GAME_DAY_X_TIME_Y(gameTime.day, nextTime)
     this.emit(eventName, this._newEngineEvent(eventName))
 
     this.store.commit('SET_GAME_TIME', {
       day: gameTime.day,
-      time: gameTime.time,
+      time: nextTime,
       isWorking: true
     })
+    .then(() => {
+      let now = Date.now()
+      let adjustedNextTickMS = (this._timer.startTime + nextTime * 1000) - now
 
-    let now = Date.now()
-    let adjustedNextTickMS = 1000
-
-    timeout(adjustedNextTickMS)
-    .then(() => { this.nextTick() })
+      if (nextTime === this.store.state.dayLength - 1) {
+        timeout(adjustedNextTickMS)
+        .then(() => { this._nextTickToOffWork() })
+      } else {
+        timeout(adjustedNextTickMS)
+        .then(() => { this._nextTick() })
+      }
+    })
   }
 
-  nextTickToOffWork () {
+  _nextTickToOffWork () {
+    this.emit(ENGINE_EVENTS.GAME_TIME_CHANGE,
+      this._newEngineEvent(ENGINE_EVENTS.GAME_TIME_CHANGE))
+    this.emit(ENGINE_EVENTS.GAME_ISWORKING_CHANGE,
+      this._newEngineEvent(ENGINE_EVENTS.GAME_ISWORKING_CHANGE))
+    this.emit(ENGINE_EVENTS.GAME_OFFWORK,
+      this._newEngineEvent(ENGINE_EVENTS.GAME_OFFWORK))
+    let gameTime = this.getGameTime()
+    let nextTime = gameTime.time + 1
+    let eventName = ENGINE_EVENTS.GAME_DAY_X_TIME_Y(gameTime.day, nextTime)
+    this.emit(eventName, this._newEngineEvent(eventName))
 
+    this.store.commit('SET_GAME_TIME', {
+      day: gameTime.day,
+      time: nextTime,
+      isWorking: false
+    })
+    .then(() => {
+      if (gameTime.day === this.store.state.gameDays) {
+        this.nextStage()
+      }
+    })
   }
 
   remove () {}
@@ -212,6 +247,10 @@ export default class Engine extends EventEmitter {
 
   toObject () {
     return this.store.toObject()
+  }
+
+  getId () {
+    return this.store.state._id
   }
 
   _newEngineEvent (type) {
