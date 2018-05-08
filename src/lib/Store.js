@@ -118,7 +118,7 @@ export default class Store extends EventEmitter {
   dispatch (action, payload, options) {
     return new Promise((resolve, reject) => {
       if (typeof action !== 'string' || !(action in this.actions)) {
-        throw new Error('Store:dispatch()' + `action ${action} is not found or not being a string.`)
+        throw new Error(`Store:dispatch() action ${action} is not found or not being a string.`)
       }
       let actionFunction = this.actions[action]
       actionFunction(
