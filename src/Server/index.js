@@ -30,4 +30,12 @@ export default class Server extends EventEmitter {
       .catch(err => { reject(err) })
     })
   }
+
+  toObject () {
+    return this.store.toObject()
+  }
+
+  getId () {
+    return this.store.state._id
+  }
 }

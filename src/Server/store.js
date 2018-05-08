@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import Store from '@/lib/Store'
 import ServerrModel from './model'
 
@@ -8,20 +9,20 @@ export const STORE_CONTENT = {
   },
   getters: {},
   mutations: {
-    CHANGE_NAME: (state, payload) => {
+    SET_NAME: (state, payload) => {
       state.name = payload.name
     },
-    CHANGE_COMPONENT_ID: (state, payload) => {
+    SET_COMPONENT_ID: (state, payload) => {
       let c = state.components.find(component => component.type === payload.type)
       c.id = payload.id
     }
   },
   actions: {
-    changeComponentsId: (context, payload) => {
+    setComponentsId: (context, payload) => {
       for (let component of payload) {
-        context.commit('CHANGE_COMPONENT_ID', {
+        context.commit('SET_COMPONENT_ID', {
           type: component.type,
-          id: component.store.state._id
+          id: component.getId()
         })
       }
       return Promise.resolve()
@@ -36,6 +37,6 @@ export const STORE_CONTENT = {
  */
 export default function store (state) {
   let st = new Store()
-  let content = Object.assign({}, STORE_CONTENT, {state: state})
+  let content = _.defaultsDeep({}, {state: state}, STORE_CONTENT)
   return st.load(ServerrModel, content)
 }
