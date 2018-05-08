@@ -42,57 +42,17 @@ export const AccountLedgerItemSchema = new mongoose.Schema({
 })
 
 export const AccountLedgerSchema = new mongoose.Schema({
-  items: [AccountLedgerItemSchema],
   classification: {type: String, required: true},
+  items: [AccountLedgerItemSchema],
   /**
    * Balance = Debit - Credit
    */
-  balance: {
-    type: Number,
-    default: 0
-  }
+  balance: {type: Number, default: 0}
 })
 
 export const AccountSchema = new mongoose.Schema({
   journal: [AccountTransactionSchema],
-  ledger: {
-    /**
-     * Assets
-     */
-    Cash: AccountLedgerSchema, // 現金
-    Inventory: AccountLedgerSchema, // 存貨
-    AccountsReceivable: AccountLedgerSchema, // 應收帳款
-
-    /**
-     * Liability
-     */
-    AccountsPayable: AccountLedgerSchema, // 應付帳款
-
-    /**
-     * OperatingIncome
-     */
-    Sales: AccountLedgerSchema, // 銷售收入
-
-    /**
-     * OperatingCosts
-     */
-    CostOfSales: AccountLedgerSchema, // 銷售成本=進料成本
-    CostOfTransportation: AccountLedgerSchema, // 運輸成本 (原本應該算到銷售成本，但為了要彰顯出運輸成本，所以獨立計算)
-    CostOfWarehousing: AccountLedgerSchema, // 倉儲成本
-
-    /**
-     * OperatingExpenses
-     */
-    SalaryAndWages: AccountLedgerSchema, // 薪資成本
-
-    /**
-     * NonOperatingIncomeAndExpenses
-     */
-    NonOperatingIncome: AccountLedgerSchema, // 營業外收入
-    NonOperatingExpenses: AccountLedgerSchema, // 營業外支出
-    IncomeFromCounterPartyDefault: AccountLedgerSchema, // 違約金收入
-    CounterPartyDefault: AccountLedgerSchema // 違約金支出
-  }
+  ledger: [AccountLedgerSchema]
 }, {
   // Fix a bug https://github.com/Automattic/mongoose/issues/5574
   usePushEach: true

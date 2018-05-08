@@ -21,15 +21,18 @@ export const STORE_CONTENT = {
       if (typeof state.ledger !== 'object') {
         state.ledger = {}
       }
-      if (!(item.classification in state.ledger) || !state.ledger[item.classification]) {
-        state.ledger[item.classification] = {
+      let ledger = state.ledger.find(ledger => ledger.classification === item.classification)
+      if (ledger === undefined) {
+        state.ledger.push({
+          classification: item.classification,
           items: [],
           balance: 0
-        }
+        })
+        ledger = state.ledger[state.ledger.length - 1]
       }
 
-      state.ledger[item.classification].items.push(item)
-      state.ledger[item.classification].balance += (item.side === 'debit' ? item.amount : -item.amount)
+      ledger.items.push(item)
+      ledger.balance += (item.side === 'debit' ? item.amount : -item.amount)
     }
   },
   actions: {
@@ -42,7 +45,7 @@ export const STORE_CONTENT = {
 
       // Ledger
       for (let side of ['debit', 'credit']) {
-        for (let item of transaction[side]) {
+        for (let item of transaction[side] || []) {
           context.commit('ADD_LEDGER_ITEM', {
             amount: item.amount,
             classification: item.classification,

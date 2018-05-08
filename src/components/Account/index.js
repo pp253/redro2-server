@@ -1,4 +1,5 @@
 import { EventEmitter } from 'events'
+import _ from 'lodash'
 import {Pack} from '@/lib/pack'
 import store from './store'
 
@@ -26,7 +27,7 @@ export default class Account extends EventEmitter {
       this._loaded = true
 
       this.node = node
-      this.options = options
+      this.options = _.cloneDeep(options) || {}
 
       let state = {}
       store(state)
@@ -78,19 +79,19 @@ export default class Account extends EventEmitter {
   }
 
   getBalance (classification) {
-    if (!(classification in this.store.ledger)) {
+    let ledger = this.getLedger(classification)
+    if (ledger === undefined) {
       return 0 // Not an error, 因為這只是詢問是否有這個科目的剩餘金額
     }
-
-    return this.getLedger(classification).balance
+    return ledger.balance
   }
 
   getJournal () {
-    return this.store.journal
+    return this.store.state.journal
   }
 
   getLedger (classification) {
-    return this.store.ledger[classification]
+    return this.store.state.ledger.find(ledger => ledger.classification === classification)
   }
 
   isBankrupt () {
