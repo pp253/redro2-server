@@ -1,5 +1,6 @@
 import Store from '@/lib/Store'
 import IOModel from './model'
+import * as schema from '@/lib/schema'
 
 export const STORE_CONTENT = {
   state: {
@@ -20,11 +21,25 @@ export const STORE_CONTENT = {
   },
   getters: {},
   mutations: {
-    ADD_IMPORT: (state, inputJournalItem) => {
-      if (!state.journal) {
-        state.journal = []
+    ADD_IMPORT: (state, ioJournalItem) => {
+      if (!state.importJournal) {
+        state.importJournal = []
       }
-      state.journal.push(inputJournalItem)
+      state.importJournal.push(ioJournalItem)
+    },
+    COMPLETE_IMPORT: (state, payload) => {
+      let iji = state.importJournal.find(item => item._id === payload.id)
+      iji.transportationStatus = schema.TRANSPORTATION_STATUS.COMPLETED
+    },
+    ADD_EXPORT: (state, ioJournalItem) => {
+      if (!state.exportJournal) {
+        state.exportJournal = []
+      }
+      state.exportJournal.push(ioJournalItem)
+    },
+    COMPLETE_EXPORT: (state, payload) => {
+      let iji = state.exportJournal.find(item => item._id === payload.id)
+      iji.transportationStatus = schema.TRANSPORTATION_STATUS.COMPLETED
     },
     SET_HAS_IMPORT_LIMIT: (state, payload) => {
       state.hasImportLimit = payload.hasImportLimit
