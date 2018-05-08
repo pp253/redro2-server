@@ -1,115 +1,149 @@
 import { EventEmitter } from 'events'
 import _ from 'lodash'
+import store from './store'
+import Server from '@/Server'
 import Node from '@/Node'
+import { timeout } from '@/lib/utils'
+import {ENGINE_STAGE, EngineEvent} from '@/lib/schema'
 
-export const GAME_STAGE = {
-  PREPARE: 'PREPARE',
-  READY: 'READY',
-  START: 'START',
-  FINAL: 'FINAL',
-  END: 'END'
+export const ENGINE_EVENTS = {
+  GAME_STAGE_CHANGE: 'game-stage-change',
+  GAME_TIME_CHANGE: 'game-time-change',
+  GAME_DAY_CHANGE: 'game-day-change',
+  GAME_ISWORKING_CHANGE: 'game-isworking-change',
+  GAME_ONWORK: 'game-onwork',
+  GAME_OFFWORK: 'game-offwork',
+  GAME_DAY_X_TIME_Y: (day, time) => `game-day-${day}-time-${time}`
 }
-
-export const GAMEENGINE_OPTIONS_DEFAULT = { dayLength: 5, gragh: [] }
 
 export default class Engine extends EventEmitter {
   constructor (server, options) {
     super()
-    if (!server) {
-      console.error('Engine:constructor()', '`server` is required.')
-      return
-    }
-    this.server = server
-    this.options = Object.assign(options || {}, _.cloneDeep(GAMEENGINE_OPTIONS_DEFAULT))
-
-    this.gragh = this.options.gragh
-    this.nodes = new Map()
-
-    this.gameStage = this.gameDay = 0
-    this.gameTime = 0
-    this.isWorking = false
-    this.dayLength = this.options.dayLength || 3
-    this.timeLength = this.options.timeLength || 180
-
+    this.type = 'Engine'
+    this._loaded = false
     this._timer = { expectedTimeChange: 0, timerId: null }
+  }
+
+  load (server, options) {
+    return new Promise((resolve, reject) => {
+      if (!(server instanceof Server)) {
+        throw new Error('Engine:load() `server` should be instance of Server.')
+      }
+      if (this._loaded) {
+        throw new Error('Engine:load() Engine has been loaded before.')
+      }
+      this._loaded = true
+
+      this.server = server
+      this.options = _.cloneDeep(options) || {}
+
+      let state = this.options
+
+      store(state)
+      .then((store) => {
+        this.store = store
+
+        /**
+         * LOAD THE NODES HERE!!!!!!!!
+         */
+
+        resolve(this)
+      })
+      .catch(err => { reject(err) })
+    })
   }
 
   constructGragh (gragh) {}
 
-  load () {}
-
-  dump () {
-    return {
-      gameStage: this.gameStage,
-      gameDay: this.gameDay,
-      gameTime: this.gameTime,
-      isWorking: this.isWorking
-    }
-  }
-
   remove () {}
 
   nextStage () {
-    console.log('currentStage:', this.gameStage)
-    switch (this.gameStage) {
-      case GAME_STAGE.PREPARE:
-        this.gameStage = GAME_STAGE.READY
-        break
-      case GAME_STAGE.READY:
-        this.gameStage = GAME_STAGE.START
-        this.nextDay()
-        break
-      case GAME_STAGE.START:
-        this.gameStage = GAME_STAGE.FINAL
-        break
-      case GAME_STAGE.FINAL:
-        this.gameStage = GAME_STAGE.END
-        break
-      default:
-        this.gameStage = GAME_STAGE.PREPARE
-        break
-    }
+    return new Promise((resolve, reject) => {
+      let ns = ENGINE_STAGE.CONSTRUCTED
+      switch (this.store.state.stage) {
+        case ENGINE_STAGE.CONSTRUCTED:
+          ns = ENGINE_STAGE.PREPARE
+          break
+        case ENGINE_STAGE.PREPARE:
+          ns = ENGINE_STAGE.READY
+          break
+        case ENGINE_STAGE.READY:
+          ns = ENGINE_STAGE.START
+          break
+        case ENGINE_STAGE.START:
+          ns = ENGINE_STAGE.FINAL
+          break
+        case ENGINE_STAGE.FINAL:
+          ns = ENGINE_STAGE.END
+          break
+        default:
+          throw new Error('Engine:nextStage() Stage is unknown.')
+      }
+
+      this.store.commit('SET_STAGE', {stage: ns})
+      .then(() => {
+        this.emit(ENGINE_EVENTS.GAME_STAGE_CHANGE,
+          this._newEngineEvent(ENGINE_EVENTS.GAME_STAGE_CHANGE))
+
+        if (ns === ENGINE_STAGE.START) {
+          return this.nextDay()
+        }
+
+        resolve(this)
+      })
+      .catch(err => { reject(err) })
+    })
   }
 
   nextDay () {
-    if (this.gameDay === this.dayLength) {
-      console.warn('Engine:nextDay()', 'The game has reach its day length limit.')
-      return
-    }
-    if (this.gameStage !== GAME_STAGE.START) {
-      console.warn('Engine:nextDay()', 'nextDay() can only operate during `START` stage.')
-      return
-    }
-    if (this.isWorking === true) {
-      console.warn('Engine:nextDay()', 'nextDay() can only operate during off work.')
-      return
-    }
+    return new Promise((resolve, reject) => {
+      if (this.getStage() !== ENGINE_STAGE.START) {
+        throw new Error('Engine:nextDay() nextDay() can only operate during `START` stage.')
+      }
+      if (this.getGameTime().isWorking === true) {
+        throw new Error('Engine:nextDay() nextDay() can only operate during off work.')
+      }
+      if (this.getGameTime().day === this.store.state.gameDays) {
+        throw new Error('Engine:nextDay() The game has reach its day length limit.')
+      }
 
-    this.gameDay += 1
-    this.gameTime = 0
-    this.isWorking = true
-    this.emit('game-day-change', this.gameDay, this)
-    this.emit('game-isworking-change', this.isWorking, this)
-    this.emit('game-onwork', this.isWorking, this)
+      this.store.commit('SET_GAME_TIME', {
+        day: this.getGameTime().day + 1,
+        time: 0,
+        isWorking: true
+      })
+      .then(() => {
+        this.emit(ENGINE_EVENTS.GAME_DAY_CHANGE,
+          this._newEngineEvent(ENGINE_EVENTS.GAME_DAY_CHANGE))
+        this.emit(ENGINE_EVENTS.GAME_ISWORKING_CHANGE,
+          this._newEngineEvent(ENGINE_EVENTS.GAME_ISWORKING_CHANGE))
+        this.emit(ENGINE_EVENTS.GAME_ONWORK,
+          this._newEngineEvent(ENGINE_EVENTS.GAME_ONWORK))
 
-    this.startTicking()
+        this.startTicking()
+
+        resolve(this)
+      })
+      .catch(err => { reject(err) })
+    })
   }
 
   startTicking () {
-    this.emit('game-time-change', this.gameTime, this)
+    return new Promise((resolve, reject) => {
+      let adjustedNextTickMS = 1000
+      timeout(adjustedNextTickMS)
+      this.emit('game-time-change', this.gameTime, this)
 
-    setInterval(() => {
-      this.emit('game-time-change')
-
-      // setInterval recursively.
       setInterval(() => {
         this.emit('game-time-change')
-      }, adjustedNextTickMS)
-    }, adjustedNextTickMS)
-  }
 
-  pause () {}
-  resume () {}
+      // setInterval recursively.
+        setInterval(() => {
+          this.emit('game-time-change')
+        }, adjustedNextTickMS)
+      }, adjustedNextTickMS)
+    })
+  }
 
   /**
    * gameTimeAdd(GameTime, diff)
@@ -121,7 +155,7 @@ export default class Engine extends EventEmitter {
   gameTimeAdd (gameTime, diff = 0) {
     if (typeof gameTime === 'number') {
       diff = gameTime
-      gameTime = this.store.state.gameTime
+      gameTime = this.getGameTime()
     }
 
     let gameDays = this.store.state.gameDays
@@ -143,7 +177,25 @@ export default class Engine extends EventEmitter {
       }
     }
   }
-}
 
-let server = {}
-let engine = new Engine(server)
+  getGameTime () {
+    return this.store.state.gameTime
+  }
+
+  getStage () {
+    return this.store.state.stage
+  }
+
+  toObject () {
+    return this.store.toObject()
+  }
+
+  _newEngineEvent (type) {
+    return new EngineEvent({
+      type: type,
+      target: this,
+      gameTime: _.cloneDeep(this.getGameTime()),
+      stage: this.getStage()
+    })
+  }
+}

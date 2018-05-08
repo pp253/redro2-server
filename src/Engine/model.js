@@ -1,9 +1,11 @@
 import mongoose from 'mongoose'
 import * as schema from '@/lib/schema'
+import { NodeScheme } from '@/Node/model'
 
 export const EngineSchema = new mongoose.Schema({
+  nodes: [NodeScheme],
+  stage: {type: String, default: schema.ENGINE_STAGE.CONSTRUCTED},
   gameTime: schema.GameTimeSchema,
-  stage: {type: String, default: schema.ENGINE_STAGE.PREPARE},
   gameDays: {type: Number, default: 0},
   dayLength: {type: Number, default: 0}
 }, {

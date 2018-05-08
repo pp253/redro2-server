@@ -1,5 +1,6 @@
 import EventEmitter from 'events'
 import mongoose from 'mongoose'
+import _ from 'lodash'
 
 /**
  * let store = new Store()
@@ -39,7 +40,7 @@ export default class Store extends EventEmitter {
 
       this.mutations = StoreContent.mutations
       this.actions = StoreContent.actions
-      this.getters = this.convertGetters(StoreContent.getters)
+      this.getters = StoreContent.getters ? this.convertGetters(StoreContent.getters) : this.getters
 
       if (StoreContent._id && mongoose.Types.ObjectId.isValid(StoreContent._id)) {
         // Load from DB instead of creating a new Store.
@@ -158,6 +159,6 @@ export default class Store extends EventEmitter {
   }
 
   toObject () {
-    return this.state.toObject()
+    return _.cloneDeep(this.state.toObject())
   }
 }
