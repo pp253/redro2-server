@@ -3,19 +3,62 @@ import mongoose from 'mongoose'
 import {assert, expect} from 'chai'
 import Node from '@/Node'
 
-let node = new Node()
-/*
-node.load({}, {
-  name: 'hahaha',
-  components: {
-    Account: {enable: true},
-    Inventory: {enable: false},
-    Input: {enable: false},
-    Output: {enable: false}
-  }
-}).then(a => {
-  // console.log(a)
-}).catch(err => {
-  console.error(err)
+const DUMMY_ENGINE = {}
+
+const NODE_OPTIONS = {
+  name: 'SAMPLE_NODE',
+  components: [
+    {
+      type: 'Account',
+      enable: true
+    },
+    {
+      type: 'IO',
+      enable: true
+    },
+    {
+      type: 'Inventory',
+      enable: true
+    }
+  ]
+}
+
+describe('Node', function () {
+  let node
+
+  before(function (done) {
+    mongoose.Promise = Promise
+    mongoose.connect(`mongodb://localhost/redro2_test`, {useMongoClient: true})
+    .then(() => { done() })
+  })
+
+  after(function (done) {
+    mongoose.disconnect()
+    .then(account => { done() })
+  })
+
+  describe('#constructor()', function () {
+    it('should be marked as type Node.', function (done) {
+      node = new Node()
+      expect(node.type).to.equal('Node')
+      done()
+    })
+  })
+
+  describe('#load()', function () {
+    it('should load the options.', function (done) {
+      node.load(DUMMY_ENGINE, NODE_OPTIONS)
+      .then(() => {
+        done()
+      })
+    })
+  })
+
+  describe('#toObject()', function () {
+    it('should return a object.', function (done) {
+      let obj = node.toObject()
+      assert.isObject(obj)
+      done()
+    })
+  })
 })
-*/
