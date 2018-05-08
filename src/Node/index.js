@@ -4,6 +4,12 @@ import Account from '@/components/Account'
 import Inventory from '@/components/Inventory'
 import IO from '@/components/IO'
 
+export const COMPONENTS = {
+  Inventory,
+  IO,
+  Account
+}
+
 export default class Node extends EventEmitter {
   constructor () {
     super()
@@ -31,14 +37,13 @@ export default class Node extends EventEmitter {
           this.store = store
           let jobSeq = []
 
-          for (let componentName in this.store.state.components.toObject()) {
-            if (!this.store.state.components[componentName] ||
-            !this.store.state.components[componentName].enable) {
+          for (let component of this.store.state.components) {
+            if (component.enable === false) {
               continue
             }
 
-            this[componentName] = new Account() // TODO
-            let job = this[componentName].load(this, this.store.state.components[componentName].options)
+            this[component.type] = new COMPONENTS[component.type]() // TODO
+            let job = this[component.type].load(this, component.options)
             jobSeq.push(job)
           }
 
