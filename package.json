@@ -9,7 +9,7 @@
     "start-db": "mongod --dbpath \"./db\"",
     "unit": "mocha test/unit/* --require babel-core/register --single-run",
     "test": "npm run unit",
-    "debug": "babel-node src/main --inspect --debug-brk --nolazy src/main"
+    "debug": "babel-node src/main --inspect-brk --nolazy src/main"
   },
   "author": "pp253",
   "license": "Apache-2.0",
