@@ -16,14 +16,6 @@ export default class Account extends EventEmitter {
     super()
     this.type = 'Account'
     this._loaded = false
-    /*
-    this.load = this.load.bind(this)
-    this.add = this.add.bind(this)
-    this.getBalance = this.getBalance.bind(this)
-    this.getJournal = this.getJournal.bind(this)
-    this.getLedger = this.getLedger.bind(this)
-    this.toObject = this.toObject.bind(this)
-    */
   }
 
   load (node, options) {
