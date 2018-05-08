@@ -21,7 +21,10 @@ export default class Engine extends EventEmitter {
     super()
     this.type = 'Engine'
     this._loaded = false
-    this._timer = { expectedTimeChange: 0, timerId: null }
+    this._timer = {
+      startTime: 0,
+      timerId: null
+    }
   }
 
   load (server, options) {
@@ -127,9 +130,20 @@ export default class Engine extends EventEmitter {
   }
 
   startTicking () {
+    this._timer.startTime = Date.now()
+
+    this.emit(ENGINE_EVENTS.GAME_TIME_CHANGE,
+      this._newEngineEvent(ENGINE_EVENTS.GAME_TIME_CHANGE))
+    let eventName = ENGINE_EVENTS.GAME_DAY_X_TIME_Y(this.getGameTime().day, 0)
+    this.emit(eventName, this._newEngineEvent(eventName))
+
+    timeout(1000)
+    .then(() => { this.nextTick() })
+
     return new Promise((resolve, reject) => {
+      let now = Date.now()
       let adjustedNextTickMS = 1000
-      timeout(adjustedNextTickMS)
+
       this.emit('game-time-change', this.gameTime, this)
 
       setInterval(() => {
@@ -142,6 +156,28 @@ export default class Engine extends EventEmitter {
       }, adjustedNextTickMS)
     })
   }
+
+  nextTick () {
+    this.emit(ENGINE_EVENTS.GAME_TIME_CHANGE,
+      this._newEngineEvent(ENGINE_EVENTS.GAME_TIME_CHANGE))
+    let gameTime = this.getGameTime()
+    let eventName = ENGINE_EVENTS.GAME_DAY_X_TIME_Y(gameTime.day, gameTime.time + 1)
+    this.emit(eventName, this._newEngineEvent(eventName))
+
+    this.store.commit('SET_GAME_TIME', {
+      day: gameTime.day,
+      time: gameTime.time,
+      isWorking: true
+    })
+
+    let now = Date.now()
+    let adjustedNextTickMS = 1000
+
+    timeout(1000)
+    .then(() => { this.nextTick() })
+  }
+
+  nextTickToOffWork () {}
 
   remove () {}
   pause () {}
