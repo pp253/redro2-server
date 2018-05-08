@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import Store from '@/lib/Store'
 import InventoryModel from './model'
 
@@ -82,6 +83,6 @@ export const STORE_CONTENT = {
  */
 export default function store (state) {
   let st = new Store()
-  let content = Object.assign({}, STORE_CONTENT, {state: state})
+  let content = _.defaultsDeep({}, {state: state}, STORE_CONTENT)
   return st.load(InventoryModel, content)
 }
