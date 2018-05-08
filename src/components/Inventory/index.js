@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events'
 import _ from 'lodash'
 import store from './store'
+import Node from '@/Node'
 
 export default class Inventory extends EventEmitter {
   constructor () {
@@ -11,6 +12,9 @@ export default class Inventory extends EventEmitter {
 
   load (node, options) {
     return new Promise((resolve, reject) => {
+      if (!(node instanceof Node)) {
+        throw new Error('Inventory:load() `node` should be instance of Node.')
+      }
       if (this._loaded) {
         throw new Error('Inventory:load() Node has been loaded before.')
       }

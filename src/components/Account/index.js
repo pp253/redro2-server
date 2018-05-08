@@ -2,6 +2,7 @@ import { EventEmitter } from 'events'
 import _ from 'lodash'
 import {Pack} from '@/lib/pack'
 import store from './store'
+import Node from '@/Node'
 
 export function AccountTransactionPack ({debitItems, creditItems, memo, unbalance}) {
   return Pack({
@@ -21,6 +22,9 @@ export default class Account extends EventEmitter {
 
   load (node, options) {
     return new Promise((resolve, reject) => {
+      if (!(node instanceof Node)) {
+        throw new Error('Inventory:load() `node` should be instance of Node.')
+      }
       if (this._loaded) {
         throw new Error('Account:load() Node has been loaded before.')
       }
