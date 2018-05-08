@@ -11,10 +11,7 @@ export const NodeComponentItemScheme = new mongoose.Schema(
 )
 
 export const NodeScheme = new mongoose.Schema({
-  name: {
-    type: String,
-    default: 'UnknownNodeName'
-  },
+  name: {type: String, default: 'UnknownNodeName'},
   components: [NodeComponentItemScheme],
   time: {type: Date, default: Date.now},
   id: mongoose.Schema.Types.ObjectId
