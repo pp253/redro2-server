@@ -11,6 +11,12 @@ export const AccountsClassification = {
   NonOperatingIncomeAndExpenses: 'Non-Operating Income and Expenses' // 營業外收入及支出
 }
 
+/**
+ * @typedef AccountItem
+ * @property amount {Number}
+ * @property classification {String}
+ * @property counterObject {CounterObject}
+ */
 export const AccountItemSchema = new mongoose.Schema({
   amount: {type: Number, default: 0},
   classification: {type: String, default: ''},
@@ -20,6 +26,15 @@ export const AccountItemSchema = new mongoose.Schema({
   counterObject: schema.CounterObjectSchema
 })
 
+/**
+ * @typedef AccountTransaction
+ * @property debit {Array<AccountItem>}
+ * @property credit {Array<AccountItem>}
+ * @property memo {String}
+ * @property time {Date}
+ * @property gameTime {GameTime}
+ * @property unbalance {Boolean}
+ */
 export const AccountTransactionSchema = new mongoose.Schema({
   debit: [AccountItemSchema],
   credit: [AccountItemSchema],
@@ -29,6 +44,15 @@ export const AccountTransactionSchema = new mongoose.Schema({
   unbalance: {type: Boolean, default: false}
 })
 
+/**
+ * @typedef AccountLedgerItem
+ * @property amount {Number}
+ * @property classification {String}
+ * @property side {String}
+ * @property memo {String}
+ * @property time {Date}
+ * @property gameTime {GameTime}
+ */
 export const AccountLedgerItemSchema = new mongoose.Schema({
   amount: {type: Number, default: 0},
   classification: {type: String, required: true},
@@ -41,6 +65,12 @@ export const AccountLedgerItemSchema = new mongoose.Schema({
   gameTime: schema.GameTimeSchema
 })
 
+/**
+ * @typedef AccountLedger
+ * @property classification {String}
+ * @property items {Array<AccountLedgerItem>}
+ * @property balance {Number}
+ */
 export const AccountLedgerSchema = new mongoose.Schema({
   classification: {type: String, required: true},
   items: [AccountLedgerItemSchema],
@@ -50,6 +80,11 @@ export const AccountLedgerSchema = new mongoose.Schema({
   balance: {type: Number, default: 0}
 })
 
+/**
+ * @typedef Account
+ * @property journal {Array<AccountTransaction>}
+ * @property ledger {Array<AccountLedger>}
+ */
 export const AccountSchema = new mongoose.Schema({
   journal: [AccountTransactionSchema],
   ledger: [AccountLedgerSchema]
