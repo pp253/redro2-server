@@ -15,7 +15,7 @@ export const StorageItemSchema = new mongoose.Schema({
 
 export const StorageCostItemSchema = new mongoose.Schema({
   good: {type: String, required: true},
-  cost: Number
+  cost: Number // cost per unit
 }, {_id: false})
 
 export const InventorySchema = new mongoose.Schema({

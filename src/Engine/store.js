@@ -1,13 +1,13 @@
 import _ from 'lodash'
 import Store from '@/lib/Store'
 import EngineModel from './model'
-import * as schema from '@/lib/schema'
+import { ENGINE_STAGE } from '@/lib/schema'
 
 export const STORE_CONTENT = {
   state: {
     name: 'UnknownEngineName',
     nodes: [],
-    stage: schema.ENGINE_STAGE.CONSTRUCTED,
+    stage: ENGINE_STAGE.CONSTRUCTED,
     gameTime: {
       day: 0,
       time: 0,

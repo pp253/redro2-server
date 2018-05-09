@@ -3,6 +3,7 @@ import _ from 'lodash'
 import store from './store'
 import Node from '@/Node'
 import { PRODUCTION } from '@/lib/utils'
+import { ENGINE_EVENTS } from '@/lib/schema'
 
 export default class IO extends EventEmitter {
   constructor () {
@@ -91,7 +92,17 @@ export default class IO extends EventEmitter {
       .then(() => {
         return this.node.Inventory.import(ij)
       })
-      .then((store) => { resolve(this) })
+      .then((store) => {
+        let iji = this.store.importJournal[this.store.importJournal.length - 1]
+        if (iji.transportationStatus === TRANSPORTATION_STATUS.DELIVERING) {
+          let gta = this.node.engine.gameTimeAdd(iji.gameTime, iji.transportationTime)
+          this.node.engine.once(ENGINE_EVENTS.GAME_DAY_X_TIME_Y(gta.day, gta.time), () => {
+            this.store.commit('COMPLETE_IMPORT', {id: iji._id})
+          })
+        }
+
+        resolve(this)
+      })
       .catch(err => { reject(err) })
     })
   }
@@ -183,10 +194,12 @@ export default class IO extends EventEmitter {
       })
       .then(() => {
         let iji = this.store.exportJournal[this.store.exportJournal.length - 1]
-        let gta = this.node.engine.gameTimeAdd(iji.gameTime, iji.transportationTime)
-        this.node.engine.on(`game-day-${gta.day}-time-${gta.time}`, () => {
-          this.store.commit('COMPLETE_EXPORT', {id: iji._id})
-        })
+        if (iji.transportationStatus === TRANSPORTATION_STATUS.DELIVERING) {
+          let gta = this.node.engine.gameTimeAdd(iji.gameTime, iji.transportationTime)
+          this.node.engine.once(ENGINE_EVENTS.GAME_DAY_X_TIME_Y(gta.day, gta.time), () => {
+            this.store.commit('COMPLETE_EXPORT', {id: iji._id})
+          })
+        }
 
         resolve(this)
       })
@@ -194,12 +207,12 @@ export default class IO extends EventEmitter {
     })
   }
 
-  getJournal (good) {
-    let it = this.getStorage(good)
-    if (!it) {
-      return []
-    }
-    return _.cloneDeep(it.journal)
+  getImportJournal (good) {
+    return this.store.state.importJournal
+  }
+
+  getExportJournal (good) {
+    return this.store.state.exportJournal
   }
 
   toObject () {

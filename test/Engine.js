@@ -8,7 +8,48 @@ const DUMMY_SERVER = {}
 
 const ENGINE_OPTIONS = {
   name: 'SAMPLE_ENGINE',
-  nodes: [],
+  nodes: [
+    {
+      name: 'SAMPLE_NODE_1',
+      components: [
+        {
+          type: 'Account',
+          enable: true,
+          options: {}
+        },
+        {
+          type: 'Inventory',
+          enable: true,
+          options: {}
+        },
+        {
+          type: 'IO',
+          enable: true,
+          options: {}
+        }
+      ]
+    },
+    {
+      name: 'SAMPLE_NODE_2',
+      components: [
+        {
+          type: 'Account',
+          enable: true,
+          options: {}
+        },
+        {
+          type: 'Inventory',
+          enable: true,
+          options: {}
+        },
+        {
+          type: 'IO',
+          enable: true,
+          options: {}
+        }
+      ]
+    }
+  ],
   stage: schema.ENGINE_STAGE.CONSTRUCTED,
   gameTime: {
     day: 0,

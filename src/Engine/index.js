@@ -4,17 +4,7 @@ import store from './store'
 import Server from '@/Server'
 import Node from '@/Node'
 import { timeout, PRODUCTION } from '@/lib/utils'
-import {ENGINE_STAGE, EngineEvent} from '@/lib/schema'
-
-export const ENGINE_EVENTS = {
-  GAME_STAGE_CHANGE: 'game-stage-change',
-  GAME_TIME_CHANGE: 'game-time-change',
-  GAME_DAY_CHANGE: 'game-day-change',
-  GAME_ISWORKING_CHANGE: 'game-isworking-change',
-  GAME_ONWORK: 'game-onwork',
-  GAME_OFFWORK: 'game-offwork',
-  GAME_DAY_X_TIME_Y: (day, time) => `game-day-${day}-time-${time}`
-}
+import { ENGINE_EVENTS, ENGINE_STAGE, EngineEvent } from '@/lib/schema'
 
 export default class Engine extends EventEmitter {
   constructor (server, options) {
@@ -46,9 +36,6 @@ export default class Engine extends EventEmitter {
       .then((store) => {
         this.store = store
 
-        /**
-         * LOAD THE NODES HERE!!!!!!!!
-         */
         let jobSeq = []
         for (let node of this.store.state.nodes) {
           let newNode = new Node()
@@ -57,9 +44,10 @@ export default class Engine extends EventEmitter {
         }
         return Promise.all(jobSeq)
       })
-      .then(() => {
-        resolve(this)
+      .then(jobSeqResults => {
+        this.store.dispatch('setNodesId', jobSeqResults)
       })
+      .then(() => { resolve(this) })
       .catch(err => { reject(err) })
     })
   }

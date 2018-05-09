@@ -58,10 +58,16 @@ export default class Node extends EventEmitter {
     })
   }
 
+  /**
+   * @returns {Object}
+   */
   toObject () {
     return this.store.toObject()
   }
 
+  /**
+   * @returns {ObjectId}
+   */
   getId () {
     return this.store.state._id
   }

@@ -3,6 +3,7 @@ import _ from 'lodash'
 import store from './store'
 import Node from '@/Node'
 import { PRODUCTION } from '@/lib/utils'
+import { ENGINE_EVENTS } from '@/Engine'
 
 export default class Inventory extends EventEmitter {
   constructor () {
@@ -34,7 +35,7 @@ export default class Inventory extends EventEmitter {
          * Computing Storage cost.
          */
         if (this.store.state.hasStorageCost && this.node.Account) {
-          this.node.engine.on('game-offwork', (engineTime) => {
+          this.node.engine.on(ENGINE_EVENTS.GAME_OFFWORK, (engineTime) => {
             if (!this.store.state.hasStorageCost || !this.node.Account) {
               return
             }
@@ -43,7 +44,7 @@ export default class Inventory extends EventEmitter {
             for (let storageItem of this.store.state.storage) {
               let good = storageItem.good
               let unit = storageItem.unit
-              let costPerUnit = this.store.state.storageCost.find(item => item.good === good)
+              let costPerUnit = this.store.state.storageCost.find(item => item.good === good).cost
               sumOfCost += unit * costPerUnit
             }
             Account.add({

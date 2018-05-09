@@ -5,7 +5,7 @@ import Node from '@/Node'
 const DUMMY_ENGINE = {}
 
 const NODE_OPTIONS = {
-  name: 'SAMPLE_ENGINE',
+  name: 'SAMPLE_NODE',
   components: [
     {
       type: 'Account',
