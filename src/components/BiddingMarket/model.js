@@ -1,6 +1,5 @@
 import mongoose from 'mongoose'
 import * as schema from '@/lib/schema'
-import {BIDDING_ITEM_STAGE, BIDDING_CHAIN} from './index'
 
 export const BiddingItemGoodSchema = new mongoose.Schema({
   good: {type: String, required: true},
@@ -10,8 +9,8 @@ export const BiddingItemGoodSchema = new mongoose.Schema({
 
 export const BiddingItemSchema = new mongoose.Schema({
   goods: [BiddingItemGoodSchema],
-  stage: {type: String, default: BIDDING_ITEM_STAGE.CONSTRUCTED},
-  publishedFromChain: {type: String, default: BIDDING_CHAIN.UPSTREAM},
+  stage: {type: String, default: schema.BIDDING_ITEM_STAGE.CONSTRUCTED},
+  publishedFromChain: {type: String, default: schema.BIDDING_CHAIN.UPSTREAM},
   publisher: schema.CounterObjectSchema,
   signer: schema.CounterObjectSchema,
   price: Number,

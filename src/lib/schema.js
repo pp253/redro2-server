@@ -57,6 +57,14 @@ export const IO_EVENTS = {
   IO_EXPORT: 'IO_EXPORT'
 }
 
+export const BIDDING_EVENTS = {
+  BIDDING_RELEASED: 'bidding-released',
+  BIDDING_CANCELED: 'bidding-canceled',
+  BIDDING_SIGNED: 'bidding-signed',
+  BIDDING_BREAKOFF: 'bidding-breakoff',
+  BIDDING_DELIVERING: 'bidding-delivering'
+}
+
 /**
  * Stage
  */
@@ -73,6 +81,20 @@ export var ENGINE_STAGE = {
 export const TRANSPORTATION_STATUS = {
   DELIVERING: 'DELIVERING',
   COMPLETED: 'COMPLETED'
+}
+
+export const BIDDING_ITEM_STAGE = {
+  CONSTRUCTED: 'CONSTRUCTED',
+  BIDDING: 'BIDDING',
+  CANCELED: 'CANCELED',
+  SIGNED: 'SIGNED',
+  BREAKOFF: 'BREAKOFF',
+  COMPLETED: 'COMPLETED'
+}
+
+export const BIDDING_CHAIN = {
+  UPSTREAM: 'UPSTREAM',
+  DOWNSTREAM: 'DOWNSTREAM'
 }
 
 /**

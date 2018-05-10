@@ -51,9 +51,7 @@ export default class Engine extends EventEmitter {
       .catch(err => { reject(err) })
     })
   }
-
-  constructGragh (gragh) {}
-
+  
   nextStage () {
     return new Promise((resolve, reject) => {
       let ns = ENGINE_STAGE.CONSTRUCTED
