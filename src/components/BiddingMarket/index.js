@@ -35,11 +35,52 @@ export default class BiddingMarket extends EventEmitter {
     })
   }
 
-  release () {
+  /**
+   *
+   * @param {BiddingItem} BiddingItem
+   */
+  release (BiddingItem) {
+    return new Promise((resolve, reject) => {
+      // check sum of costs of goods is the same as price
+      if (BiddingItem) {
 
+      }
+
+      // check the publisher is from the up of down stream
+
+      //
+
+      this.store.commit('ADD_BIDDING', BiddingItem)
+      .then(() => {
+        this.emit(schema.BIDDING_EVENTS.BIDDING_RELEASED /* BiddingEvent */)
+
+        resolve(this)
+      })
+    })
   }
 
-  cancel () {}
+  cancel (BiddingItem) {
+    return new Promise((resolve, reject) => {
+      // check sum of costs of goods is the same as price
+      if (BiddingItem.id) {
+
+      }
+      if (BiddingItem.publisher) {
+
+      }
+
+      this.store.commit('SET_BIDDING_STAGE', {id: id, stage: schema.BIDDING_ITEM_STAGE.CANCELED})
+      .then(() => {
+        this.emit(schema.BIDDING_EVENTS.BIDDING_CANCELED /* BiddingEvent */)
+
+        resolve(this)
+      })
+    })
+  }
+
+  cancelForce () {
+
+  }
   sign () {}
   breakoff () {}
   deliver () {}
@@ -52,6 +93,8 @@ export default class BiddingMarket extends EventEmitter {
   toObject () {
     return this.store.toObject()
   }
+
+  toMaskedObject () {}
 
   getId () {
     return this.store.state._id
