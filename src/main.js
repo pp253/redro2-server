@@ -14,6 +14,7 @@ import socket from 'socket.io'
 // import memwatch from 'memwatch-next'
 import routes from '@/routes'
 import { PRODUCTION } from '@/lib/utils'
+import * as validator from '@/api/validator'
 
 console.log(`ENV: ${PRODUCTION ? 'production' : 'development'}`)
 
@@ -36,7 +37,10 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 app.use(
   expressValidator({
-    customValidators: {}
+    customValidators: {
+      isObjectId: validator.isObjectId,
+      isCode: validator.isCode
+    }
   })
 )
 

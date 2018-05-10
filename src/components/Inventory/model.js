@@ -15,13 +15,14 @@ export const StorageItemSchema = new mongoose.Schema({
 
 export const StorageCostItemSchema = new mongoose.Schema({
   good: {type: String, required: true},
-  cost: Number // cost per unit
+  costPerBatch: Number // cost per batch
 }, {_id: false})
 
 export const InventorySchema = new mongoose.Schema({
   storage: [StorageItemSchema], // 類似分類帳
   storageCost: [StorageCostItemSchema],
-  hasStorageCost: {type: Boolean, default: true}
+  hasStorageCost: {type: Boolean, default: true},
+  batchSize: {type: Number, deault: 1}
 }, {
   // Fix a bug https://github.com/Automattic/mongoose/issues/5574
   usePushEach: true

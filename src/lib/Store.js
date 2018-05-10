@@ -5,7 +5,7 @@ import _ from 'lodash'
 /**
  * let store = new Store()
  * store.load(Model, StoreContent)
- * if StoreContent._id exists, Store will load that from db.
+ * if StoreContent.id exists, Store will load that from db.
  */
 export default class Store extends EventEmitter {
   constructor () {
@@ -20,7 +20,7 @@ export default class Store extends EventEmitter {
   /**
    *
    * store.load(Model, StoreContent)
-   * if StoreContent._id exists, Store will load that from db.
+   * if StoreContent.id exists, Store will load that from db.
    *
    * @param {Model} Model
    * @param {StoreContent} StoreContent
@@ -42,9 +42,9 @@ export default class Store extends EventEmitter {
       this.actions = StoreContent.actions
       this.getters = StoreContent.getters ? this.convertGetters(StoreContent.getters) : this.getters
 
-      if (StoreContent._id && mongoose.Types.ObjectId.isValid(StoreContent._id)) {
+      if (StoreContent.id && mongoose.Types.ObjectId.isValid(StoreContent.id)) {
         // Load from DB instead of creating a new Store.
-        Model.findById(StoreContent._id)
+        Model.findById(StoreContent.id)
           .exec(state => {
             this.state = state
             this._loaded = true

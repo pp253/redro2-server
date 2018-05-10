@@ -44,8 +44,8 @@ export default class Inventory extends EventEmitter {
             for (let storageItem of this.store.state.storage) {
               let good = storageItem.good
               let unit = storageItem.unit
-              let costPerUnit = this.store.state.storageCost.find(item => item.good === good).cost
-              sumOfCost += unit * costPerUnit
+              let costPerBatch = this.store.state.storageCost.find(item => item.good === good).costPerBatch
+              sumOfCost += Math.ceil(unit / this.store.state.batchSize) * costPerBatch
             }
             Account.add({
               credit: [{
@@ -205,6 +205,6 @@ export default class Inventory extends EventEmitter {
   }
 
   getId () {
-    return this.store.state._id
+    return this.store.state._id.toHexString()
   }
 }

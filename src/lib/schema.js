@@ -7,14 +7,23 @@ import mongoose from 'mongoose'
 /*
 {
   type: '',
-  target: this
+  target: this,
+  gameTime: {}
 }
 */
+/**
+ * @typedef {Object} Event
+ * @property {String} type
+ * @property {Object} target
+ * @property {Date} time
+ * @property {GameTime} [gameTime]
+ */
 export class Event {
   constructor (options) {
     this.type = options.type
     this.target = options.target
     this.time = Date.now()
+    this.gameTime = options.gameTime
   }
 }
 
@@ -24,10 +33,14 @@ export class Event {
   stage: this.store.state.stage
 }
 */
+/**
+ * @typedef {Object} EngineEvent
+ * @extends Event
+ * @property {String} stage
+ */
 export class EngineEvent extends Event {
   constructor (options) {
     super(options)
-    this.gameTime = options.gameTime
     this.stage = options.stage
   }
 }
@@ -35,6 +48,18 @@ export class EngineEvent extends Event {
 export class IOEvent extends Event {
   constructor (options) {
     super()
+  }
+}
+
+/**
+ * @typedef {Object} BiddingEvent
+ * @extends Event
+ * @property {BiddingItem} item
+ */
+export class BiddingEvent extends Event {
+  constructor (options) {
+    super()
+    this.item = options.item
   }
 }
 
@@ -62,7 +87,7 @@ export const BIDDING_EVENTS = {
   BIDDING_CANCELED: 'bidding-canceled',
   BIDDING_SIGNED: 'bidding-signed',
   BIDDING_BREAKOFF: 'bidding-breakoff',
-  BIDDING_DELIVERING: 'bidding-delivering'
+  BIDDING_COMPLETED: 'bidding-completed'
 }
 
 /**
@@ -123,10 +148,12 @@ export const GameTimeSchema = new mongoose.Schema({
 
 /**
  * @typedef CounterObject
- * @property type {String}
- * @property id {ObjectId}
+ * @property [type] {String}
+ * @property [id] {ObjectId}
+ * @property [name] {String}
  */
 export const CounterObjectSchema = new mongoose.Schema({
-  type: {type: String, required: true},
-  id: {type: mongoose.Schema.Types.ObjectId, required: true}
+  type: {type: String},
+  id: {type: mongoose.Schema.Types.ObjectId},
+  name: {type: String}
 }, {_id: false})

@@ -3,7 +3,7 @@ import _ from 'lodash'
 import store from './store'
 import Node from '@/Node'
 import { PRODUCTION } from '@/lib/utils'
-import { ENGINE_EVENTS } from '@/lib/schema'
+import { ENGINE_EVENTS, TRANSPORTATION_STATUS } from '@/lib/schema'
 
 export default class IO extends EventEmitter {
   constructor () {
@@ -220,6 +220,6 @@ export default class IO extends EventEmitter {
   }
 
   getId () {
-    return this.store.state._id
+    return this.store.state._id.toHexString()
   }
 }

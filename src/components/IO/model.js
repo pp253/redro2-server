@@ -2,6 +2,16 @@ import mongoose from 'mongoose'
 import * as schema from '@/lib/schema'
 import { StocksItemSchema } from '@/components/Inventory/model'
 
+/**
+ * @typedef IOJournalItem
+ * @property {CounterObject} from
+ * @property {CounterObject} to
+ * @property {Array<StocksItem>} list
+ * @property {Number} price
+ * @property {Number} transportationCost
+ * @property {Number} transportationTime
+ * @property {String} transportationStatus
+ */
 export const IOJournalItemSchema = new mongoose.Schema({
   from: schema.CounterObjectSchema,
   to: schema.CounterObjectSchema,
@@ -35,7 +45,7 @@ export const IOSchema = new mongoose.Schema({
   rejectNotAvailableExportGoods: {type: Boolean, default: true},
 
   transportationCost: {type: Number, default: 0},
-  transportationUnitPerBatch: {type: Number, default: 0}
+  batchSize: {type: Number, default: 0}
 }, {
   // Fix a bug https://github.com/Automattic/mongoose/issues/5574
   usePushEach: true

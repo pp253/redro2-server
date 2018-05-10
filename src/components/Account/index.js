@@ -98,6 +98,6 @@ export default class Account extends EventEmitter {
   }
 
   getId () {
-    return this.store.state._id
+    return this.store.state._id.toHexString()
   }
 }

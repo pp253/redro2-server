@@ -15,6 +15,11 @@ export default class Engine extends EventEmitter {
       startTime: 0,
       timerId: null
     }
+
+    /**
+     * @type {Map<String, Node>}
+     */
+    this.nodes = new Map()
   }
 
   load (server, options) {
@@ -45,13 +50,16 @@ export default class Engine extends EventEmitter {
         return Promise.all(jobSeq)
       })
       .then(jobSeqResults => {
-        this.store.dispatch('setNodesId', jobSeqResults)
+        for (let node of jobSeqResults) {
+          this.nodes.set(node.getName(), node)
+        }
+        return this.store.dispatch('setNodesId', jobSeqResults)
       })
       .then(() => { resolve(this) })
       .catch(err => { reject(err) })
     })
   }
-  
+
   nextStage () {
     return new Promise((resolve, reject) => {
       let ns = ENGINE_STAGE.CONSTRUCTED
@@ -231,12 +239,23 @@ export default class Engine extends EventEmitter {
     return this.store.state.stage
   }
 
+  /**
+   * @param {String} name
+   * @returns {Node}
+   */
+  getNode (name) {
+    if (!this.nodes.has(name)) {
+      throw new Error('Engine:getNode() node name is not found.')
+    }
+    return this.nodes.get(name)
+  }
+
   toObject () {
     return this.store.toObject()
   }
 
   getId () {
-    return this.store.state._id
+    return this.store.state._id.toHexString()
   }
 
   _newEngineEvent (type) {

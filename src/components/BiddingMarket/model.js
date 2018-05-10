@@ -1,25 +1,14 @@
 import mongoose from 'mongoose'
 import * as schema from '@/lib/schema'
-
-/**
- * @typedef BiddingItemGood
- * @property {Stirng} good
- * @property {Number} unit
- * @property {Number} [cost] Cost per unit.
- */
-export const BiddingItemGoodSchema = new mongoose.Schema({
-  good: {type: String, required: true},
-  unit: {type: Number, required: true},
-  cost: Number // cost per unit
-}, {_id: false})
+import { StocksItemSchema } from '@/components/Inventory/model'
 
 /**
  * @typedef BiddingItem
  * @property {Array<BiddingItemGood>} goods
  * @property {String} stage
  * @property {String} publishedFromChain
- * @property {ObjectId} [publisher]
- * @property {ObjectId} [signer]
+ * @property {CounterObject} [publisher]
+ * @property {CounterObject} [signer]
  * @property {Number} price
  * @property {Number} [timeLimit]
  * @property {String} [memo]
@@ -27,7 +16,7 @@ export const BiddingItemGoodSchema = new mongoose.Schema({
  * @property {GameTime} gameTime
  */
 export const BiddingItemSchema = new mongoose.Schema({
-  goods: [BiddingItemGoodSchema],
+  goods: [StocksItemSchema],
   stage: {type: String, default: schema.BIDDING_ITEM_STAGE.CONSTRUCTED},
   publishedFromChain: {type: String, default: schema.BIDDING_CHAIN.UPSTREAM},
   publisher: schema.CounterObjectSchema,
@@ -46,7 +35,9 @@ export const BiddingMarketSchema = new mongoose.Schema({
   provider: schema.CounterObjectSchema,
   biddings: [BiddingItemSchema],
   breakoffPaneltyRatio: {type: Number, default: 1.2},
-  breakoffCompensationRatio: {type: Number, default: 0.5}
+  breakoffCompensationRatio: {type: Number, default: 0.5},
+  transportationTime: {type: Number, default: 300},
+  transportationStatus: {type: String, default: schema.TRANSPORTATION_STATUS.DELIVERING}
 }, {
   // Fix a bug https://github.com/Automattic/mongoose/issues/5574
   usePushEach: true

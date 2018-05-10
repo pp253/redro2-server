@@ -65,10 +65,14 @@ export default class Node extends EventEmitter {
     return this.store.toObject()
   }
 
+  getName () {
+    return this.store.state.name
+  }
+
   /**
    * @returns {ObjectId}
    */
   getId () {
-    return this.store.state._id
+    return this.store.state._id.toHexString()
   }
 }

@@ -18,7 +18,7 @@ export const STORE_CONTENT = {
     rejectNotAvailableExportGoods: true,
 
     transportationCost: 100,
-    transportationUnitPerBatch: 4
+    batchSize: 4
   },
   getters: {},
   mutations: {
@@ -29,7 +29,7 @@ export const STORE_CONTENT = {
       state.importJournal.push(ioJournalItem)
     },
     COMPLETE_IMPORT: (state, payload) => {
-      let iji = state.importJournal.find(item => item._id === payload.id)
+      let iji = state.importJournal.find(item => item._id.equals(payload.id))
       iji.transportationStatus = schema.TRANSPORTATION_STATUS.COMPLETED
     },
     ADD_EXPORT: (state, ioJournalItem) => {
@@ -39,7 +39,7 @@ export const STORE_CONTENT = {
       state.exportJournal.push(ioJournalItem)
     },
     COMPLETE_EXPORT: (state, payload) => {
-      let iji = state.exportJournal.find(item => item._id === payload.id)
+      let iji = state.exportJournal.find(item => item._id.equals(payload.id))
       iji.transportationStatus = schema.TRANSPORTATION_STATUS.COMPLETED
     },
     SET_HAS_IMPORT_LIMIT: (state, payload) => {

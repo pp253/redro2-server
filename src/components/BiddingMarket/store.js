@@ -1,6 +1,7 @@
 import _ from 'lodash'
 import Store from '@/lib/Store'
 import BiddingMarketModel from './model'
+import * as schema from '@/lib/schema'
 
 export const STORE_CONTENT = {
   state: {
@@ -10,7 +11,9 @@ export const STORE_CONTENT = {
     provider: null,
     biddings: [],
     breakoffPaneltyRatio: 1.2,
-    breakoffCompensationRatio: 0.5
+    breakoffCompensationRatio: 0.5,
+    transportationTime: 300,
+    transportationStatus: schema.TRANSPORTATION_STATUS.DELIVERING
   },
   getters: {},
   mutations: {
@@ -18,11 +21,19 @@ export const STORE_CONTENT = {
       state.biddings.push(BiddingItem)
     },
     SET_BIDDING_STAGE (state, payload) {
-      let it = state.biddings.find(bidding => bidding._id === payload.id)
+      let it = state.biddings.find(bidding => bidding._id.equals(payload.id))
       it.stage = payload.stage
+    },
+    SET_BIDDING_SIGNER (state, payload) {
+      let it = state.biddings.find(bidding => bidding._id.equals(payload.id))
+      it.signer = payload.signer
     }
   },
   actions: {
+    setBiddingSign (context, payload) {
+      context.commit('SET_BIDDING_STAGE', payload)
+      context.commit('SET_BIDDING_SIGNER', payload)
+    }
   }
 }
 
