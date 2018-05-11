@@ -3,11 +3,19 @@ import store from './store'
 import Account from '@/components/Account'
 import Inventory from '@/components/Inventory'
 import IO from '@/components/IO'
+import BiddingMarket from '@/components/BiddingMarket'
+import BiddingMarketReceiver from '@/components/BiddingMarketReceiver'
+import Market from '@/components/Market'
+import MarketReceiver from '@/components/MarketReceiver'
 
 export const COMPONENTS = {
   Inventory: Inventory,
   IO: IO,
-  Account: Account
+  Account: Account,
+  BiddingMarket: BiddingMarket,
+  BiddingMarketReceiver: BiddingMarketReceiver,
+  Market: Market,
+  MarketReceiver: MarketReceiver
 }
 
 export default class Node extends EventEmitter {
@@ -41,6 +49,9 @@ export default class Node extends EventEmitter {
             if (component.enable === false) {
               continue
             }
+            if (!(component.type in COMPONENTS)) {
+              throw new Error(`Node:load() Component type ${component.type} is not found.`)
+            }
             this[component.type] = new COMPONENTS[component.type]()
             let job = this[component.type].load(this, component.options)
             jobSeq.push(job)
@@ -59,12 +70,22 @@ export default class Node extends EventEmitter {
   }
 
   /**
+   * This will emit a `on-message` event.
+   */
+  emitMessage (event) {
+    this.emit('on-message', event)
+  }
+
+  /**
    * @returns {Object}
    */
   toObject () {
     return this.store.toObject()
   }
 
+  /**
+   * @returns {String}
+   */
   getName () {
     return this.store.state.name
   }

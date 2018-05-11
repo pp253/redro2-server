@@ -18,9 +18,6 @@ import * as validator from '@/api/validator'
 
 console.log(`ENV: ${PRODUCTION ? 'production' : 'development'}`)
 
-// Connecting to MongoDB
-mongoose.connect(`mongodb://localhost/redro2`, {useMongoClient: true})
-
 const app = express()
 
 // Security
@@ -62,6 +59,12 @@ app.use('/', express.static('public'))
 
 // Route
 routes(app)
+
+// Connecting to MongoDB
+mongoose.Promise = Promise
+mongoose.connect(`mongodb://localhost/redro2`, {useMongoClient: true})
+.then(() => { console.log(`Connecting to MongoDB.`) })
+.catch(() => { console.error(`Failed to connect to MongoDB.`) })
 
 if (PRODUCTION) {
   let httpsServer = https.createServer(

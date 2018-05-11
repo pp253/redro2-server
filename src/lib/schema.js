@@ -59,6 +59,7 @@ export class IOEvent extends Event {
 export class BiddingEvent extends Event {
   constructor (options) {
     super()
+    this.provider = options.provider
     this.item = options.item
   }
 }
@@ -77,9 +78,14 @@ export var ENGINE_EVENTS = {
   GAME_DAY_X_TIME_Y: (day, time) => `game-day-${day}-time-${time}`
 }
 
+export const ACCOUNT_EVENTS = {
+  ACCOUNT_BALANCE_CHANGE: 'account-balance-change',
+  ACCOUNT_ADD: 'account-add'
+}
+
 export const IO_EVENTS = {
-  IO_IMPORT: 'IO_IMPORT',
-  IO_EXPORT: 'IO_EXPORT'
+  IO_IMPORT: 'io-import',
+  IO_EXPORT: 'io-export'
 }
 
 export const BIDDING_EVENTS = {
@@ -88,6 +94,11 @@ export const BIDDING_EVENTS = {
   BIDDING_SIGNED: 'bidding-signed',
   BIDDING_BREAKOFF: 'bidding-breakoff',
   BIDDING_COMPLETED: 'bidding-completed'
+}
+
+export const MARKET_EVENTS = {
+  MARKET_NEWS_PUBLISHED: 'market-news-published',
+  MARKET_NEEDS_CHANGE: 'market-needs-change'
 }
 
 /**
@@ -106,6 +117,11 @@ export var ENGINE_STAGE = {
 export const TRANSPORTATION_STATUS = {
   DELIVERING: 'DELIVERING',
   COMPLETED: 'COMPLETED'
+}
+
+export const ACCOUNT_LEDGER_SIDE = {
+  DEBIT: 'debit',
+  CREDIT: 'credit'
 }
 
 export const BIDDING_ITEM_STAGE = {
@@ -147,6 +163,7 @@ export const GameTimeSchema = new mongoose.Schema({
 }, {_id: false})
 
 /**
+ * @deprecated
  * @typedef CounterObject
  * @property [type] {String}
  * @property [id] {ObjectId}

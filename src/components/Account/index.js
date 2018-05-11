@@ -53,6 +53,11 @@ export default class Account extends EventEmitter {
       gameTime: ''
     })
   */
+  /**
+    *
+    * @param {AccountTransaction} accountTransaction
+    * @returns {Promise}
+    */
   add (accountTransaction) {
     return new Promise((resolve, reject) => {
       // check balance
@@ -70,7 +75,7 @@ export default class Account extends EventEmitter {
       }
 
       this.store.dispatch('addTransaction', accountTransaction)
-      .then(() => { return this.repaying() })
+      .then(() => { return this.repay() })
       .then(() => { resolve(this) })
       .catch(err => { reject(err) })
     })
@@ -79,7 +84,7 @@ export default class Account extends EventEmitter {
   /**
    * @returns {Promise}
    */
-  repaying (accountTransaction) {
+  repay (accountTransaction) {
     if (this.getBalance('Cash') <= 0 || this.getBalance('AccountsPayable') === 0) {
       return Promise.resolve()
     }

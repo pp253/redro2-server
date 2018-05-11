@@ -49,4 +49,12 @@ describe('Node', function () {
       done()
     })
   })
+
+  describe('#getId()', function () {
+    it('should return an object.', function (done) {
+      let id = node.getId()
+      assert.isString(id)
+      done()
+    })
+  })
 })

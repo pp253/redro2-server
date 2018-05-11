@@ -108,9 +108,17 @@ export default class Store extends EventEmitter {
   }
 
   /**
-   * Commit a mutation.
+   * The same as `commit` but as immidiately.
+   */
+  immediate (mutation, payload, options) {
+    Object.assign(options, { save: false })
+    return this.commit(mutation, payload, options)
+  }
+
+  /**
+   * Dispatching an action.
    *
-   * @param {string} mutation
+   * @param {string} action
    * @param {any} payload
    * @param {Map<string, any>} options
    * @returns {Promise<Store>} the store after saving.

@@ -13,8 +13,8 @@ import { StocksItemSchema } from '@/components/Inventory/model'
  * @property {String} transportationStatus
  */
 export const IOJournalItemSchema = new mongoose.Schema({
-  from: schema.CounterObjectSchema,
-  to: schema.CounterObjectSchema,
+  from: {type: String, default: 0},
+  to: {type: String, default: 0},
   list: [StocksItemSchema],
   price: {type: Number, default: 0},
   transportationCost: {type: Number, default: 0},

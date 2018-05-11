@@ -23,19 +23,19 @@ export default class IO extends EventEmitter {
       this._loaded = true
 
       this.node = node
+      this.engine = node.engine
       this.options = _.cloneDeep(options) || {}
 
-      let state = this.options
-      if (state.availableImportGoods) {
-        for (let availableImportGood of state.availableImportGoods) {
+      if (this.options.availableImportGoods) {
+        for (let availableImportGood of this.options.availableImportGoods) {
           if (availableImportGood.left !== undefined) {
             continue
           }
           availableImportGood.left = availableImportGood.limit
         }
       }
-      if (state.availableExportGoods) {
-        for (let availableExportGood of state.availableExportGoods) {
+      if (this.options.availableExportGoods) {
+        for (let availableExportGood of this.options.availableExportGoods) {
           if (availableExportGood.left !== undefined) {
             continue
           }
@@ -43,6 +43,7 @@ export default class IO extends EventEmitter {
         }
       }
 
+      let state = _.cloneDeep(this.options)
       store(state)
       .then((store) => {
         this.store = store
@@ -57,31 +58,17 @@ export default class IO extends EventEmitter {
       let ij = _.cloneDeep(ioJournalItem)
 
       // Available Goods check
-      if (this.store.state.rejectNotAvailableImportGoods === true) {
-        let list = ij.list
-        for (let ioJournalGoodItem of list) {
-          let good = ioJournalGoodItem.good
-          if (this.store.state.availableImportGoods.find(item => item.good === good) === undefined) {
-            throw new Error('IO:import() Goods imported is not available.')
-          }
+      let list = ij.list
+      for (let ioJournalGoodItem of list) {
+        let good = ioJournalGoodItem.good
+        let unit = ioJournalGoodItem.unit
+        if (!this.isImportGoodAvailable(good, unit)) {
+          throw new Error('IO:import() Goods imported is not available.')
         }
-      }
-
-      // Limit check
-      if (this.store.state.hasImportLimit === true) {
-        let list = ij.list
-        for (let ioJournalGoodItem of list) {
-          let good = ioJournalGoodItem.good
-          let unit = ioJournalGoodItem.unit
-          let it = this.store.state.availableImportGoods.find(item => item.good === good)
-          if (typeof it.left === 'undefined') {
-            it.left = it.limit
-          }
-          if (it.left < unit) {
-            throw new Error('IO:import() Good imported has reach the limitation.')
-          }
-          it.left -= unit
-        }
+        this.store.immediate('SUB_IMPORT_LEFT', {
+          good: good,
+          unit: unit
+        })
       }
 
       if (!this.node.Inventory) {
@@ -107,34 +94,26 @@ export default class IO extends EventEmitter {
     })
   }
 
+  /**
+   *
+   * @param {IOJournalItem} ioJournalItem
+   */
   export (ioJournalItem) {
     return new Promise((resolve, reject) => {
       let ij = _.cloneDeep(ioJournalItem)
 
       // Available Goods check
-      if (this.store.state.rejectNotAvailableExportGoods === true) {
-        for (let ioJournalGoodItem of ij.list) {
-          let good = ioJournalGoodItem.good
-          if (this.store.state.availableImportGoods.find(item => item.good === good) === undefined) {
-            throw new Error('IO:import() Goods exported is not available.')
-          }
+      let list = ij.list
+      for (let ioJournalGoodItem of list) {
+        let good = ioJournalGoodItem.good
+        let unit = ioJournalGoodItem.unit
+        if (!this.isImportGoodAvailable(good, unit)) {
+          throw new Error('IO:import() Goods imported is not available.')
         }
-      }
-
-      // Limit check
-      if (this.store.state.hasImportLimit === true) {
-        for (let inputJournalGoodItem of ij.list) {
-          let good = inputJournalGoodItem.good
-          let unit = inputJournalGoodItem.unit
-          let it = this.store.state.availableImportGoods.find(item => item.good === good)
-          if (typeof it.left === 'undefined') {
-            it.left = it.limit
-          }
-          if (it.left < unit) {
-            throw new Error('IO:import() Good exported has reach the limitation.')
-          }
-          it.left -= unit
-        }
+        this.store.immediate('SUB_EXPORT_LEFT', {
+          good: good,
+          unit: unit
+        })
       }
 
       if (!this.node.Inventory) {
@@ -142,6 +121,7 @@ export default class IO extends EventEmitter {
       }
 
       this.node.Inventory.export(ij)
+      .then(() => { return this.engine.getNode(ij.to).IO.import(ij) })
       .then(() => {
         return new Promise((resolve, reject) => {
           if (!this.node.Account) {
@@ -205,6 +185,56 @@ export default class IO extends EventEmitter {
       })
       .catch(err => { reject(err) })
     })
+  }
+
+  /**
+   *
+   * @param {String} good
+   * @param {Number} [unit]
+   * @returns {Boolean}
+   */
+  isImportGoodAvailable (good, unit = 0) {
+    if (!this.store.state.rejectNotAvailableImportGoods) {
+      return true
+    }
+
+    let it = this.store.state.availableImportGoods.find(item => item.good === good)
+    if (it === undefined) {
+      return false
+    }
+    if (this.store.state.hasImportLimit === true) {
+      return true
+    }
+    let left = 'left' in it ? it.left : it.limit
+    if (left < unit) {
+      return false
+    }
+    return true
+  }
+
+  /**
+   *
+   * @param {String} good
+   * @param {Number} [unit]
+   * @returns {Boolean}
+   */
+  isExportGoodAvailable (good, unit = 0) {
+    if (!this.store.state.rejectNotAvailableExportGoods) {
+      return true
+    }
+
+    let it = this.store.state.availableExportGoods.find(item => item.good === good)
+    if (it === undefined) {
+      return false
+    }
+    if (this.store.state.hasExportLimit === true) {
+      return true
+    }
+    let left = 'left' in it ? it.left : it.limit
+    if (left < unit) {
+      return false
+    }
+    return true
   }
 
   getImportJournal (good) {

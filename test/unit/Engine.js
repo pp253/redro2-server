@@ -3,62 +3,9 @@ import {assert, expect} from 'chai'
 import * as schema from '@/lib/schema'
 import Engine from '@/Engine'
 import { timeout } from '@/lib/utils'
+import ENGINE_OPTIONS from '../engine.config'
 
 const DUMMY_SERVER = {}
-
-const ENGINE_OPTIONS = {
-  name: 'SAMPLE_ENGINE',
-  nodes: [
-    {
-      name: 'SAMPLE_NODE_1',
-      components: [
-        {
-          type: 'Account',
-          enable: true,
-          options: {}
-        },
-        {
-          type: 'Inventory',
-          enable: true,
-          options: {}
-        },
-        {
-          type: 'IO',
-          enable: true,
-          options: {}
-        }
-      ]
-    },
-    {
-      name: 'SAMPLE_NODE_2',
-      components: [
-        {
-          type: 'Account',
-          enable: true,
-          options: {}
-        },
-        {
-          type: 'Inventory',
-          enable: true,
-          options: {}
-        },
-        {
-          type: 'IO',
-          enable: true,
-          options: {}
-        }
-      ]
-    }
-  ],
-  stage: schema.ENGINE_STAGE.CONSTRUCTED,
-  gameTime: {
-    day: 0,
-    time: 0,
-    isWorking: false
-  },
-  gameDays: 2,
-  dayLength: 4
-}
 
 describe('Engine', function () {
   let engine
@@ -192,7 +139,7 @@ describe('Engine', function () {
   describe('#getId()', function () {
     it('should return an object.', function (done) {
       let id = engine.getId()
-      assert.isObject(id)
+      assert.isString(id)
       done()
     })
   })

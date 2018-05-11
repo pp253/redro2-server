@@ -134,9 +134,11 @@ const RETAILER_COMPONENTS = [
   }
 ]
 
-export const ENGINE_CONFIG = {
-  'name': '',
-  'nodes': [
+export default {
+  name: 'Engine Testing',
+  gameDays: 3,
+  dayLength: 10,
+  nodes: [
     {
       name: 'ComponentsFactory#1',
       components: COMPONENTS_FACTORY_COMPONENTS,
@@ -231,7 +233,5 @@ export const ENGINE_CONFIG = {
         {type: 'IO', enable: true}
       ]
     }
-  ],
-  gameDays: 3,
-  dayLength: 10
+  ]
 }

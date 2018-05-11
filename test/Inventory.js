@@ -24,7 +24,7 @@ const NODE_OPTIONS = {
 }
 
 const INVENTORY_OPTIONS = {
-  
+
 }
 
 describe('Inventory', function () {
@@ -58,6 +58,14 @@ describe('Inventory', function () {
     it('should return an object.', function (done) {
       let obj = inventory.toObject()
       assert.isObject(obj)
+      done()
+    })
+  })
+
+  describe('#getId()', function () {
+    it('should return an object.', function (done) {
+      let id = inventory.getId()
+      assert.isString(id)
       done()
     })
   })

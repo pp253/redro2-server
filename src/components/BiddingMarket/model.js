@@ -7,8 +7,8 @@ import { StocksItemSchema } from '@/components/Inventory/model'
  * @property {Array<BiddingItemGood>} goods
  * @property {String} stage
  * @property {String} publishedFromChain
- * @property {CounterObject} [publisher]
- * @property {CounterObject} [signer]
+ * @property {String} publisher
+ * @property {String} [signer]
  * @property {Number} price
  * @property {Number} [timeLimit]
  * @property {String} [memo]
@@ -19,8 +19,8 @@ export const BiddingItemSchema = new mongoose.Schema({
   goods: [StocksItemSchema],
   stage: {type: String, default: schema.BIDDING_ITEM_STAGE.CONSTRUCTED},
   publishedFromChain: {type: String, default: schema.BIDDING_CHAIN.UPSTREAM},
-  publisher: schema.CounterObjectSchema,
-  signer: schema.CounterObjectSchema,
+  publisher: {type: String, required: true},
+  signer: {type: String},
   price: {type: Number, default: 0},
   timeLimit: {type: Number, default: 300},
   memo: String,
@@ -30,9 +30,9 @@ export const BiddingItemSchema = new mongoose.Schema({
 
 export const BiddingMarketSchema = new mongoose.Schema({
   mode: {type: String, default: 'Receiver'}, // or 'Provider'
-  upstreams: [schema.CounterObjectSchema],
-  downstreams: [schema.CounterObjectSchema],
-  provider: schema.CounterObjectSchema,
+  upstreams: [String],
+  downstreams: [String],
+  provider: String,
   biddings: [BiddingItemSchema],
   breakoffPaneltyRatio: {type: Number, default: 1.2},
   breakoffCompensationRatio: {type: Number, default: 0.5},

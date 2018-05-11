@@ -29,6 +29,7 @@ export default class BiddingMarket extends EventEmitter {
       this._loaded = true
 
       this.node = node
+      this.engine = node.engine
       this.options = _.cloneDeep(options) || {}
 
       let state = {}
@@ -43,27 +44,27 @@ export default class BiddingMarket extends EventEmitter {
 
   /**
    *
-   * @param {BiddingItem} BiddingItem
+   * @param {BiddingItem} biddingItem
    */
-  release (BiddingItem) {
+  release (biddingItem) {
     return new Promise((resolve, reject) => {
       // check sum of costs of goods is the same as price
       let sumOfCost = 0
-      for (let stocksItem of BiddingItem.goods) {
+      for (let stocksItem of biddingItem.goods) {
         sumOfCost += stocksItem.unit * stocksItem.unitPrice
       }
-      BiddingItem.price = sumOfCost
+      biddingItem.price = sumOfCost
 
       // check the publisher is from the up or down stream
-      if (this.isUpstreamsObjectId(BiddingItem.publisher.name)) {
-        BiddingItem.publishedFromChain = BIDDING_CHAIN.UPSTREAM
-      } else if (this.isDownstreamsObjectId(BiddingItem.publisher.name)) {
-        BiddingItem.publishedFromChain = BIDDING_CHAIN.DOWNSTREAM
+      if (this.isUpstreams(biddingItem.publisher)) {
+        biddingItem.publishedFromChain = BIDDING_CHAIN.UPSTREAM
+      } else if (this.isDownstreams(biddingItem.publisher)) {
+        biddingItem.publishedFromChain = BIDDING_CHAIN.DOWNSTREAM
       } else {
         throw new Error('BiddingMarket:release() publisher should be either one of the upstreams or downstreams.')
       }
 
-      this.store.commit('ADD_BIDDING', BiddingItem)
+      this.store.commit('ADD_BIDDING', biddingItem)
       .then(() => {
         let bi = this.store.state.biddings[this.store.state.biddings.length - 1]
         this.emit(BIDDING_EVENTS.BIDDING_RELEASED, new BiddingEvent({
@@ -71,6 +72,7 @@ export default class BiddingMarket extends EventEmitter {
           target: this,
           time: bi.time,
           gameTime: bi.gameTime,
+          provider: this.node.getName(),
           item: bi
         }))
 
@@ -81,36 +83,37 @@ export default class BiddingMarket extends EventEmitter {
 
   /**
    *
-   * @param {BiddingStageChange} BiddingStageChange
+   * @param {BiddingStageChange} biddingStageChange
    */
-  cancel (BiddingStageChange) {
+  cancel (biddingStageChange) {
     return new Promise((resolve, reject) => {
-      if (!BiddingStageChange.id || !BiddingStageChange.operator) {
+      if (!biddingStageChange.id || !biddingStageChange.operator) {
         throw new Error('BiddingMarket:cancel() `id` and `operator` is required.')
       }
 
-      let bi = this.getBiddingById(BiddingStageChange.id)
+      let bi = this.getBiddingById(biddingStageChange.id)
 
       if (bi.stage !== BIDDING_ITEM_STAGE.BIDDING) {
         throw new Error('BiddingMarket:cancel() Bidding item could be canceled only when bidding.')
       }
 
-      if (PRODUCTION && bi.publisher !== BiddingStageChange.operator) {
+      if (PRODUCTION && bi.publisher !== biddingStageChange.operator) {
         throw new Error('BiddingMarket:cancel() operator is not the `publisher`.')
       }
 
       this.store.commit('SET_BIDDING_STAGE', {
-        id: BiddingStageChange.id,
+        id: biddingStageChange.id,
         stage: BIDDING_ITEM_STAGE.CANCELED
       })
       .then(() => {
-        let bi = this.getBiddingById(BiddingStageChange.id)
+        let bi = this.getBiddingById(biddingStageChange.id)
 
         this.emit(BIDDING_EVENTS.BIDDING_CANCELED, new BiddingEvent({
           type: BIDDING_EVENTS.BIDDING_CANCELED,
           target: this,
           time: bi.time,
           gameTime: bi.gameTime,
+          provider: this.node.getName(),
           item: bi
         }))
 
@@ -121,43 +124,44 @@ export default class BiddingMarket extends EventEmitter {
 
   /**
    *
-   * @param {BiddingStageChange} BiddingStageChange
+   * @param {BiddingStageChange} biddingStageChange
    */
-  sign (BiddingStageChange) {
+  sign (biddingStageChange) {
     return new Promise((resolve, reject) => {
-      if (!BiddingStageChange.id || !BiddingStageChange.operator) {
+      if (!biddingStageChange.id || !biddingStageChange.operator) {
         throw new Error('BiddingMarket:sign() `id` and `operator` is required.')
       }
 
-      let bi = this.getBiddingById(BiddingStageChange.id)
+      let bi = this.getBiddingById(biddingStageChange.id)
 
       if (bi.stage !== BIDDING_ITEM_STAGE.BIDDING) {
         throw new Error('BiddingMarket:sign() Bidding item could be signed only when bidding.')
       }
 
       if (bi.publishedFromChain === BIDDING_CHAIN.UPSTREAM) {
-        if (!this.isDownstreamsObjectId(BiddingStageChange.id)) {
+        if (!this.isDownstreams(biddingStageChange.id)) {
           throw new Error('BiddingMarket:sign() Signer should be one of downstreams.')
         }
       } else {
-        if (!this.isUpstreamsObjectId(BiddingStageChange.id)) {
+        if (!this.isUpstreams(biddingStageChange.id)) {
           throw new Error('BiddingMarket:sign() Signer should be one of upstreams.')
         }
       }
 
       this.store.dispatch('setBiddingSign', {
-        id: BiddingStageChange.id,
+        id: biddingStageChange.id,
         stage: BIDDING_ITEM_STAGE.SIGNED,
-        signer: BiddingStageChange.operator
+        signer: biddingStageChange.operator
       })
       .then(() => {
-        let bi = this.getBiddingById(BiddingStageChange.id)
+        let bi = this.getBiddingById(biddingStageChange.id)
 
         this.emit(BIDDING_EVENTS.BIDDING_SIGNED, new BiddingEvent({
           type: BIDDING_EVENTS.BIDDING_CANCELED,
           target: this,
           time: bi.time,
           gameTime: bi.gameTime,
+          provider: this.node.getName(),
           item: bi
         }))
 
@@ -186,11 +190,11 @@ export default class BiddingMarket extends EventEmitter {
       let breakoffeder
 
       if (BiddingStageChange.operator === bi.publisher) {
-        breakoffer = this.node.engine.getNode(bi.publisher.name)
-        breakoffeder = this.node.engine.getNode(bi.signer.name)
+        breakoffer = this.node.engine.getNode(bi.publisher)
+        breakoffeder = this.node.engine.getNode(bi.signer)
       } else if (BiddingStageChange.operator === bi.signer) {
-        breakoffer = this.node.engine.getNode(bi.signer.name)
-        breakoffeder = this.node.engine.getNode(bi.publisher.name)
+        breakoffer = this.node.engine.getNode(bi.signer)
+        breakoffeder = this.node.engine.getNode(bi.publisher)
       } else {
         throw new Error('BiddingMarket:breakoff() operator should be either the publisher or signer.')
       }
@@ -202,12 +206,12 @@ export default class BiddingMarket extends EventEmitter {
         credit: [{
           amount: breakoffPaneltyAmount,
           classification: 'CounterPartyDefault',
-          counterObject: this.getId()
+          counterObject: this.node.getName()
         }],
         debit: [{
           amount: breakoffPaneltyAmount,
           classification: 'AccountsPayable',
-          counterObject: this.getId()
+          counterObject: this.node.getName()
         }],
         memo: 'Breakoff Panelty',
         time: BiddingStageChange.time,
@@ -218,12 +222,12 @@ export default class BiddingMarket extends EventEmitter {
         credit: [{
           amount: breakoffCompensationAmount,
           classification: 'Cash',
-          counterObject: this.getId()
+          counterObject: this.node.getName()
         }],
         debit: [{
           amount: breakoffCompensationAmount,
           classification: 'IncomFromCounterPartyDefault',
-          counterObject: this.getId()
+          counterObject: this.node.getName()
         }],
         memo: 'Breakoff Compensation',
         time: BiddingStageChange.time,
@@ -242,6 +246,7 @@ export default class BiddingMarket extends EventEmitter {
           target: this,
           time: bi.time,
           gameTime: bi.gameTime,
+          provider: this.node.getName(),
           item: bi
         }))
 
@@ -266,8 +271,8 @@ export default class BiddingMarket extends EventEmitter {
         throw new Error('BiddingMarket:deliver() Bidding item could be signed only when signed.')
       }
 
-      let publisher = this.node.engine.getNode(bi.publisher.name)
-      let signer = this.node.engine.getNode(bi.signer.name)
+      let publisher = this.node.engine.getNode(bi.publisher)
+      let signer = this.node.engine.getNode(bi.signer)
 
       let ioJournalItem = {
         from: bi.publisher,
@@ -296,6 +301,7 @@ export default class BiddingMarket extends EventEmitter {
           target: this,
           time: bi.time,
           gameTime: bi.gameTime,
+          provider: this.node.getName(),
           item: bi
         }))
 
@@ -308,13 +314,13 @@ export default class BiddingMarket extends EventEmitter {
     return this.store.state.biddings.find(bidding => bidding._id.equals(id))
   }
 
-  isUpstreamsObjectId (name) {
-    let r = this.store.state.upstreams.find(counterNode => counterNode.name === name)
+  isUpstreams (name) {
+    let r = this.store.state.upstreams.find(counterName => counterName === name)
     return r !== undefined
   }
 
-  isDownstreamsObjectId (name) {
-    let r = this.store.state.downstreams.find(counterNode => counterNode.name === name)
+  isDownstreams (name) {
+    let r = this.store.state.downstreams.find(counterName => counterName === name)
     return r !== undefined
   }
 
