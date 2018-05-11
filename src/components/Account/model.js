@@ -13,9 +13,9 @@ export const AccountsClassification = {
 
 /**
  * @typedef AccountItem
- * @property amount {Number}
- * @property classification {String}
- * @property counterObject {CounterObject}
+ * @property {Number} amount
+ * @property {String} classification
+ * @property {String} counterObject
  */
 export const AccountItemSchema = new mongoose.Schema({
   amount: {type: Number, default: 0},
@@ -23,17 +23,17 @@ export const AccountItemSchema = new mongoose.Schema({
   /**
    * 資產、負債科目應計交易對象，以便追蹤，尤其是負債或應付帳款時更應。
    */
-  counterObject: schema.CounterObjectSchema
+  counterObject: {type: String}
 })
 
 /**
  * @typedef AccountTransaction
- * @property debit {Array<AccountItem>}
- * @property credit {Array<AccountItem>}
- * @property memo {String}
- * @property time {Date}
- * @property gameTime {GameTime}
- * @property unbalance {Boolean}
+ * @property {Array<AccountItem>} debit
+ * @property {Array<AccountItem>} credit
+ * @property {String} memo
+ * @property {Date} time
+ * @property {GameTime} gameTime
+ * @property {Boolean} unbalance
  */
 export const AccountTransactionSchema = new mongoose.Schema({
   debit: [AccountItemSchema],
@@ -46,12 +46,13 @@ export const AccountTransactionSchema = new mongoose.Schema({
 
 /**
  * @typedef AccountLedgerItem
- * @property amount {Number}
- * @property classification {String}
- * @property side {String}
- * @property memo {String}
- * @property time {Date}
- * @property gameTime {GameTime}
+ * @property {Number} amount
+ * @property {String} classification
+ * @property {String} side
+ * @property {String} counterObject
+ * @property {String} memo
+ * @property {Date} time
+ * @property {GameTime} gameTime
  */
 export const AccountLedgerItemSchema = new mongoose.Schema({
   amount: {type: Number, default: 0},
@@ -60,6 +61,7 @@ export const AccountLedgerItemSchema = new mongoose.Schema({
    * side = `debit` | `credit`
    */
   side: {type: String, required: true},
+  counterObject: {type: String},
   memo: String,
   time: {type: Date, default: Date.now},
   gameTime: schema.GameTimeSchema
@@ -67,9 +69,9 @@ export const AccountLedgerItemSchema = new mongoose.Schema({
 
 /**
  * @typedef AccountLedger
- * @property classification {String}
- * @property items {Array<AccountLedgerItem>}
- * @property balance {Number}
+ * @property {String} classification
+ * @property {Array<AccountLedgerItem>} [items]
+ * @property {Number} [balance]
  */
 export const AccountLedgerSchema = new mongoose.Schema({
   classification: {type: String, required: true},

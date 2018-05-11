@@ -1,6 +1,7 @@
 import _ from 'lodash'
 import Store from '@/lib/Store'
 import AccountModel from './model'
+import { ACCOUNT_LEDGER_SIDE } from '@/lib/schema'
 
 export const STORE_CONTENT = {
   state: {
@@ -33,7 +34,7 @@ export const STORE_CONTENT = {
       }
 
       ledger.items.push(item)
-      ledger.balance += (item.side === 'debit' ? item.amount : -item.amount)
+      ledger.balance += (item.side === ACCOUNT_LEDGER_SIDE.DEBIT ? item.amount : -item.amount)
     }
   },
   actions: {
@@ -45,12 +46,13 @@ export const STORE_CONTENT = {
       context.commit('ADD_JOURNAL_TRANSACTION', transaction)
 
       // Ledger
-      for (let side of ['debit', 'credit']) {
+      for (let side of [ACCOUNT_LEDGER_SIDE.DEBIT, ACCOUNT_LEDGER_SIDE.CREDIT]) {
         for (let item of transaction[side] || []) {
           context.commit('ADD_LEDGER_ITEM', {
             amount: item.amount,
             classification: item.classification,
             side: side,
+            counterObject: item.counterObject,
             memo: transaction.memo,
             time: transaction.time,
             gameTime: transaction.gameTime

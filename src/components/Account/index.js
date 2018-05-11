@@ -3,6 +3,7 @@ import _ from 'lodash'
 import store from './store'
 import Node from '@/Node'
 import { PRODUCTION } from '@/lib/utils'
+import { ACCOUNT_LEDGER_SIDE } from '@/lib/schema'
 
 export default class Account extends EventEmitter {
   constructor () {
@@ -22,6 +23,7 @@ export default class Account extends EventEmitter {
       this._loaded = true
 
       this.node = node
+      this.engine = node.engine
       this.options = _.cloneDeep(options) || {}
 
       let state = {}
@@ -68,8 +70,77 @@ export default class Account extends EventEmitter {
       }
 
       this.store.dispatch('addTransaction', accountTransaction)
+      .then(() => { return this.repaying() })
       .then(() => { resolve(this) })
       .catch(err => { reject(err) })
+    })
+  }
+
+  /**
+   * @returns {Promise}
+   */
+  repaying (accountTransaction) {
+    if (this.getBalance('Cash') <= 0 || this.getBalance('AccountsPayable') === 0) {
+      return Promise.resolve()
+    }
+
+    return new Promise((resolve, reject) => {
+      let payableMap = {}
+      for (let ledgerItem of this.getLedger('AccountsPayable')) {
+        if (ledgerItem.counterObject === 'Engine') {
+          continue
+        }
+        if (!('ledgerItem.counterObject' in payableMap)) {
+          payableMap[ledgerItem.counterObject] = 0
+        }
+        if (ledgerItem.side === ACCOUNT_LEDGER_SIDE.DEBIT) {
+          payableMap[ledgerItem.counterObject] -= ledgerItem.amount
+        } else if (ledgerItem.side === ACCOUNT_LEDGER_SIDE.DEBIT) {
+          payableMap[ledgerItem.counterObject] += ledgerItem.amount
+        }
+      }
+
+      let jobSeq = []
+      for (let counterObject in payableMap) {
+        let payableAmount = payableMap[counterObject]
+        if (payableAmount <= 0) {
+          continue
+        }
+
+        jobSeq.push(this.engine.getNode(counterObject).Account.add({
+          credit: [{
+            amount: payableAmount,
+            classification: 'Cash',
+            counterObject: this.node.getName()
+          }],
+          debit: [{
+            amount: payableAmount,
+            classification: 'AccountsReceivable',
+            counterObject: this.node.getName()
+          }],
+          memo: 'Pay the Accounts Payable.',
+          time: accountTransaction.time,
+          gameTime: accountTransaction.gameTime
+        }))
+        jobSeq.push(this.node.Account.add({
+          credit: [{
+            amount: payableAmount,
+            classification: 'AccountsPayable',
+            counterObject: counterObject
+          }],
+          debit: [{
+            amount: payableAmount,
+            classification: 'Cash',
+            counterObject: counterObject
+          }],
+          memo: 'Pay the Accounts Payable.',
+          time: accountTransaction.time,
+          gameTime: accountTransaction.gameTime
+        }))
+      }
+
+      Promise.all(jobSeq)
+      .then(() => { resolve() })
     })
   }
 
