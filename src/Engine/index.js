@@ -198,6 +198,10 @@ export default class Engine extends EventEmitter {
   pause () {}
   resume () {}
 
+  getGameTime () {
+    return this.store.state.gameTime
+  }
+
   /**
    * gameTimeAdd(GameTime, diff)
    * gameTimeAdd(diff)
@@ -231,8 +235,24 @@ export default class Engine extends EventEmitter {
     }
   }
 
-  getGameTime () {
-    return this.store.state.gameTime
+  /**
+   *
+   * @param {GameTime} gameTime
+   * @returns {Number} 1 is greater, 0 is equal, -1 is less than the current game time.
+   */
+  gameTimeCompare (gameTime) {
+    let cgt = this.getGameTime()
+    if (cgt.day < gameTime.day) {
+      return 1
+    } else if (cgt.day > gameTime.day) {
+      return -1
+    } else if (cgt.time < gameTime.time) {
+      return 1
+    } else if (cgt.time > gameTime.time) {
+      return -1
+    } else {
+      return 0
+    }
   }
 
   getStage () {

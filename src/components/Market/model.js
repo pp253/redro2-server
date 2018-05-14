@@ -6,7 +6,7 @@ export const MarketNewsSchema = new mongoose.Schema({
   title: {type: String},
   content: {type: String},
   releasedGameTime: {type: schema.GameTimeSchema},
-  marketNeeds: [MarketNeedsGoodSchema]
+  marketNeeds: [StocksItemSchema]
 })
 
 export const MarketJournalItem = new mongoose.Schema({

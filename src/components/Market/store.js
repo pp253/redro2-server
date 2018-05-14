@@ -7,12 +7,20 @@ export const STORE_CONTENT = {
     upstreams: [],
     marketNeeds: [],
     news: [],
-    accumulateNeeds: false
+    accumulateNeeds: false,
+    journal: []
   },
   getters: {},
   mutations: {
     ADD_NEWS (state, marketNews) {
       state.news.push(marketNews)
+    },
+    EDIT_NEWS (state, marketNews) {
+      let news = state.news.find(news => news._id.equals(marketNews.id))
+      news.title = marketNews.title || news.title
+      news.content = marketNews.content || news.content
+      news.releasedGameTime = marketNews.releasedGameTime || news.releasedGameTime
+      news.marketNeeds = marketNews.marketNeeds || news.marketNeeds
     },
     SET_MARKET_NEEDS (state, marketNeeds) {
       let it = state.marketNeeds.find(needs => needs.good === marketNeeds.good)
@@ -30,8 +38,15 @@ export const STORE_CONTENT = {
         }
       }
     },
+    SUB_MARKET_NEEDS (state, marketNeeds) {
+      let it = state.marketNeeds.find(needs => needs.good === marketNeeds.good)
+      it.left = marketNeeds.unit
+    },
     SET_ACCUMULATE_NEEDS (state, payload) {
       state.accumulateNeeds = payload.accumulateNeeds
+    },
+    ADD_JOURNAL (state, marketJournalItem) {
+      state.journal.push(marketJournalItem)
     }
   },
   actions: {

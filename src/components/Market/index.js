@@ -3,22 +3,22 @@ import _ from 'lodash'
 import store from './store'
 import Node from '@/Node'
 import { PRODUCTION } from '@/lib/utils'
-import { ENGINE_EVENTS, TRANSPORTATION_STATUS } from '@/lib/schema'
+import { MARKET_EVENTS, MarketEvent } from '@/lib/schema'
 
-export default class IO extends EventEmitter {
+export default class Market extends EventEmitter {
   constructor () {
     super()
-    this.type = 'IO'
+    this.type = 'Market'
     this._loaded = false
   }
 
   load (node, options) {
     return new Promise((resolve, reject) => {
       if (PRODUCTION && !(node instanceof Node)) {
-        throw new Error('IO:load() `node` should be instance of Node.')
+        throw new Error('Market:load() `node` should be instance of Node.')
       }
       if (this._loaded) {
-        throw new Error('IO:load() Node has been loaded before.')
+        throw new Error('Market:load() Node has been loaded before.')
       }
       this._loaded = true
 
@@ -44,6 +44,8 @@ export default class IO extends EventEmitter {
         throw new Error('Market:buy() Market seller must from the upstreams of market.')
       }
 
+      // TODO: Check the goods price
+
       // Check for the needed good
       for (let item of marketJournalItem.list) {
         let it = this.getNeededGood(item.good)
@@ -54,12 +56,29 @@ export default class IO extends EventEmitter {
           throw new Error('Market:buy() The market has no more needs of the good.')
         }
         item.unitPrice = it.unitPrice
-        // TODO: minus the left
+
+        // minus the left
+        this.store.immediate('SUB_MARKET_NEEDS', {
+          good: item.good,
+          unit: item.unit
+        })
       }
 
-      this.engine.getNode(marketJournalItem.from)
-      .MarketReceiver.sell(marketJournalItem)
+      this.store.save()
+      .then(() => {
+        return this.engine.getNode(marketJournalItem.from)
+          .MarketReceiver.sell(marketJournalItem)
+      })
+      .catch(err => { reject(err) })
     })
+  }
+
+  getNeeds () {
+    return this.store.state.marketNeeds
+  }
+
+  setNeeds (marketNeeds) {
+    return this.store.commit('SET_MARKET_NEEDS', marketNeeds)
   }
 
   getNeededGood (good) {
@@ -100,6 +119,46 @@ export default class IO extends EventEmitter {
     } else {
       return true
     }
+  }
+
+  addNews (marketNews) {
+    return new Promise((resolve, reject) => {
+      this.store.commit('ADD_NEWS', marketNews)
+      .then(() => {
+        this._registNews(marketNews)
+        resolve(this)
+      })
+      .catch(err => { reject(err) })
+    })
+  }
+
+  _registNews (marketNews) {
+    this.engine.once(`game-day-${marketNews.day}-time-${marketNews.time}`, (engineEvent) => {
+      this.emit(MARKET_EVENTS.MARKET_NEWS_PUBLISHED, new MarketEvent({
+        type: MARKET_EVENTS.MARKET_NEWS_PUBLISHED,
+        target: this,
+        gameTime: engineEvent.gameTime,
+        provider: this,
+        news: this.getAvailableNews(),
+        needs: this.getNeeds()
+      }))
+    })
+  }
+
+  editNews (marketNews) {
+    return this.store.commit('EDIT_NEWS', marketNews)
+  }
+
+  getAvailableNews () {
+    let resultList = []
+    let newsList = this.store.state.news
+    for (let news of newsList) {
+      if (this.engine.gameTimeCompare(news.releasedGameTime) === 1) {
+        continue
+      }
+      resultList.push(news)
+    }
+    return resultList
   }
 
   toObject () {

@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events'
 import _ from 'lodash'
-import {BiddingEvent, BIDDING_EVENTS, BIDDING_ITEM_STAGE, BIDDING_CHAIN} from '@/lib/schema'
+import {MarketEvent, BIDDING_EVENTS, BIDDING_ITEM_STAGE, BIDDING_CHAIN} from '@/lib/schema'
 import store from './store'
 import Node from '@/Node'
 import { PRODUCTION } from '@/lib/utils'
@@ -67,7 +67,7 @@ export default class BiddingMarket extends EventEmitter {
       this.store.commit('ADD_BIDDING', biddingItem)
       .then(() => {
         let bi = this.store.state.biddings[this.store.state.biddings.length - 1]
-        this.emit(BIDDING_EVENTS.BIDDING_RELEASED, new BiddingEvent({
+        this.emit(BIDDING_EVENTS.BIDDING_RELEASED, new MarketEvent({
           type: BIDDING_EVENTS.BIDDING_RELEASED,
           target: this,
           time: bi.time,
@@ -108,7 +108,7 @@ export default class BiddingMarket extends EventEmitter {
       .then(() => {
         let bi = this.getBiddingById(biddingStageChange.id)
 
-        this.emit(BIDDING_EVENTS.BIDDING_CANCELED, new BiddingEvent({
+        this.emit(BIDDING_EVENTS.BIDDING_CANCELED, new MarketEvent({
           type: BIDDING_EVENTS.BIDDING_CANCELED,
           target: this,
           time: bi.time,
@@ -156,7 +156,7 @@ export default class BiddingMarket extends EventEmitter {
       .then(() => {
         let bi = this.getBiddingById(biddingStageChange.id)
 
-        this.emit(BIDDING_EVENTS.BIDDING_SIGNED, new BiddingEvent({
+        this.emit(BIDDING_EVENTS.BIDDING_SIGNED, new MarketEvent({
           type: BIDDING_EVENTS.BIDDING_CANCELED,
           target: this,
           time: bi.time,
@@ -241,7 +241,7 @@ export default class BiddingMarket extends EventEmitter {
       .then(() => {
         let bi = this.getBiddingById(BiddingStageChange.id)
 
-        this.emit(BIDDING_EVENTS.BIDDING_BREAKOFF, new BiddingEvent({
+        this.emit(BIDDING_EVENTS.BIDDING_BREAKOFF, new MarketEvent({
           type: BIDDING_EVENTS.BIDDING_CANCELED,
           target: this,
           time: bi.time,
@@ -296,7 +296,7 @@ export default class BiddingMarket extends EventEmitter {
       .then(() => {
         let bi = this.getBiddingById(BiddingStageChange.id)
 
-        this.emit(BIDDING_EVENTS.BIDDING_COMPLETED, new BiddingEvent({
+        this.emit(BIDDING_EVENTS.BIDDING_COMPLETED, new MarketEvent({
           type: BIDDING_EVENTS.BIDDING_CANCELED,
           target: this,
           time: bi.time,

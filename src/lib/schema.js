@@ -65,6 +65,20 @@ export class BiddingEvent extends Event {
 }
 
 /**
+ * @typedef {Object} MarketEvent
+ * @extends Event
+ * @property {BiddingItem} item
+ */
+export class MarketEvent extends Event {
+  constructor (options) {
+    super()
+    this.provider = options.provider
+    this.news = options.news
+    this.needs = options.needs
+  }
+}
+
+/**
  * Events Name
  */
 

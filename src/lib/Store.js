@@ -166,6 +166,10 @@ export default class Store extends EventEmitter {
     return map
   }
 
+  save () {
+    return this.state.save()
+  }
+
   toObject () {
     return _.cloneDeep(this.state.toObject())
   }
