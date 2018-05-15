@@ -111,7 +111,7 @@ export default class Store extends EventEmitter {
    * The same as `commit` but as immidiately.
    */
   immediate (mutation, payload, options) {
-    Object.assign(options, { save: false })
+    Object.assign({}, options, { save: false })
     return this.commit(mutation, payload, options)
   }
 
@@ -150,6 +150,7 @@ export default class Store extends EventEmitter {
           resolve(this)
         })
         .catch(err => {
+          console.error(err)
           reject(err)
         })
     })

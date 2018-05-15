@@ -203,12 +203,12 @@ export default class BiddingMarket extends EventEmitter {
       let breakoffCompensationAmount = bi.price * this.store.state.breakoffCompensationRatio
 
       breakoffer.Account.add({
-        credit: [{
+        debit: [{
           amount: breakoffPaneltyAmount,
           classification: 'CounterPartyDefault',
           counterObject: this.node.getName()
         }],
-        debit: [{
+        credit: [{
           amount: breakoffPaneltyAmount,
           classification: 'AccountsPayable',
           counterObject: this.node.getName()
@@ -219,12 +219,12 @@ export default class BiddingMarket extends EventEmitter {
       })
 
       breakoffeder.Account.add({
-        credit: [{
+        debit: [{
           amount: breakoffCompensationAmount,
           classification: 'Cash',
           counterObject: this.node.getName()
         }],
-        debit: [{
+        credit: [{
           amount: breakoffCompensationAmount,
           classification: 'IncomFromCounterPartyDefault',
           counterObject: this.node.getName()

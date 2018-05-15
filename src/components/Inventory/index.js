@@ -35,31 +35,8 @@ export default class Inventory extends EventEmitter {
          * Computing Storage cost.
          */
         if (this.store.state.hasStorageCost && this.node.Account) {
-          this.node.engine.on(ENGINE_EVENTS.GAME_OFFWORK, (engineTime) => {
-            if (!this.store.state.hasStorageCost || !this.node.Account) {
-              return
-            }
-            let Account = this.node.Account
-            let sumOfCost = 0
-            for (let storageItem of this.store.state.storage) {
-              let good = storageItem.good
-              let unit = storageItem.unit
-              let costPerBatch = this.store.state.storageCost.find(item => item.good === good).costPerBatch
-              sumOfCost += Math.ceil(unit / this.store.state.batchSize) * costPerBatch
-            }
-            Account.add({
-              credit: [{
-                amount: sumOfCost,
-                classification: 'CostOfWarehousing'
-              }],
-              debit: [{
-                amount: sumOfCost,
-                classification: 'Cash'
-              }],
-              memo: 'Storage Cost',
-              time: engineTime.time,
-              gameTime: engineTime.gameTime
-            })
+          this.node.engine.on(ENGINE_EVENTS.GAME_OFFWORK, (engineEvent) => {
+            this.countStorageCost(engineEvent)
           })
         }
       })
@@ -74,29 +51,29 @@ export default class Inventory extends EventEmitter {
   import (ioJournalItem) {
     return new Promise((resolve, reject) => {
       let ioji = _.cloneDeep(ioJournalItem)
-      let price = ioji.price
+
+      for (let item of ioji.list) {
+        item.left = item.unit
+      }
+
       this.store.commit('ADD_STORAGES', ioji.list)
       .then((store) => {
-        if (this.node.Account) {
-          this.node.Account.add({
-            credit: [{
-              amount: price,
-              classification: 'Inventory',
-              counterObject: ioji.from
-            }],
-            debit: [{
-              amount: price,
-              classification: 'AccountsPayable',
-              counterObject: ioji.from
-            }],
-            memo: 'Purchasing Inventory',
-            time: ioji.time,
-            gameTime: ioji.gameTime
-          })
-          .then(() => { resolve(this) })
-        } else {
-          resolve(this)
-        }
+        this.node.Account.add({
+          debit: [{
+            amount: ioji.price,
+            classification: 'Inventory',
+            counterObject: ioji.from
+          }],
+          credit: [{
+            amount: ioji.price,
+            classification: 'AccountsPayable',
+            counterObject: ioji.from
+          }],
+          memo: 'Purchasing Inventory',
+          time: ioji.time,
+          gameTime: ioji.gameTime
+        })
+        .then(() => { resolve(this) })
       })
       .catch(err => { reject(err) })
     })
@@ -122,28 +99,51 @@ export default class Inventory extends EventEmitter {
 
       this.store.commit('TAKE_STORAGES', ioji.list)
       .then((store) => {
-        if (this.node.Account) {
-          this.node.Account.add({
-            credit: [{
-              amount: sumOfCostOfSales,
-              classification: 'CostOfSales',
-              counterObject: ioji.from
-            }],
-            debit: [{
-              amount: sumOfCostOfSales,
-              classification: 'Inventory',
-              counterObject: ioji.from
-            }],
-            memo: 'Selling Inventory',
-            time: ioji.time,
-            gameTime: ioji.gameTime
-          })
-          .then(() => { resolve(this) })
-        } else {
-          resolve(this)
-        }
+        this.node.Account.add({
+          debit: [{
+            amount: sumOfCostOfSales,
+            classification: 'CostOfSales',
+            counterObject: ioji.from
+          }],
+          credit: [{
+            amount: sumOfCostOfSales,
+            classification: 'Inventory',
+            counterObject: ioji.from
+          }],
+          memo: 'Selling Inventory',
+          time: ioji.time,
+          gameTime: ioji.gameTime
+        })
+        .then(() => { resolve(this) })
       })
       .catch(err => { reject(err) })
+    })
+  }
+
+  countStorageCost (engineEvent) {
+    if (!this.store.state.hasStorageCost || !this.node.Account) {
+      return
+    }
+    let Account = this.node.Account
+    let sumOfCost = 0
+    for (let storageItem of this.store.state.storage) {
+      let good = storageItem.good
+      let unit = storageItem.unit
+      let costPerBatch = this.store.state.storageCost.find(item => item.good === good).costPerBatch
+      sumOfCost += Math.ceil(unit / this.store.state.batchSize) * costPerBatch
+    }
+    Account.add({
+      debit: [{
+        amount: sumOfCost,
+        classification: 'CostOfWarehousing'
+      }],
+      credit: [{
+        amount: sumOfCost,
+        classification: 'Cash'
+      }],
+      memo: 'Storage Cost',
+      time: engineEvent.time,
+      gameTime: engineEvent.gameTime
     })
   }
 
@@ -153,7 +153,7 @@ export default class Inventory extends EventEmitter {
    * @returns {StorageItem}
    */
   getStorage (good) {
-    return this.store.storage.find(item => item.good === good)
+    return this.store.state.storage.find(item => item.good === good)
   }
 
   /**
@@ -162,7 +162,7 @@ export default class Inventory extends EventEmitter {
    * @returns {Number} unit
    */
   getStorageUnit (good) {
-    let s = this.getStorage()
+    let s = this.getStorage(good)
     if (s === undefined) {
       return 0
     }
@@ -175,17 +175,18 @@ export default class Inventory extends EventEmitter {
       throw new Error('Inventory:getCostOfSales() Out of stocks.')
     }
 
-    let s = this.getStorage()
+    let s = this.getStorage(good)
     let left = unit
     let costOfSales = 0
-    for (let leftIdx = s.stocks.indexOf(item => item.left > 0); leftIdx < s.stocks.length; leftIdx++) {
-      let lit = s.stocks[leftIdx]
-      if (left - lit.left > 0) {
-        left -= lit.left
+
+    for (let idx = s.stocks.findIndex(item => item.left > 0); idx >= 0 && idx < s.stocks.length; idx++) {
+      let lit = s.stocks[idx]
+      if (left > lit.left) {
         costOfSales += lit.left * lit.unitPrice
+        left -= lit.left
       } else {
-        left = 0
         costOfSales += left * lit.unitPrice
+        left = 0
         break
       }
     }

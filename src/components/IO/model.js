@@ -48,7 +48,9 @@ export const IOSchema = new mongoose.Schema({
   batchSize: {type: Number, default: 0}
 }, {
   // Fix a bug https://github.com/Automattic/mongoose/issues/5574
-  usePushEach: true
+  usePushEach: true,
+  // Fix https://stackoverflow.com/questions/22053685/mongoose-no-matching-document-found-using-id-method-error-caused-by-asynchron/22158872#22158872
+  versionKey: false
 })
 
 const IOModel = mongoose.model('io', IOSchema)

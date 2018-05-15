@@ -54,10 +54,11 @@ export const STORE_CONTENT = {
         let good = stocksItem.good
         let it = state.storage.find((item) => item.good === good)
         it.unit -= stocksItem.unit
+
         let left = stocksItem.unit
-        for (let leftIdx = it.stocks.indexOf(item => item.left > 0); leftIdx < it.stocks.length; leftIdx++) {
-          let lit = it.stocks[leftIdx]
-          if (left - lit.left > 0) {
+        for (let idx = it.stocks.findIndex(item => item.left > 0); idx >= 0 && idx < it.stocks.length; idx++) {
+          let lit = it.stocks[idx]
+          if (left > lit.left) {
             left -= lit.left
             lit.left = 0
           } else {

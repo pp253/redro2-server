@@ -89,10 +89,13 @@ export const AccountLedgerSchema = new mongoose.Schema({
  */
 export const AccountSchema = new mongoose.Schema({
   journal: [AccountTransactionSchema],
-  ledger: [AccountLedgerSchema]
+  ledger: [AccountLedgerSchema],
+  initialCash: {type: Number, default: 0}
 }, {
   // Fix a bug https://github.com/Automattic/mongoose/issues/5574
-  usePushEach: true
+  usePushEach: true,
+  // Fix https://stackoverflow.com/questions/22053685/mongoose-no-matching-document-found-using-id-method-error-caused-by-asynchron/22158872#22158872
+  versionKey: false
 })
 
 const AccountModel = mongoose.model('account', AccountSchema)

@@ -8,7 +8,6 @@ export const STORE_CONTENT = {
     mode: 'Provider',
     upstreams: [],
     downstreams: [],
-    provider: null,
     biddings: [],
     breakoffPaneltyRatio: 1.2,
     breakoffCompensationRatio: 0.5,

@@ -69,6 +69,7 @@ export default class Market extends EventEmitter {
         return this.engine.getNode(marketJournalItem.from)
           .MarketReceiver.sell(marketJournalItem)
       })
+      .then(() => { resolve(this) })
       .catch(err => { reject(err) })
     })
   }

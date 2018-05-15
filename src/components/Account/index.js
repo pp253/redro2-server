@@ -26,10 +26,29 @@ export default class Account extends EventEmitter {
       this.engine = node.engine
       this.options = _.cloneDeep(options) || {}
 
-      let state = {}
+      let state = {
+        journal: this.options.journal || [],
+        ledger: this.options.ledger || [],
+        initialCash: this.options.initialCash || 0
+      }
+
       store(state)
       .then((store) => {
         this.store = store
+
+        if (this.store.state.initialCash > 0) {
+          this.add({
+            debit: [{
+              amount: this.store.state.initialCash,
+              classification: 'Cash',
+              counterObject: 'Engine'
+            }],
+            memo: 'Initial Cash',
+            gameTime: {day: 0, time: 0, isWorking: false},
+            unbalance: true
+          })
+        }
+
         resolve(this)
       })
       .catch(err => { reject(err) })
@@ -38,12 +57,12 @@ export default class Account extends EventEmitter {
 
   /*
     Account.add({
-      credit: [{
+      debit: [{
         amount: 0,
         classification: 'Cash',
         counterObject: ''
       }],
-      debit: [{
+      credit: [{
         amount: 0,
         classification: 'Cash',
         counterObject: ''
@@ -58,16 +77,16 @@ export default class Account extends EventEmitter {
     * @param {AccountTransaction} accountTransaction
     * @returns {Promise}
     */
-  add (accountTransaction) {
+  add (accountTransaction, options) {
     return new Promise((resolve, reject) => {
       // check balance
-      if (!('unbalance' in accountTransaction) || accountTransaction.unbalance === true) {
-        let debitAmount = accountTransaction.debit.reduce((acc, item) => {
+      if (!('unbalance' in accountTransaction) || accountTransaction.unbalance === false) {
+        let debitAmount = accountTransaction.debit ? accountTransaction.debit.reduce((acc, item) => {
           return acc + item.amount
-        }, 0)
-        let creditAmount = accountTransaction.credit.reduce((acc, item) => {
+        }, 0) : 0
+        let creditAmount = accountTransaction.credit ? accountTransaction.credit.reduce((acc, item) => {
           return acc + item.amount
-        }, 0)
+        }, 0) : 0
 
         if (debitAmount !== creditAmount) {
           throw new Error('Account:add() Transaction is not balance.')
@@ -75,7 +94,12 @@ export default class Account extends EventEmitter {
       }
 
       this.store.dispatch('addTransaction', accountTransaction)
-      .then(() => { return this.repay() })
+      .then(() => {
+        if (options && options.noRepay === true) {
+          return Promise.resolve()
+        }
+        return this.repay(accountTransaction)
+      })
       .then(() => { resolve(this) })
       .catch(err => { reject(err) })
     })
@@ -85,40 +109,45 @@ export default class Account extends EventEmitter {
    * @returns {Promise}
    */
   repay (accountTransaction) {
-    if (this.getBalance('Cash') <= 0 || this.getBalance('AccountsPayable') === 0) {
+    if (this.getBalance('Cash') <= 0 || this.getBalance('AccountsPayable') >= 0) {
       return Promise.resolve()
     }
 
     return new Promise((resolve, reject) => {
       let payableMap = {}
-      for (let ledgerItem of this.getLedger('AccountsPayable')) {
+      for (let ledgerItem of this.getLedger('AccountsPayable').items) {
         if (ledgerItem.counterObject === 'Engine') {
           continue
         }
-        if (!('ledgerItem.counterObject' in payableMap)) {
+        if (!(ledgerItem.counterObject in payableMap)) {
           payableMap[ledgerItem.counterObject] = 0
         }
         if (ledgerItem.side === ACCOUNT_LEDGER_SIDE.DEBIT) {
           payableMap[ledgerItem.counterObject] -= ledgerItem.amount
-        } else if (ledgerItem.side === ACCOUNT_LEDGER_SIDE.DEBIT) {
+        } else if (ledgerItem.side === ACCOUNT_LEDGER_SIDE.CREDIT) {
           payableMap[ledgerItem.counterObject] += ledgerItem.amount
         }
       }
 
+      let cashAmount = this.getBalance('Cash')
       let jobSeq = []
       for (let counterObject in payableMap) {
         let payableAmount = payableMap[counterObject]
         if (payableAmount <= 0) {
           continue
         }
+        cashAmount -= payableAmount
+        if (cashAmount <= 0) {
+          break
+        }
 
         jobSeq.push(this.engine.getNode(counterObject).Account.add({
-          credit: [{
+          debit: [{
             amount: payableAmount,
             classification: 'Cash',
             counterObject: this.node.getName()
           }],
-          debit: [{
+          credit: [{
             amount: payableAmount,
             classification: 'AccountsReceivable',
             counterObject: this.node.getName()
@@ -126,14 +155,14 @@ export default class Account extends EventEmitter {
           memo: 'Pay the Accounts Payable.',
           time: accountTransaction.time,
           gameTime: accountTransaction.gameTime
-        }))
+        }, {noRepay: true}))
         jobSeq.push(this.node.Account.add({
-          credit: [{
+          debit: [{
             amount: payableAmount,
             classification: 'AccountsPayable',
             counterObject: counterObject
           }],
-          debit: [{
+          credit: [{
             amount: payableAmount,
             classification: 'Cash',
             counterObject: counterObject
@@ -141,7 +170,7 @@ export default class Account extends EventEmitter {
           memo: 'Pay the Accounts Payable.',
           time: accountTransaction.time,
           gameTime: accountTransaction.gameTime
-        }))
+        }, {noRepay: true}))
       }
 
       Promise.all(jobSeq)

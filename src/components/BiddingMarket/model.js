@@ -32,7 +32,6 @@ export const BiddingMarketSchema = new mongoose.Schema({
   mode: {type: String, default: 'Receiver'}, // or 'Provider'
   upstreams: [String],
   downstreams: [String],
-  provider: String,
   biddings: [BiddingItemSchema],
   breakoffPaneltyRatio: {type: Number, default: 1.2},
   breakoffCompensationRatio: {type: Number, default: 0.5},

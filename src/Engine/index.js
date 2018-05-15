@@ -42,21 +42,23 @@ export default class Engine extends EventEmitter {
         this.store = store
 
         let jobSeq = []
-        for (let node of this.store.state.nodes) {
+        for (let nodeOptions of this.store.state.nodes) {
           let newNode = new Node()
-          let job = newNode.load(this, node)
+          let job = newNode.load(this, nodeOptions)
+          this.nodes.set(nodeOptions.name, newNode)
           jobSeq.push(job)
         }
         return Promise.all(jobSeq)
       })
       .then(jobSeqResults => {
-        for (let node of jobSeqResults) {
-          this.nodes.set(node.getName(), node)
-        }
         return this.store.dispatch('setNodesId', jobSeqResults)
       })
-      .then(() => { resolve(this) })
-      .catch(err => { reject(err) })
+      .then(() => {
+        resolve(this)
+      })
+      .catch(err => {
+        reject(err)
+      })
     })
   }
 
@@ -136,6 +138,7 @@ export default class Engine extends EventEmitter {
       this._newEngineEvent(ENGINE_EVENTS.GAME_TIME_CHANGE))
     let eventName = ENGINE_EVENTS.GAME_DAY_X_TIME_Y(this.getGameTime().day, 0)
     this.emit(eventName, this._newEngineEvent(eventName))
+    console.log('TickingStart!', `day:`, this.getGameTime().day)
 
     this._timer.startTime = Date.now()
 
@@ -159,12 +162,12 @@ export default class Engine extends EventEmitter {
     .then(() => {
       let now = Date.now()
       let adjustedNextTickMS = (this._timer.startTime + nextTime * 1000) - now
-
+      console.log('Ticking!', `day:`, gameTime.day, `time:`, nextTime, `adjust:`, adjustedNextTickMS)
       if (nextTime === this.store.state.dayLength - 1) {
-        timeout(adjustedNextTickMS)
+        timeout(adjustedNextTickMS > 0 ? adjustedNextTickMS : 0)
         .then(() => { this._nextTickToOffWork() })
       } else {
-        timeout(adjustedNextTickMS)
+        timeout(adjustedNextTickMS > 0 ? adjustedNextTickMS : 0)
         .then(() => { this._nextTick() })
       }
     })
@@ -181,6 +184,7 @@ export default class Engine extends EventEmitter {
     let nextTime = gameTime.time + 1
     let eventName = ENGINE_EVENTS.GAME_DAY_X_TIME_Y(gameTime.day, nextTime)
     this.emit(eventName, this._newEngineEvent(eventName))
+    console.log('TickingToOffWork!', `day:`, gameTime.day, `time:`, nextTime)
 
     this.store.commit('SET_GAME_TIME', {
       day: gameTime.day,
@@ -219,18 +223,19 @@ export default class Engine extends EventEmitter {
     let dayLength = this.store.state.dayLength
 
     let day = gameTime.day + parseInt((gameTime.time + diff) / dayLength)
+    let time = (gameTime.time + diff) % dayLength
 
-    if (day > gameDays) {
-      return {
-        day: day,
-        time: (gameTime.time + diff) % dayLength,
-        isWorking: true
-      }
-    } else {
+    if (day > gameDays || time > dayLength) {
       return {
         day: gameDays,
         time: dayLength,
         isWorking: false
+      }
+    } else {
+      return {
+        day: day,
+        time: time,
+        isWorking: true
       }
     }
   }

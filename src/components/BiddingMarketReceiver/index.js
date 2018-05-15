@@ -14,17 +14,17 @@ import { PRODUCTION } from '@/lib/utils'
 export default class BiddingMarketReceiver extends EventEmitter {
   constructor () {
     super()
-    this.type = 'BiddingMarket'
+    this.type = 'BiddingMarketReceiver'
     this._loaded = false
   }
 
   load (node, options) {
     return new Promise((resolve, reject) => {
       if (PRODUCTION && !(node instanceof Node)) {
-        throw new Error('BiddingMarket:load() `node` should be instance of Node.')
+        throw new Error('BiddingMarketReceiver:load() `node` should be instance of Node.')
       }
       if (this._loaded) {
-        throw new Error('BiddingMarket:load() Node has been loaded before.')
+        throw new Error('BiddingMarketReceiver:load() Node has been loaded before.')
       }
       this._loaded = true
 

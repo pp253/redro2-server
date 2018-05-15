@@ -6,7 +6,8 @@ import { ACCOUNT_LEDGER_SIDE } from '@/lib/schema'
 export const STORE_CONTENT = {
   state: {
     journal: [],
-    ledger: []
+    ledger: [],
+    initialCash: 0
   },
   getters: {},
   mutations: {

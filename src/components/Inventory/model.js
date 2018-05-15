@@ -5,7 +5,7 @@ export const StocksItemSchema = new mongoose.Schema({
   unit: {type: Number, required: true},
   unitPrice: {type: Number, default: 0},
   left: {type: Number}
-})
+}, {_id: false})
 
 export const StorageItemSchema = new mongoose.Schema({
   good: {type: String, required: true},

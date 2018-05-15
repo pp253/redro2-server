@@ -47,6 +47,8 @@ export default class MarketReceiver extends EventEmitter {
         time: marketJournalItem.time,
         gameTime: marketJournalItem.gameTime
       })
+      .then(() => { resolve(this) })
+      .catch(err => { reject(err) })
     })
   }
 
