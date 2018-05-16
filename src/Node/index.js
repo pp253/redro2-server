@@ -7,6 +7,9 @@ import BiddingMarket from '@/components/BiddingMarket'
 import BiddingMarketReceiver from '@/components/BiddingMarketReceiver'
 import Market from '@/components/Market'
 import MarketReceiver from '@/components/MarketReceiver'
+import InventoryRegister from '@/components/InventoryRegister'
+import AssemblyDepartment from '@/components/AssemblyDepartment'
+import { timeout } from '@/lib/utils'
 
 export const COMPONENTS = {
   Inventory: Inventory,
@@ -15,7 +18,9 @@ export const COMPONENTS = {
   BiddingMarket: BiddingMarket,
   BiddingMarketReceiver: BiddingMarketReceiver,
   Market: Market,
-  MarketReceiver: MarketReceiver
+  MarketReceiver: MarketReceiver,
+  InventoryRegister: InventoryRegister,
+  AssemblyDepartment: AssemblyDepartment
 }
 
 export default class Node extends EventEmitter {
@@ -43,7 +48,6 @@ export default class Node extends EventEmitter {
       store(initState)
         .then(store => {
           this.store = store
-          let jobSeq = []
 
           for (let component of this.store.state.components) {
             if (component.enable === false) {
@@ -53,10 +57,19 @@ export default class Node extends EventEmitter {
               throw new Error(`Node:load() Component type ${component.type} is not found.`)
             }
             this[component.type] = new COMPONENTS[component.type]()
+          }
+          return timeout(100)
+        })
+        .then(() => {
+          let jobSeq = []
+
+          for (let component of this.store.state.components) {
+            if (component.enable === false) {
+              continue
+            }
             let job = this[component.type].load(this, component.options)
             jobSeq.push(job)
           }
-
           return Promise.all(jobSeq)
         })
         .then(jobSeqResult => {

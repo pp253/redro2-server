@@ -47,7 +47,7 @@ export class EngineEvent extends Event {
 
 export class IOEvent extends Event {
   constructor (options) {
-    super()
+    super(options)
   }
 }
 
@@ -58,7 +58,7 @@ export class IOEvent extends Event {
  */
 export class BiddingEvent extends Event {
   constructor (options) {
-    super()
+    super(options)
     this.provider = options.provider
     this.item = options.item
   }
@@ -69,9 +69,9 @@ export class BiddingEvent extends Event {
  * @extends Event
  * @property {BiddingItem} item
  */
-export class MarketEvent extends Event {
+export class BiddingMarketEvent extends Event {
   constructor (options) {
-    super()
+    super(options)
     this.provider = options.provider
     this.news = options.news
     this.needs = options.needs
@@ -150,6 +150,11 @@ export const BIDDING_ITEM_STAGE = {
 export const BIDDING_CHAIN = {
   UPSTREAM: 'UPSTREAM',
   DOWNSTREAM: 'DOWNSTREAM'
+}
+
+export const INVENTORY_MODE = {
+  PERIODIC: 'PERIODIC', // 定期盤點制
+  PERPETUAL: 'PERPETUAL' // 永續盤存制
 }
 
 /**

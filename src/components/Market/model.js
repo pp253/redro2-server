@@ -19,7 +19,7 @@ export const MarketJournalItem = new mongoose.Schema({
 })
 
 export const MarketSchema = new mongoose.Schema({
-  upstreams: [String],
+  upstreams: [{type: String}],
   marketNeeds: [StocksItemSchema],
   news: [MarketNewsSchema],
   accumulateNeeds: {type: Boolean, default: false},

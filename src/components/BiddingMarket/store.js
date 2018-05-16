@@ -5,7 +5,6 @@ import * as schema from '@/lib/schema'
 
 export const STORE_CONTENT = {
   state: {
-    mode: 'Provider',
     upstreams: [],
     downstreams: [],
     biddings: [],
@@ -30,8 +29,11 @@ export const STORE_CONTENT = {
   },
   actions: {
     setBiddingSign (context, payload) {
-      context.commit('SET_BIDDING_STAGE', payload)
-      context.commit('SET_BIDDING_SIGNER', payload)
+      return new Promise((resolve, reject) => {
+        context.commit('SET_BIDDING_STAGE', payload)
+        context.commit('SET_BIDDING_SIGNER', payload)
+        resolve()
+      })
     }
   }
 }

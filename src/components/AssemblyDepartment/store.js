@@ -1,16 +1,15 @@
 import _ from 'lodash'
 import Store from '@/lib/Store'
-import ServerModel from './model'
+import AssemblyDepartmentModel from './model'
+import * as schema from '@/lib/schema'
 
 export const STORE_CONTENT = {
   state: {
-    engines: []
+    receivers: [],
+    bom: []
   },
   getters: {},
   mutations: {
-    ADD_ENGINE: (state, engineOptions) => {
-      state.engines.push(engineOptions)
-    }
   },
   actions: {
   }
@@ -24,5 +23,5 @@ export const STORE_CONTENT = {
 export default function store (state) {
   let st = new Store()
   let content = _.defaultsDeep({}, {state: state}, STORE_CONTENT)
-  return st.load(ServerModel, content)
+  return st.load(AssemblyDepartmentModel, content)
 }

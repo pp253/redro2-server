@@ -25,13 +25,15 @@ const COMPONENTS_FACTORY_COMPONENTS = [
           costPerBatch: 6
         }
       ],
-      batchSize: 10
+      batchSize: 10,
+      mode: 'PERIODIC'
     }
   },
   {
     type: 'IO',
     enable: true,
     options: {
+      transportationTime: 5,
       transportationCost: 100,
       batchSize: 4,
       availableImportGoods: [{good: 'Wheel'}, {good: 'Body'}, {good: 'Engine'}],
@@ -85,6 +87,7 @@ const ASSEMBLY_FACTORY_COMPONENTS = [
     type: 'IO',
     enable: true,
     options: {
+      transportationTime: 5,
       transportationCost: 150,
       batchSize: 4,
       availableImportGoods: [{good: 'Wheel'}, {good: 'Body'}, {good: 'Engine'}],
@@ -127,6 +130,7 @@ const RETAILER_COMPONENTS = [
     type: 'IO',
     enable: true,
     options: {
+      transportationTime: 5,
       transportationCost: 200,
       batchSize: 4,
       availableImportGoods: [{good: 'Car'}],
@@ -144,7 +148,7 @@ const RETAILER_COMPONENTS = [
     type: 'MarketReceiver',
     enable: true,
     options: {
-      provider: 'CarsMarket'
+      provider: 'Market'
     }
   }
 ]
@@ -184,8 +188,15 @@ export const NODES = [
           initialCash: 100000000
         }
       },
-        {type: 'Inventory', enable: false},
-        {type: 'IO', enable: false}
+      {type: 'Inventory', enable: false},
+      {type: 'IO', enable: false},
+      {
+        type: 'InventoryRegister',
+        enable: true,
+        options: {
+          receivers: ['ComponentsFactory#1', 'ComponentsFactory#2']
+        }
+      }
     ]
   },
   {
@@ -199,6 +210,46 @@ export const NODES = [
     components: ASSEMBLY_FACTORY_COMPONENTS,
     wage: 150,
     workers: 2
+  },
+  {
+    name: 'AssemblyDepartment',
+    components: [
+      {
+        type: 'AssemblyDepartment',
+        enable: true,
+        options: {
+          receivers: ['AssemblyFactory#1', 'AssemblyFactory#2'],
+          bom: [
+            {
+              good: 'Car',
+              components: [
+                {
+                  good: 'Wheel',
+                  unit: 4
+                },
+                {
+                  good: 'Body',
+                  unit: 1
+                },
+                {
+                  good: 'Engine',
+                  unit: 1
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        type: 'Account',
+        enable: true,
+        options: {
+          initialCash: 100000000
+        }
+      },
+      {type: 'Inventory', enable: false},
+      {type: 'IO', enable: false}
+    ]
   },
   {
     name: 'CarsBiddingMarket',
@@ -245,9 +296,24 @@ export const NODES = [
         type: 'Market',
         enable: true,
         options: {
-          upstreams: ['AssemblyFactory#1', 'AssemblyFactory#2'],
+          upstreams: ['Retailer#1', 'Retailer#2'],
           news: [
-
+            {
+              title: 'Sample News Day1',
+              content: 'Haha...',
+              releasedGameTime: {
+                day: 1,
+                time: 0,
+                isWorking: true
+              },
+              marketNeeds: [
+                {
+                  good: 'Car',
+                  unit: 30,
+                  unitPrice: 100
+                }
+              ]
+            }
           ]
         }
       },
@@ -258,8 +324,14 @@ export const NODES = [
           initialCash: 100000000
         }
       },
-        {type: 'Inventory', enable: true},
-        {type: 'IO', enable: true}
+      {type: 'Inventory', enable: true},
+      {
+        type: 'IO',
+        enable: true,
+        options: {
+          availableImportGoods: [{good: 'Car'}]
+        }
+      }
     ]
   }
 ]
@@ -268,7 +340,41 @@ export const SHORT_ENGINE_CONFIG = {
   name: 'Engine Testing',
   gameDays: 2,
   dayLength: 10,
-  nodes: NODES
+  nodes: NODES,
+  hasTeam: true,
+  teams: [
+    {
+      index: 0,
+      name: 'STAFF',
+      isStaff: true,
+      roles: [
+        'Console',
+        'Scoreboard',
+        'ComponentsBiddingMarket',
+        'AssemblyDepartment',
+        'CarsBiddingMarket',
+        'Market'
+      ]
+    },
+    {
+      index: 1,
+      name: 'Team 1',
+      roles: [
+        'ComponentsFactory#1',
+        'AssemblyFactory#1',
+        'Retailer#1'
+      ]
+    },
+    {
+      index: 2,
+      name: 'Team 2',
+      roles: [
+        'ComponentsFactory#2',
+        'AssemblyFactory#2',
+        'Retailer#2'
+      ]
+    }
+  ]
 }
 
 export const LONG_ENGINE_CONFIG = {

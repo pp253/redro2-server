@@ -3,7 +3,7 @@ import _ from 'lodash'
 import store from './store'
 import Node from '@/Node'
 import { PRODUCTION } from '@/lib/utils'
-import { MARKET_EVENTS, MarketEvent } from '@/lib/schema'
+import { MARKET_EVENTS, BiddingMarketEvent, ENGINE_EVENTS } from '@/lib/schema'
 
 export default class Market extends EventEmitter {
   constructor () {
@@ -31,6 +31,10 @@ export default class Market extends EventEmitter {
       .then((store) => {
         this.store = store
 
+        for (let news of this.store.state.news) {
+          this._registNews(news)
+        }
+
         resolve(this)
       })
       .catch(err => { reject(err) })
@@ -43,8 +47,6 @@ export default class Market extends EventEmitter {
       if (!this.isUpstreams(marketJournalItem.from)) {
         throw new Error('Market:buy() Market seller must from the upstreams of market.')
       }
-
-      // TODO: Check the goods price
 
       // Check for the needed good
       for (let item of marketJournalItem.list) {
@@ -63,6 +65,14 @@ export default class Market extends EventEmitter {
           unit: item.unit
         })
       }
+
+      // Check the goods price
+      let price = 0
+      for (let item of marketJournalItem.list) {
+        item.unitPrice = this.getUnitPrice(item.good)
+        price += item.unitPrice * item.unit
+      }
+      marketJournalItem.price = price
 
       this.store.save()
       .then(() => {
@@ -134,15 +144,20 @@ export default class Market extends EventEmitter {
   }
 
   _registNews (marketNews) {
-    this.engine.once(`game-day-${marketNews.day}-time-${marketNews.time}`, (engineEvent) => {
-      this.emit(MARKET_EVENTS.MARKET_NEWS_PUBLISHED, new MarketEvent({
-        type: MARKET_EVENTS.MARKET_NEWS_PUBLISHED,
-        target: this,
-        gameTime: engineEvent.gameTime,
-        provider: this,
-        news: this.getAvailableNews(),
-        needs: this.getNeeds()
-      }))
+    let eventName = ENGINE_EVENTS.GAME_DAY_X_TIME_Y(marketNews.releasedGameTime.day, marketNews.releasedGameTime.time)
+    this.engine.once(eventName, (engineEvent) => {
+      // Set the needs
+      this.store.dispatch('setMarketNeeds', marketNews.marketNeeds)
+      .then(() => {
+        this.emit(MARKET_EVENTS.MARKET_NEWS_PUBLISHED, new BiddingMarketEvent({
+          type: MARKET_EVENTS.MARKET_NEWS_PUBLISHED,
+          target: this,
+          gameTime: engineEvent.gameTime,
+          provider: this,
+          news: this.getAvailableNews(),
+          needs: this.getNeeds()
+        }))
+      })
     })
   }
 

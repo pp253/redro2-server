@@ -50,6 +50,14 @@ export const STORE_CONTENT = {
     }
   },
   actions: {
+    setMarketNeeds (context, marketNeedsList) {
+      return new Promise((resolve, reject) => {
+        for (let needs of marketNeedsList) {
+          context.commit('SET_MARKET_NEEDS', needs)
+        }
+        resolve()
+      })
+    }
   }
 }
 

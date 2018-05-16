@@ -7,7 +7,7 @@ import { timeout, PRODUCTION } from '@/lib/utils'
 import { ENGINE_EVENTS, ENGINE_STAGE, EngineEvent } from '@/lib/schema'
 
 export default class Engine extends EventEmitter {
-  constructor (server, options) {
+  constructor () {
     super()
     this.type = 'Engine'
     this._loaded = false
@@ -35,8 +35,7 @@ export default class Engine extends EventEmitter {
       this.server = server
       this.options = _.cloneDeep(options) || {}
 
-      let state = this.options
-
+      let state = _.cloneDeep(this.options)
       store(state)
       .then((store) => {
         this.store = store
@@ -138,7 +137,7 @@ export default class Engine extends EventEmitter {
       this._newEngineEvent(ENGINE_EVENTS.GAME_TIME_CHANGE))
     let eventName = ENGINE_EVENTS.GAME_DAY_X_TIME_Y(this.getGameTime().day, 0)
     this.emit(eventName, this._newEngineEvent(eventName))
-    console.log('TickingStart!', `day:`, this.getGameTime().day)
+    console.log('TickingStart!', `day:`, this.getGameTime().day, Date.now())
 
     this._timer.startTime = Date.now()
 
@@ -161,8 +160,8 @@ export default class Engine extends EventEmitter {
     })
     .then(() => {
       let now = Date.now()
-      let adjustedNextTickMS = (this._timer.startTime + nextTime * 1000) - now
-      console.log('Ticking!', `day:`, gameTime.day, `time:`, nextTime, `adjust:`, adjustedNextTickMS)
+      let adjustedNextTickMS = (this._timer.startTime + nextTime * 1000 + 1000) - now
+      console.log('Ticking!', `day:`, gameTime.day, `time:`, nextTime, `adjust:`, adjustedNextTickMS, Date.now())
       if (nextTime === this.store.state.dayLength - 1) {
         timeout(adjustedNextTickMS > 0 ? adjustedNextTickMS : 0)
         .then(() => { this._nextTickToOffWork() })
@@ -184,7 +183,7 @@ export default class Engine extends EventEmitter {
     let nextTime = gameTime.time + 1
     let eventName = ENGINE_EVENTS.GAME_DAY_X_TIME_Y(gameTime.day, nextTime)
     this.emit(eventName, this._newEngineEvent(eventName))
-    console.log('TickingToOffWork!', `day:`, gameTime.day, `time:`, nextTime)
+    console.log('TickingToOffWork!', `day:`, gameTime.day, `time:`, nextTime, Date.now())
 
     this.store.commit('SET_GAME_TIME', {
       day: gameTime.day,
@@ -264,13 +263,17 @@ export default class Engine extends EventEmitter {
     return this.store.state.stage
   }
 
+  getTeams () {
+    return this.store.state.teams
+  }
+
   /**
    * @param {String} name
    * @returns {Node}
    */
   getNode (name) {
     if (!this.nodes.has(name)) {
-      throw new Error('Engine:getNode() node name is not found.')
+      throw new Error(`Engine:getNode() node name '${name}' is not found.`)
     }
     return this.nodes.get(name)
   }

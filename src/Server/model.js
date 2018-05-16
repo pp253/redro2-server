@@ -1,5 +1,4 @@
 import mongoose from 'mongoose'
-import * as schema from '@/lib/schema'
 import { EngineSchema } from '@/Engine/model'
 
 export const ServerSchema = new mongoose.Schema({

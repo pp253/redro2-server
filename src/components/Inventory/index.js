@@ -4,6 +4,7 @@ import store from './store'
 import Node from '@/Node'
 import { PRODUCTION } from '@/lib/utils'
 import { ENGINE_EVENTS } from '@/Engine'
+import {INVENTORY_MODE} from '@/lib/schema'
 
 export default class Inventory extends EventEmitter {
   constructor () {
@@ -12,6 +13,12 @@ export default class Inventory extends EventEmitter {
     this._loaded = false
   }
 
+  /**
+   *
+   * @param {Node} node
+   * @param {Object} [options]
+   * @returns {Promise}
+   */
   load (node, options) {
     return new Promise((resolve, reject) => {
       if (PRODUCTION && !(node instanceof Node)) {
@@ -25,7 +32,13 @@ export default class Inventory extends EventEmitter {
       this.node = node
       this.options = _.cloneDeep(options) || {}
 
-      let state = {}
+      let state = {
+        storage: this.options.storage || [],
+        storageCost: this.options.storageCost || [],
+        hasStorageCost: this.options.hasStorageCost || true,
+        batchSize: this.options.batchSize || 1,
+        mode: this.options.mode || INVENTORY_MODE.PERPETUAL
+      }
       store(state)
       .then((store) => {
         this.store = store
@@ -34,7 +47,7 @@ export default class Inventory extends EventEmitter {
         /**
          * Computing Storage cost.
          */
-        if (this.store.state.hasStorageCost && this.node.Account) {
+        if (this.store.state.mode === INVENTORY_MODE.PERPETUAL && this.store.state.hasStorageCost) {
           this.node.engine.on(ENGINE_EVENTS.GAME_OFFWORK, (engineEvent) => {
             this.countStorageCost(engineEvent)
           })
@@ -47,18 +60,26 @@ export default class Inventory extends EventEmitter {
   /**
    *
    * @param {IOJournalItem} ioJournalItem
+   * @returns {Promise}
    */
   import (ioJournalItem) {
+    if (this.store.state.mode === INVENTORY_MODE.PERIODIC) {
+      return Promise.resolve(this)
+    }
+
     return new Promise((resolve, reject) => {
       let ioji = _.cloneDeep(ioJournalItem)
 
       for (let item of ioji.list) {
+        if ('left' in item) {
+          continue
+        }
         item.left = item.unit
       }
 
       this.store.commit('ADD_STORAGES', ioji.list)
       .then((store) => {
-        this.node.Account.add({
+        return this.node.Account.add({
           debit: [{
             amount: ioji.price,
             classification: 'Inventory',
@@ -73,8 +94,8 @@ export default class Inventory extends EventEmitter {
           time: ioji.time,
           gameTime: ioji.gameTime
         })
-        .then(() => { resolve(this) })
       })
+      .then(() => { resolve(this) })
       .catch(err => { reject(err) })
     })
   }
@@ -82,8 +103,13 @@ export default class Inventory extends EventEmitter {
   /**
    *
    * @param {IOJournalItem} ioJournalItem
+   * @returns {Promise}
    */
   export (ioJournalItem) {
+    if (this.store.state.mode === INVENTORY_MODE.PERIODIC) {
+      return Promise.resolve(this)
+    }
+
     return new Promise((resolve, reject) => {
       let ioji = _.cloneDeep(ioJournalItem)
       let sumOfCostOfSales = 0
@@ -99,7 +125,7 @@ export default class Inventory extends EventEmitter {
 
       this.store.commit('TAKE_STORAGES', ioji.list)
       .then((store) => {
-        this.node.Account.add({
+        return this.node.Account.add({
           debit: [{
             amount: sumOfCostOfSales,
             classification: 'CostOfSales',
@@ -114,12 +140,49 @@ export default class Inventory extends EventEmitter {
           time: ioji.time,
           gameTime: ioji.gameTime
         })
-        .then(() => { resolve(this) })
       })
+      .then(() => {
+        return this.node.Account.add({
+          debit: [{
+            amount: ioji.price,
+            classification: 'AccountsReceivable',
+            counterObject: ioji.to
+          }],
+          credit: [{
+            amount: ioji.price,
+            classification: 'Sales',
+            counterObject: ioji.to
+          }],
+          memo: 'Sales',
+          time: ioji.time,
+          gameTime: ioji.gameTime
+        })
+      })
+      .then(() => { resolve(this) })
       .catch(err => { reject(err) })
     })
   }
 
+  /**
+   *
+   * @param {Array<StocksItem>} stocksItemList
+   * @returns {Promise}
+   */
+  regist (stocksItemList) {
+    return this.store.commit('SET_STORAGES', stocksItemList)
+    .then(() => {
+      return this.countStorageCost({
+        time: Date.now(),
+        gameTime: this.engine.getGameTime()
+      })
+    })
+  }
+
+  /**
+   *
+   * @param {EngineEvent} engineEvent
+   * @returns {Promise}
+   */
   countStorageCost (engineEvent) {
     if (!this.store.state.hasStorageCost || !this.node.Account) {
       return
@@ -129,10 +192,10 @@ export default class Inventory extends EventEmitter {
     for (let storageItem of this.store.state.storage) {
       let good = storageItem.good
       let unit = storageItem.unit
-      let costPerBatch = this.store.state.storageCost.find(item => item.good === good).costPerBatch
+      let costPerBatch = this.getStorageCost(good)
       sumOfCost += Math.ceil(unit / this.store.state.batchSize) * costPerBatch
     }
-    Account.add({
+    return Account.add({
       debit: [{
         amount: sumOfCost,
         classification: 'CostOfWarehousing'
@@ -145,6 +208,20 @@ export default class Inventory extends EventEmitter {
       time: engineEvent.time,
       gameTime: engineEvent.gameTime
     })
+  }
+
+  /**
+   *
+   * @param {String} good
+   * @returns {Number}
+   */
+  getStorageCost (good) {
+    let it = this.store.state.storageCost.find(item => item.good === good)
+    if (it === undefined) {
+      return 0
+    } else {
+      return it.costPerBatch
+    }
   }
 
   /**
@@ -193,12 +270,16 @@ export default class Inventory extends EventEmitter {
     return costOfSales
   }
 
-  getJournal (good) {
+  getMode () {
+    return this.store.state.mode
+  }
+
+  getStocks (good) {
     let s = this.getStorage(good)
     if (!s) {
       return []
     }
-    return _.cloneDeep(s.journal)
+    return _.cloneDeep(s.stocks)
   }
 
   toObject () {

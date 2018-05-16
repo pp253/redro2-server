@@ -55,7 +55,7 @@ export default class IO extends EventEmitter {
 
   import (ioJournalItem) {
     return new Promise((resolve, reject) => {
-      let ij = _.cloneDeep(ioJournalItem)
+      let ij = _.cloneDeep(ioJournalItem.toObject ? ioJournalItem.toObject() : ioJournalItem)
 
       // Same good should not in more than 1 item
       let list = ij.list
@@ -73,7 +73,7 @@ export default class IO extends EventEmitter {
         let good = ioJournalGoodItem.good
         let unit = ioJournalGoodItem.unit
         if (!this.isImportGoodAvailable(good, unit)) {
-          throw new Error('IO:import() Goods imported is not available.')
+          throw new Error(`IO:import() Goods '${good}' (${unit}) imported is not available.`)
         }
       }
 
@@ -97,16 +97,16 @@ export default class IO extends EventEmitter {
 
           this.node.engine.once(ENGINE_EVENTS.GAME_DAY_X_TIME_Y(gta.day, gta.time), (engineEvent) => {
             let importJournal = this.getImportJournal()
-            let iji = importJournal[importJournal.length - 1]
+            let iji = importJournal[importJournal.length - 1].toObject()
             let id = iji._id.toHexString()
 
             this.store.commit('COMPLETE_IMPORT', {id: id})
             .then(() => {
               return this.node.Inventory.import({
-                from: ij.from,
-                to: ij.to,
-                list: ij.list,
-                price: ij.price,
+                from: iji.from,
+                to: iji.to,
+                list: iji.list,
+                price: iji.price,
                 time: engineEvent.time,
                 gameTime: engineEvent.gameTime
               })
@@ -144,11 +144,12 @@ export default class IO extends EventEmitter {
 
       // Available Goods check
       let list = ij.list
+
       for (let ioJournalGoodItem of list) {
         let good = ioJournalGoodItem.good
         let unit = ioJournalGoodItem.unit
-        if (!this.isImportGoodAvailable(good, unit)) {
-          throw new Error('IO:import() Goods imported is not available.')
+        if (!this.isExportGoodAvailable(good, unit)) {
+          throw new Error(`IO:export() Goods ${good} (${unit}) exported is not available.`)
         }
         this.store.immediate('SUB_EXPORT_LEFT', {
           good: good,
@@ -157,55 +158,30 @@ export default class IO extends EventEmitter {
       }
 
       if (!this.node.Inventory) {
-        throw new Error('IO:import() Inventory is required.')
+        throw new Error('IO:export() Inventory is required.')
       }
 
       this.node.Inventory.export(ij)
       .then(() => { return this.engine.getNode(ij.to).IO.import(ij) })
       .then(() => {
-        return new Promise((resolve, reject) => {
-          if (!this.node.Account) {
-            resolve()
-            return
-          }
+        if (!ij.transportationCost || ij.transportationCost <= 0) {
+          return Promise.resolve()
+        }
 
-          let job = this.node.Account.add({
-            debit: [{
-              amount: ij.price,
-              classification: 'AccountsReceivable',
-              counterObject: ij.to
-            }],
-            credit: [{
-              amount: ij.price,
-              classification: 'Sales',
-              counterObject: ij.to
-            }],
-            memo: 'Sales',
-            time: ij.time,
-            gameTime: ij.gameTime
-          })
-
-          if (ij.transportationCost > 0) {
-            job.then(() => {
-              return this.node.Account.add({
-                debit: [{
-                  amount: ij.transportationCost,
-                  classification: 'CostOfTransportation',
-                  counterObject: ij.to
-                }],
-                credit: [{
-                  amount: ij.transportationCost,
-                  classification: 'Cash',
-                  counterObject: ij.to
-                }],
-                memo: 'Cost of Transportation',
-                time: ij.time,
-                gameTime: ij.gameTime
-              })
-            })
-          }
-
-          resolve(job)
+        return this.node.Account.add({
+          debit: [{
+            amount: ij.transportationCost,
+            classification: 'CostOfTransportation',
+            counterObject: ij.to
+          }],
+          credit: [{
+            amount: ij.transportationCost,
+            classification: 'Cash',
+            counterObject: ij.to
+          }],
+          memo: 'Cost of Transportation',
+          time: ij.time,
+          gameTime: ij.gameTime
         })
       })
       .then(() => {
@@ -213,7 +189,7 @@ export default class IO extends EventEmitter {
       })
       .then(() => {
         let exportJournal = this.getExportJournal()
-        let iji = exportJournal[exportJournal.length - 1]
+        let iji = exportJournal[exportJournal.length - 1].toObject()
         if (iji.transportationStatus === TRANSPORTATION_STATUS.DELIVERING) {
           let gta = this.node.engine.gameTimeAdd(iji.gameTime, iji.transportationTime)
           this.node.engine.once(ENGINE_EVENTS.GAME_DAY_X_TIME_Y(gta.day, gta.time), () => {
@@ -267,7 +243,7 @@ export default class IO extends EventEmitter {
     if (it === undefined) {
       return false
     }
-    if (this.store.state.hasExportLimit === true) {
+    if (this.store.state.hasExportLimit === false) {
       return true
     }
     let left = 'left' in it ? it.left : it.limit

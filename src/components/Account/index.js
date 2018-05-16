@@ -89,7 +89,7 @@ export default class Account extends EventEmitter {
         }, 0) : 0
 
         if (debitAmount !== creditAmount) {
-          throw new Error('Account:add() Transaction is not balance.')
+          throw new Error(`Account:add() Transaction ${accountTransaction.memo} is not balance.`)
         }
       }
 

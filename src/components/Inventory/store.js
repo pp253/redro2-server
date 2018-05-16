@@ -1,16 +1,19 @@
 import _ from 'lodash'
 import Store from '@/lib/Store'
 import InventoryModel from './model'
+import {INVENTORY_MODE} from '@/lib/schema'
 
 export const STORE_CONTENT = {
   state: {
     storage: [],
     storageCost: [],
-    hasStorageCost: true
+    hasStorageCost: true,
+    batchSize: 1,
+    mode: INVENTORY_MODE.PERPETUAL
   },
   getters: {},
   mutations: {
-    SET_STORAGE_COST: (state, storageCostItem) => {
+    SET_STORAGE_COST (state, storageCostItem) {
       if (!state.storageCost) {
         state.storageCost = []
       }
@@ -21,7 +24,7 @@ export const STORE_CONTENT = {
         it.cost = storageCostItem.cost
       }
     },
-    ADD_STORAGES: (state, stocksItemList) => {
+    ADD_STORAGES (state, stocksItemList) {
       if (!state.storage) {
         state.storage = []
       }
@@ -35,7 +38,7 @@ export const STORE_CONTENT = {
           state.storage.push({
             good: good,
             unit: 0,
-            journal: []
+            stocks: []
           })
           it = state.storage[state.storage.length - 1]
         }
@@ -43,10 +46,30 @@ export const STORE_CONTENT = {
         it.stocks.push(stocksItem)
       }
     },
+    SET_STORAGES (state, stocksItemList) {
+      if (!state.storage) {
+        state.storage = []
+      }
+      for (let stocksItem of stocksItemList) {
+        let good = stocksItem.good
+        stocksItem.left = 0
+        let it = state.storage.find(item => item.good === good)
+        if (it === undefined) {
+          state.storage.push({
+            good: good,
+            unit: 0,
+            stocks: []
+          })
+          it = state.storage[state.storage.length - 1]
+        }
+        it.unit = stocksItem.unit
+        it.stocks.push(stocksItem)
+      }
+    },
     /**
      * 不做缺料檢查，使用前應自行檢查。
      */
-    TAKE_STORAGES: (state, stocksItemList) => {
+    TAKE_STORAGES (state, stocksItemList) {
       if (!state.storage) {
         state.storage = []
       }
@@ -69,7 +92,7 @@ export const STORE_CONTENT = {
         }
       }
     },
-    SET_HAS_STORAGE_COST: (state, payload) => {
+    SET_HAS_STORAGE_COST (state, payload) {
       state.hasStorageCost = payload.hasStorageCost
     }
   },

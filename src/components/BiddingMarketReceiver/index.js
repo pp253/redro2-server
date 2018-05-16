@@ -44,7 +44,7 @@ export default class BiddingMarketReceiver extends EventEmitter {
       .then((store) => {
         this.store = store
 
-        if (this.store.state.enableUpstream) {
+        if (this.store.state.enableUpstream && this.store.state.upstreamProvider) {
           this.upstreamProvider = this.engine.getNode(this.store.state.upstreamProvider)
 
           for (let eventName of [
@@ -54,12 +54,12 @@ export default class BiddingMarketReceiver extends EventEmitter {
             BIDDING_EVENTS.BIDDING_CANCELED,
             BIDDING_EVENTS.BIDDING_COMPLETED
           ]) {
-            this.upstreamProvider.on(eventName, (biddingEvent) => {
+            this.upstreamProvider.BiddingMarket.on(eventName, (biddingEvent) => {
               this.node.emitMessage(biddingEvent)
             })
           }
         }
-        if (this.store.state.enableDownstream) {
+        if (this.store.state.enableDownstream && this.store.state.downstreamProvider) {
           this.downstreamProvider = this.engine.getNode(this.store.state.downstreamProvider)
 
           for (let eventName of [
@@ -69,7 +69,7 @@ export default class BiddingMarketReceiver extends EventEmitter {
             BIDDING_EVENTS.BIDDING_CANCELED,
             BIDDING_EVENTS.BIDDING_COMPLETED
           ]) {
-            this.downstreamProvider.on(eventName, (biddingEvent) => {
+            this.downstreamProvider.BiddingMarket.on(eventName, (biddingEvent) => {
               this.node.emitMessage(biddingEvent)
             })
           }
@@ -82,57 +82,71 @@ export default class BiddingMarketReceiver extends EventEmitter {
   }
 
   releaseToUpstream (biddingItem) {
-    return this.upstreamProvider.release(biddingItem)
+    return this.upstreamProvider.BiddingMarket.release(biddingItem)
   }
 
   cancelToUpstream (biddingStageChange) {
-    return this.upstreamProvider.cancel(biddingStageChange)
+    return this.upstreamProvider.BiddingMarket.cancel(biddingStageChange)
   }
 
   signToUpstream (biddingStageChange) {
-    return this.upstreamProvider.sign(biddingStageChange)
+    return this.upstreamProvider.BiddingMarket.sign(biddingStageChange)
   }
 
   breakoffToUpstream (biddingStageChange) {
-    return this.upstreamProvider.cancel(biddingStageChange)
+    return this.upstreamProvider.BiddingMarket.breakoff(biddingStageChange)
   }
 
   deliverToUpstream (biddingStageChange) {
-    return this.upstreamProvider.deliver(biddingStageChange)
+    return this.upstreamProvider.BiddingMarket.deliver(biddingStageChange)
   }
 
   releaseToDownstream (biddingItem) {
-    return this.downstreamProvider.release(biddingItem)
+    return this.downstreamProvider.BiddingMarket.release(biddingItem)
   }
 
   cancelToDownstream (biddingStageChange) {
-    return this.downstreamProvider.cancel(biddingStageChange)
+    return this.downstreamProvider.BiddingMarket.cancel(biddingStageChange)
   }
 
   signToDownstream (biddingStageChange) {
-    return this.downstreamProvider.sign(biddingStageChange)
+    return this.downstreamProvider.BiddingMarket.sign(biddingStageChange)
   }
 
   breakoffToDownstream (biddingStageChange) {
-    return this.downstreamProvider.cancel(biddingStageChange)
+    return this.downstreamProvider.BiddingMarket.breakoff(biddingStageChange)
   }
 
   deliverToDownstream (biddingStageChange) {
-    return this.downstreamProvider.deliver(biddingStageChange)
+    return this.downstreamProvider.BiddingMarket.deliver(biddingStageChange)
+  }
+
+  getUpstreamBiddings () {
+    if (!this.store.state.enableUpstream) {
+      throw new Error('BiddingMarketReceiver:getUpstreamBiddings() Upstream provider is disabled.')
+    }
+    return this.upstreamProvider.BiddingMarket.getBiddings()
   }
 
   getUpstreamBiddingById (id) {
     if (!this.store.state.enableUpstream) {
       throw new Error('BiddingMarketReceiver:getUpstreamBiddingById() Upstream provider is disabled.')
     }
-    return this.engine.getNode(this.store.state.upstreamProvider).getBiddingById(id)
+    return this.upstreamProvider.BiddingMarket.getBiddingById(id)
+  }
+
+  getDownstreamBiddings () {
+    if (!this.store.state.enableDownstream) {
+      throw new Error('BiddingMarketReceiver:getDownstreamBiddings() Downstream provider is disabled.')
+    }
+    return this.downstreamProvider.BiddingMarket.getBiddings()
   }
 
   getDownstreamBiddingById (id) {
     if (!this.store.state.enableDownstream) {
       throw new Error('BiddingMarketReceiver:getDownstreamBiddingById() Downstream provider is disabled.')
     }
-    return this.engine.getNode(this.store.state.downstreamProvider).getBiddingById(id)
+    return this.downstreamProvider.BiddingMarket.getBiddingById(id)
   }
 
   isUpstreams (name) {

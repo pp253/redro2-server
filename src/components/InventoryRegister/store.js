@@ -1,15 +1,19 @@
 import _ from 'lodash'
 import Store from '@/lib/Store'
-import ServerModel from './model'
+import InventoryRegisterModel from './model'
 
 export const STORE_CONTENT = {
   state: {
-    engines: []
+    receivers: [],
+    journal: []
   },
   getters: {},
   mutations: {
-    ADD_ENGINE: (state, engineOptions) => {
-      state.engines.push(engineOptions)
+    ADD_RECEIVER (state, payload) {
+      state.receivers.push(payload.receiver)
+    },
+    ADD_JOURNAL (state, ioJournalItem) {
+      state.journal.push(ioJournalItem)
     }
   },
   actions: {
@@ -24,5 +28,5 @@ export const STORE_CONTENT = {
 export default function store (state) {
   let st = new Store()
   let content = _.defaultsDeep({}, {state: state}, STORE_CONTENT)
-  return st.load(ServerModel, content)
+  return st.load(InventoryRegisterModel, content)
 }

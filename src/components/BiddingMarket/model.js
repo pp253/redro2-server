@@ -17,7 +17,7 @@ import { StocksItemSchema } from '@/components/Inventory/model'
  */
 export const BiddingItemSchema = new mongoose.Schema({
   goods: [StocksItemSchema],
-  stage: {type: String, default: schema.BIDDING_ITEM_STAGE.CONSTRUCTED},
+  stage: {type: String, default: schema.BIDDING_ITEM_STAGE.BIDDING},
   publishedFromChain: {type: String, default: schema.BIDDING_CHAIN.UPSTREAM},
   publisher: {type: String, required: true},
   signer: {type: String},
@@ -29,9 +29,8 @@ export const BiddingItemSchema = new mongoose.Schema({
 })
 
 export const BiddingMarketSchema = new mongoose.Schema({
-  mode: {type: String, default: 'Receiver'}, // or 'Provider'
-  upstreams: [String],
-  downstreams: [String],
+  upstreams: [{type: String}],
+  downstreams: [{type: String}],
   biddings: [BiddingItemSchema],
   breakoffPaneltyRatio: {type: Number, default: 1.2},
   breakoffCompensationRatio: {type: Number, default: 0.5},
