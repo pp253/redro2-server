@@ -3,7 +3,7 @@ import _ from 'lodash'
 import store from './store'
 import Node from '@/Node'
 import { PRODUCTION } from '@/lib/utils'
-import { ENGINE_EVENTS, TRANSPORTATION_STATUS, INVENTORY_MODE } from '@/lib/schema'
+import { INVENTORY_MODE, USER_LEVEL } from '@/lib/schema'
 
 export default class AssemblyDepartment extends EventEmitter {
   constructor () {
@@ -207,6 +207,39 @@ export default class AssemblyDepartment extends EventEmitter {
   isReceiver (name) {
     let r = this.store.state.receivers.find(receiver => receiver === name)
     return r !== undefined
+  }
+
+  getActions (level) {
+    switch (level) {
+      case USER_LEVEL.ADMIN:
+        return ['AssemblyDepartment.*']
+
+      case USER_LEVEL.STAFF:
+        return [
+          'AssemblyDepartment.assemble',
+          'AssemblyDepartment.getAssemblableGoods',
+          'AssemblyDepartment.getBOM',
+          'AssemblyDepartment.isAvailableForAssemble',
+          'AssemblyDepartment.getComponentsList',
+          'AssemblyDepartment.isReceiver'
+        ]
+
+      default:
+      case USER_LEVEL.PLAYER:
+      case USER_LEVEL.GUEST:
+        return []
+    }
+  }
+
+  getListening (level) {
+    switch (level) {
+      default:
+      case USER_LEVEL.ADMIN:
+      case USER_LEVEL.STAFF:
+      case USER_LEVEL.PLAYER:
+      case USER_LEVEL.GUEST:
+        return []
+    }
   }
 
   toObject () {

@@ -4,7 +4,7 @@ import store from './store'
 import Server from '@/Server'
 import Node from '@/Node'
 import { timeout, PRODUCTION } from '@/lib/utils'
-import { ENGINE_EVENTS, ENGINE_STAGE, EngineEvent } from '@/lib/schema'
+import { ENGINE_EVENTS, ENGINE_STAGE, EngineEvent, USER_LEVEL } from '@/lib/schema'
 
 export default class Engine extends EventEmitter {
   constructor () {
@@ -53,11 +53,35 @@ export default class Engine extends EventEmitter {
         return this.store.dispatch('setNodesId', jobSeqResults)
       })
       .then(() => {
-        resolve(this)
+        // Load the permissions
+        for (let levelPer of this.store.state.permissions) {
+          let level = levelPer.level
+          for (let teamPer of levelPer.teams) {
+            for (let rolePer of teamPer.roles) {
+              let role = rolePer.role
+              for (let objectTypePer of rolePer.objectTypes) {
+                let objectType = objectTypePer.type
+                // TODO: Not valid by the store model
+                let actions
+                let listening
+                if (objectType === 'Engine') {
+                  actions = this.getActions(level)
+                  listening = this.getListening(level)
+                } else {
+                  let node = this.getNode(objectType)
+                  actions = node.getComponentsActions(level)
+                  listening = node.getComponentsListening(level)
+                }
+                objectTypePer.set('actions', objectTypePer.actions.concat(actions))
+                objectTypePer.set('listening', objectTypePer.listening.concat(listening))
+              }
+            }
+          }
+        }
+        return this.store.save()
       })
-      .catch(err => {
-        reject(err)
-      })
+      .then(() => { resolve(this) })
+      .catch(err => { console.error(err); reject(err) })
     })
   }
 
@@ -263,10 +287,6 @@ export default class Engine extends EventEmitter {
     return this.store.state.stage
   }
 
-  getTeams () {
-    return this.store.state.teams
-  }
-
   /**
    * @param {String} name
    * @returns {Node}
@@ -284,6 +304,90 @@ export default class Engine extends EventEmitter {
 
   getId () {
     return this.store.state._id.toHexString()
+  }
+
+  getTeamsByLevel (level) {
+    return this.store.state.permissions.find(permission => permission.level === level).teams
+  }
+
+  getStaffTeams () {
+    return this.getTeamsByLevel(USER_LEVEL.STAFF).teams
+  }
+
+  getPlayerTeams () {
+    return this.getTeamsByLevel(USER_LEVEL.PLAYER).teams
+  }
+
+  getRoles (level, teamIndex) {
+    return this.getTeamsByLevel(level).find(team => team.index === teamIndex).roles
+  }
+
+  getRole (level, teamIndex, role) {
+    return this.getRoles(level, teamIndex).find(r => r.role === role)
+  }
+
+  getRoleObjectTypes (level, teamIndex, role) {
+    return this.getRole(level, teamIndex, role).objectTypes
+  }
+
+  checkObjectTypePermission (level, teamIndex, role, objectType, action) {
+    let actions = this.getRoleObjectTypes(level, teamIndex, role).find(ob => ob.type === objectType).action
+    if (actions.length > 0 && actions[0] === '*') {
+      return true
+    } else if (actions.indexOf(action) !== -1) {
+      return true
+    } else {
+      return false
+    }
+  }
+
+  checkPermission (level, action) {
+    let permissions = this.getActions(level)
+    if (typeof permissions === 'boolean') {
+      return permissions
+    } else if (!(action in permissions)) {
+      return false
+    } else {
+      return permissions[action]
+    }
+  }
+
+  getActions (level) {
+    switch (level) {
+      case USER_LEVEL.ADMIN:
+        return ['*']
+
+      case USER_LEVEL.STAFF:
+      case USER_LEVEL.PLAYER:
+        return [
+          'getStage',
+          'getGameTime'
+        ]
+
+      default:
+      case USER_LEVEL.GUEST:
+        return []
+    }
+  }
+
+  getListening (level) {
+    switch (level) {
+      case USER_LEVEL.ADMIN:
+      case USER_LEVEL.STAFF:
+      case USER_LEVEL.PLAYER:
+        return [
+          ENGINE_EVENTS.GAME_DAY_CHANGE,
+          ENGINE_EVENTS.GAME_ISWORKING_CHANGE,
+          ENGINE_EVENTS.GAME_OFFWORK,
+          ENGINE_EVENTS.GAME_ONWORK,
+          ENGINE_EVENTS.GAME_STAGE_CHANGE,
+          ENGINE_EVENTS.GAME_TIME_CHANGE
+        ]
+
+      default:
+      case USER_LEVEL.GUEST:
+        return []
+    }
   }
 
   _newEngineEvent (type) {

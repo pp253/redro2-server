@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events'
 import _ from 'lodash'
-import { BIDDING_EVENTS } from '@/lib/schema'
+import { BIDDING_EVENTS, USER_LEVEL } from '@/lib/schema'
 import store from './store'
 import Node from '@/Node'
 import { PRODUCTION } from '@/lib/utils'
@@ -55,7 +55,7 @@ export default class BiddingMarketReceiver extends EventEmitter {
             BIDDING_EVENTS.BIDDING_COMPLETED
           ]) {
             this.upstreamProvider.BiddingMarket.on(eventName, (biddingEvent) => {
-              this.node.emitMessage(biddingEvent)
+              this.emit(eventName, biddingEvent)
             })
           }
         }
@@ -70,7 +70,7 @@ export default class BiddingMarketReceiver extends EventEmitter {
             BIDDING_EVENTS.BIDDING_COMPLETED
           ]) {
             this.downstreamProvider.BiddingMarket.on(eventName, (biddingEvent) => {
-              this.node.emitMessage(biddingEvent)
+              this.emit(eventName, biddingEvent)
             })
           }
         }
@@ -157,6 +157,57 @@ export default class BiddingMarketReceiver extends EventEmitter {
   isDownstreams (name) {
     let r = this.store.state.downstreams.find(counterName => counterName === name)
     return r !== undefined
+  }
+
+  getActions (level) {
+    switch (level) {
+      case USER_LEVEL.ADMIN:
+        return ['BiddingMarketReceiver.*']
+
+      case USER_LEVEL.STAFF:
+      case USER_LEVEL.PLAYER:
+        return [
+          'BiddingMarketReceiver.releaseToUpstream',
+          'BiddingMarketReceiver.cancelToUpstream',
+          'BiddingMarketReceiver.signToUpstream',
+          'BiddingMarketReceiver.breakoffToUpstream',
+          'BiddingMarketReceiver.deliverToUpstream',
+          'BiddingMarketReceiver.releaseToDownstream',
+          'BiddingMarketReceiver.cancelToDownstream',
+          'BiddingMarketReceiver.signToDownstream',
+          'BiddingMarketReceiver.breakoffToDownstream',
+          'BiddingMarketReceiver.deliverToDownstream',
+          'BiddingMarketReceiver.getUpstreamBiddings',
+          'BiddingMarketReceiver.getUpstreamBiddingById',
+          'BiddingMarketReceiver.getDownstreamBiddings',
+          'BiddingMarketReceiver.getDownstreamBiddingById',
+          'BiddingMarketReceiver.isUpstreams',
+          'BiddingMarketReceiver.isDownstreams'
+        ]
+
+      default:
+      case USER_LEVEL.GUEST:
+        return []
+    }
+  }
+
+  getListening (level) {
+    switch (level) {
+      case USER_LEVEL.ADMIN:
+      case USER_LEVEL.STAFF:
+      case USER_LEVEL.PLAYER:
+        return [
+          BIDDING_EVENTS.BIDDING_RELEASED,
+          BIDDING_EVENTS.BIDDING_CANCELED,
+          BIDDING_EVENTS.BIDDING_SIGNED,
+          BIDDING_EVENTS.BIDDING_CANCELED,
+          BIDDING_EVENTS.BIDDING_COMPLETED
+        ]
+
+      default:
+      case USER_LEVEL.GUEST:
+        return []
+    }
   }
 
   toObject () {

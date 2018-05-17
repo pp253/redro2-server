@@ -3,6 +3,7 @@ import _ from 'lodash'
 import store from './store'
 import Node from '@/Node'
 import { PRODUCTION } from '@/lib/utils'
+import { USER_LEVEL } from '@/lib/schema'
 
 export default class MarketReceiver extends EventEmitter {
   constructor () {
@@ -58,6 +59,41 @@ export default class MarketReceiver extends EventEmitter {
 
   getProvider () {
     return this.store.state.provider
+  }
+
+  getActions (level) {
+    switch (level) {
+      case USER_LEVEL.ADMIN:
+        return ['MarketReceiver.*']
+
+      case USER_LEVEL.STAFF:
+        return [
+          'MarketReceiver.sell',
+          'MarketReceiver.isProvider',
+          'MarketReceiver.getProvider'
+        ]
+
+      case USER_LEVEL.PLAYER:
+        return [
+          'isProvider',
+          'getProvider'
+        ]
+
+      default:
+      case USER_LEVEL.GUEST:
+        return []
+    }
+  }
+
+  getListening (level) {
+    switch (level) {
+      default:
+      case USER_LEVEL.ADMIN:
+      case USER_LEVEL.STAFF:
+      case USER_LEVEL.PLAYER:
+      case USER_LEVEL.GUEST:
+        return []
+    }
   }
 
   toObject () {

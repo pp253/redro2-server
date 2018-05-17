@@ -9,9 +9,9 @@ import bodyParser from 'body-parser'
 import expressValidator from 'express-validator'
 import compression from 'compression'
 import cors from 'cors'
-import mongoose from 'mongoose'
 import socket from 'socket.io'
 // import memwatch from 'memwatch-next'
+import '@/lib/db-connection'
 import routes from '@/routes'
 import { PRODUCTION } from '@/lib/utils'
 import * as validator from '@/api/validator'
@@ -60,11 +60,7 @@ app.use('/', express.static('public'))
 // Route
 routes(app)
 
-// Connecting to MongoDB
-mongoose.Promise = Promise
-mongoose.connect(`mongodb://localhost/redro2`, {useMongoClient: true})
-.then(() => { console.log(`Connecting to MongoDB.`) })
-.catch(() => { console.error(`Failed to connect to MongoDB.`) })
+export let io
 
 if (PRODUCTION) {
   let httpsServer = https.createServer(
@@ -81,10 +77,7 @@ if (PRODUCTION) {
     console.log('Start listening on PORT %d ...', 443)
   })
 
-  const io = socket(httpsServer)
-  io.on('connection', e => {
-    console.log(e)
-  })
+  io = socket(httpsServer)
 
   // Auto redirect from port 80 to 443
   http.createServer((req, res) => {
@@ -98,10 +91,7 @@ if (PRODUCTION) {
     console.log('Start listening on PORT %d ...', 80)
   })
 
-  const io = socket(httpServer)
-  io.on('connection', e => {
-    console.log(e)
-  })
+  io = socket(httpServer)
 
   /*
   memwatch.on('leak', (e) => {
@@ -109,5 +99,9 @@ if (PRODUCTION) {
   })
   */
 }
+
+io.on('connection', e => {
+  console.log(`Socket:connection`)
+})
 
 console.log('Server initialized done')

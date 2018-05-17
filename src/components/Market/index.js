@@ -3,7 +3,7 @@ import _ from 'lodash'
 import store from './store'
 import Node from '@/Node'
 import { PRODUCTION } from '@/lib/utils'
-import { MARKET_EVENTS, BiddingMarketEvent, ENGINE_EVENTS } from '@/lib/schema'
+import { MARKET_EVENTS, BiddingMarketEvent, ENGINE_EVENTS, USER_LEVEL, MarketEvent } from '@/lib/schema'
 
 export default class Market extends EventEmitter {
   constructor () {
@@ -79,7 +79,17 @@ export default class Market extends EventEmitter {
         return this.engine.getNode(marketJournalItem.from)
           .MarketReceiver.sell(marketJournalItem)
       })
-      .then(() => { resolve(this) })
+      .then(() => {
+        this.emit(MARKET_EVENTS.MARKET_NEEDS_CHANGE, new MarketEvent({
+          type: MARKET_EVENTS.MARKET_NEEDS_CHANGE,
+          gameTime: this.engine.getGameTime(),
+          target: this,
+          provider: this.node.getName(),
+          needs: this.getNeeds()
+        }))
+
+        resolve(this)
+      })
       .catch(err => { reject(err) })
     })
   }
@@ -89,7 +99,21 @@ export default class Market extends EventEmitter {
   }
 
   setNeeds (marketNeeds) {
-    return this.store.commit('SET_MARKET_NEEDS', marketNeeds)
+    return new Promise((resolve, reject) => {
+      this.store.commit('SET_MARKET_NEEDS', marketNeeds)
+      .then(() => {
+        this.emit(MARKET_EVENTS.MARKET_NEEDS_CHANGE, new MarketEvent({
+          type: MARKET_EVENTS.MARKET_NEEDS_CHANGE,
+          gameTime: this.engine.getGameTime(),
+          target: this,
+          provider: this.node.getName(),
+          needs: this.getNeeds()
+        }))
+
+        resolve(this)
+      })
+      .catch(err => { reject(err) })
+    })
   }
 
   getNeededGood (good) {
@@ -175,6 +199,63 @@ export default class Market extends EventEmitter {
       resultList.push(news)
     }
     return resultList
+  }
+
+  getActions (level) {
+    switch (level) {
+      case USER_LEVEL.ADMIN:
+        return ['MarketReceiver.*']
+
+      case USER_LEVEL.STAFF:
+        return [
+          'Market.buy',
+          'Market.getNeeds',
+          'Market.setNeeds',
+          'Market.getNeededGood',
+          'Market.isNeededGood',
+          'Market.getLeftNeedsUnitOfGood',
+          'Market.getUnitPrice',
+          'Market.isUpstreams',
+          'Market.addNews',
+          'Market.editNews',
+          'Market.getAvailableNews'
+        ]
+
+      case USER_LEVEL.PLAYER:
+        return [
+          'Market.getNeeds',
+          'Market.getNeededGood',
+          'Market.isNeededGood',
+          'Market.getLeftNeedsUnitOfGood',
+          'Market.getUnitPrice',
+          'Market.isUpstreams',
+          'Market.getAvailableNews'
+        ]
+
+      default:
+      case USER_LEVEL.GUEST:
+        return []
+    }
+  }
+
+  getListening (level) {
+    switch (level) {
+      case USER_LEVEL.ADMIN:
+      case USER_LEVEL.STAFF:
+        return [
+          MARKET_EVENTS.MARKET_NEEDS_CHANGE,
+          MARKET_EVENTS.MARKET_NEWS_PUBLISHED
+        ]
+
+      case USER_LEVEL.PLAYER:
+        return [
+          MARKET_EVENTS.MARKET_NEWS_PUBLISHED
+        ]
+
+      default:
+      case USER_LEVEL.GUEST:
+        return []
+    }
   }
 
   toObject () {

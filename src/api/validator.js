@@ -21,5 +21,18 @@ export default {
     in: 'body',
     notEmpty: true,
     errorMessage: 'options is required.'
+  },
+  'name': {
+    in: 'body',
+    notEmpty: true,
+    errorMessage: 'name is required.'
+  },
+  'password': {
+    in: 'body',
+    notEmpty: true,
+    errorMessage: 'password is required.'
+  },
+  'role': {
+    in: 'body'
   }
 }

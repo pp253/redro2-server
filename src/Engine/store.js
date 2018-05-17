@@ -15,8 +15,7 @@ export const STORE_CONTENT = {
     },
     gameDays: 3,
     dayLength: 120,
-    hasTeams: true,
-    teams: []
+    permissions: []
   },
   getters: {},
   mutations: {

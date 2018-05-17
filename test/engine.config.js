@@ -336,50 +336,186 @@ export const NODES = [
   }
 ]
 
+export const PERMISSIONS = [
+  {
+    level: 'STAFF',
+    teams: [
+      {
+        index: 0,
+        name: 'Staff',
+        roles: [
+          {
+            role: 'Console',
+            name: 'GM',
+            describe: 'GM',
+            objectTypes: [
+              {type: 'ComponentsFactory#1'},
+              {type: 'ComponentsFactory#2'},
+              {type: 'ComponentsBiddingMarket'},
+              {type: 'AssemblyFactory#1'},
+              {type: 'AssemblyFactory#2'},
+              {type: 'AssemblyDepartment'},
+              {type: 'CarsBiddingMarket'},
+              {type: 'Retailer#1'},
+              {type: 'Retailer#2'},
+              {type: 'Market'},
+              {type: 'Engine'}
+            ]
+          },
+          {
+            role: 'Scoreboard',
+            name: 'Scoreboard',
+            describe: 'Scoreboard',
+            objectTypes: [
+              {type: 'ComponentsFactory#1'},
+              {type: 'ComponentsFactory#2'},
+              {type: 'AssemblyFactory#1'},
+              {type: 'AssemblyFactory#2'},
+              {type: 'Retailer#1'},
+              {type: 'Retailer#2'},
+              {type: 'Engine'}
+            ]
+          },
+          {
+            role: 'ComponentsBiddingMarket',
+            name: 'ComponentsBiddingMarket',
+            describe: 'ComponentsBiddingMarket',
+            objectTypes: [
+              {type: 'ComponentsFactory#1'},
+              {type: 'ComponentsFactory#2'},
+              {type: 'ComponentsBiddingMarket'},
+              {type: 'AssemblyFactory#1'},
+              {type: 'AssemblyFactory#2'},
+              {type: 'Engine'}
+            ]
+          },
+          {
+            role: 'AssemblyDepartment',
+            name: 'AssemblyDepartment',
+            describe: 'AssemblyDepartment',
+            objectTypes: [
+              {type: 'AssemblyFactory#1'},
+              {type: 'AssemblyFactory#2'},
+              {type: 'AssemblyDepartment'},
+              {type: 'Engine'}
+            ]
+          },
+          {
+            role: 'CarsBiddingMarket',
+            name: 'CarsBiddingMarket',
+            describe: 'CarsBiddingMarket',
+            objectTypes: [
+              {type: 'AssemblyFactory#1'},
+              {type: 'AssemblyFactory#2'},
+              {type: 'AssemblyDepartment'},
+              {type: 'CarsBiddingMarket'},
+              {type: 'Retailer#1'},
+              {type: 'Retailer#2'},
+              {type: 'Engine'}
+            ]
+          },
+          {
+            role: 'Market',
+            name: 'Market',
+            describe: 'Market',
+            objectTypes: [
+              {type: 'Retailer#1'},
+              {type: 'Retailer#2'},
+              {type: 'Market'},
+              {type: 'Engine'}
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    level: 'PLAYER',
+    teams: [
+      {
+        index: 1,
+        name: 'Team 1',
+        roles: [
+          {
+            role: 'ComponentsFactory',
+            name: 'ComponentsFactory',
+            describe: 'ComponentsFactory',
+            objectTypes: [
+              {type: 'ComponentsFactory#1'},
+              {type: 'Engine'}
+            ]
+          },
+          {
+            role: 'AssemblyFactory',
+            name: 'AssemblyFactory',
+            describe: 'AssemblyFactory',
+            objectTypes: [
+              {type: 'AssemblyFactory#1'},
+              {type: 'Engine'}
+            ]
+          },
+          {
+            role: 'Retailer',
+            name: 'Retailer',
+            describe: 'Retailer',
+            objectTypes: [
+              {type: 'Retailer#1'},
+              {type: 'Engine'}
+            ]
+          }
+        ]
+      },
+      {
+        index: 2,
+        name: 'Team 2',
+        roles: [
+          {
+            role: 'ComponentsFactory',
+            name: 'ComponentsFactory',
+            describe: 'ComponentsFactory',
+            objectTypes: [
+              {type: 'ComponentsFactory#2'},
+              {type: 'Engine'}
+            ]
+          },
+          {
+            role: 'AssemblyFactory',
+            name: 'AssemblyFactory',
+            describe: 'AssemblyFactory',
+            objectTypes: [
+              {type: 'AssemblyFactory#2'},
+              {type: 'Engine'}
+            ]
+          },
+          {
+            role: 'Retailer',
+            name: 'Retailer',
+            describe: 'Retailer',
+            objectTypes: [
+              {type: 'Retailer#2'},
+              {type: 'Engine'}
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
+
 export const SHORT_ENGINE_CONFIG = {
-  name: 'Engine Testing',
+  name: 'Short Engine Testing',
+  describe: '',
   gameDays: 2,
   dayLength: 10,
   nodes: NODES,
-  hasTeam: true,
-  teams: [
-    {
-      index: 0,
-      name: 'STAFF',
-      isStaff: true,
-      roles: [
-        'Console',
-        'Scoreboard',
-        'ComponentsBiddingMarket',
-        'AssemblyDepartment',
-        'CarsBiddingMarket',
-        'Market'
-      ]
-    },
-    {
-      index: 1,
-      name: 'Team 1',
-      roles: [
-        'ComponentsFactory#1',
-        'AssemblyFactory#1',
-        'Retailer#1'
-      ]
-    },
-    {
-      index: 2,
-      name: 'Team 2',
-      roles: [
-        'ComponentsFactory#2',
-        'AssemblyFactory#2',
-        'Retailer#2'
-      ]
-    }
-  ]
+  permissions: PERMISSIONS
 }
 
 export const LONG_ENGINE_CONFIG = {
-  name: 'Engine Testing',
+  name: 'Long Engine Testing',
+  describe: '',
   gameDays: 5,
   dayLength: 10,
-  nodes: NODES
+  nodes: NODES,
+  permissions: PERMISSIONS
 }

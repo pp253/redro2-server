@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events'
 import _ from 'lodash'
-import {BiddingMarketEvent, BIDDING_EVENTS, BIDDING_ITEM_STAGE, BIDDING_CHAIN, TRANSPORTATION_STATUS} from '@/lib/schema'
+import {BiddingMarketEvent, BIDDING_EVENTS, BIDDING_ITEM_STAGE, BIDDING_CHAIN, TRANSPORTATION_STATUS, USER_LEVEL} from '@/lib/schema'
 import store from './store'
 import Node from '@/Node'
 import { PRODUCTION } from '@/lib/utils'
@@ -352,6 +352,50 @@ export default class BiddingMarket extends EventEmitter {
   isDownstreams (name) {
     let r = this.store.state.downstreams.find(counterName => counterName === name)
     return r !== undefined
+  }
+
+  getActions (level) {
+    switch (level) {
+      case USER_LEVEL.ADMIN:
+        return ['BiddingMarket.*']
+
+      case USER_LEVEL.STAFF:
+        return [
+          'BiddingMarket.release',
+          'BiddingMarket.cancel',
+          'BiddingMarket.sign',
+          'BiddingMarket.breakoff',
+          'BiddingMarket.deliver',
+          'BiddingMarket.getBiddings',
+          'BiddingMarket.getBiddingById',
+          'BiddingMarket.isUpstreams',
+          'BiddingMarket.isDownstreams'
+        ]
+
+      case USER_LEVEL.PLAYER:
+      case USER_LEVEL.GUEST:
+      default:
+        return []
+    }
+  }
+
+  getListening (level) {
+    switch (level) {
+      case USER_LEVEL.ADMIN:
+      case USER_LEVEL.STAFF:
+        return [
+          BIDDING_EVENTS.BIDDING_BREAKOFF,
+          BIDDING_EVENTS.BIDDING_CANCELED,
+          BIDDING_EVENTS.BIDDING_COMPLETED,
+          BIDDING_EVENTS.BIDDING_RELEASED,
+          BIDDING_EVENTS.BIDDING_SIGNED
+        ]
+
+      default:
+      case USER_LEVEL.PLAYER:
+      case USER_LEVEL.GUEST:
+        return []
+    }
   }
 
   toObject () {

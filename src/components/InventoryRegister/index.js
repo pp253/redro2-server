@@ -3,6 +3,7 @@ import _ from 'lodash'
 import store from './store'
 import Node from '@/Node'
 import { PRODUCTION } from '@/lib/utils'
+import { USER_LEVEL } from '@/lib/schema'
 
 /**
  * @typedef BiddingStageChange
@@ -58,6 +59,35 @@ export default class InventoryRegister extends EventEmitter {
 
   getReceivers () {
     return this.store.state.receivers
+  }
+
+  getActions (level) {
+    switch (level) {
+      case USER_LEVEL.ADMIN:
+        return ['InventoryRegister.*']
+
+      case USER_LEVEL.STAFF:
+        return [
+          'InventoryRegister.regist',
+          'InventoryRegister.getReceivers'
+        ]
+
+      default:
+      case USER_LEVEL.PLAYER:
+      case USER_LEVEL.GUEST:
+        return []
+    }
+  }
+
+  getListening (level) {
+    switch (level) {
+      default:
+      case USER_LEVEL.ADMIN:
+      case USER_LEVEL.STAFF:
+      case USER_LEVEL.PLAYER:
+      case USER_LEVEL.GUEST:
+        return []
+    }
   }
 
   toObject () {

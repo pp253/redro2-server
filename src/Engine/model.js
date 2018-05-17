@@ -2,12 +2,29 @@ import mongoose from 'mongoose'
 import * as schema from '@/lib/schema'
 import { NodeScheme } from '@/Node/model'
 
-export const TeamSchema = new mongoose.Schema({
-  index: {type: Number, required: true},
+export const ObjectTypePermissionSchema = new mongoose.Schema({
+  type: {type: String, required: true},
+  listening: [{type: String}],
+  actions: [{type: String}]
+}, {_id: false})
+
+export const RolePermissionSchema = new mongoose.Schema({
+  role: {type: String, required: true},
   name: {type: String},
-  isStaff: {type: Boolean, default: false},
-  roles: [{type: String}]
-})
+  describe: {type: String},
+  objectTypes: [ObjectTypePermissionSchema]
+}, {_id: false})
+
+export const TeamPermissionSchema = new mongoose.Schema({
+  index: {type: Number, required: true},
+  name: {type: String, default: 'Unknown Team'},
+  roles: [RolePermissionSchema]
+}, {_id: false})
+
+export const LevelPermissionSchema = new mongoose.Schema({
+  level: {type: String, required: true},
+  teams: [TeamPermissionSchema]
+}, {_id: false})
 
 export const EngineSchema = new mongoose.Schema({
   name: {type: String, default: 'UnknownEngineName'},
@@ -21,9 +38,8 @@ export const EngineSchema = new mongoose.Schema({
   },
   gameDays: {type: Number, default: 0},
   dayLength: {type: Number, default: 0},
-  hasTeams: {type: Boolean, default: true},
-  teams: [TeamSchema],
-  id: {type: mongoose.Schema.Types.ObjectId}
+  id: {type: mongoose.Schema.Types.ObjectId},
+  permissions: [LevelPermissionSchema]
 }, {
   // Fix a bug https://github.com/Automattic/mongoose/issues/5574
   usePushEach: true

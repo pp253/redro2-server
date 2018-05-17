@@ -4,7 +4,7 @@ import store from './store'
 import Node from '@/Node'
 import { PRODUCTION } from '@/lib/utils'
 import { ENGINE_EVENTS } from '@/Engine'
-import {INVENTORY_MODE} from '@/lib/schema'
+import {INVENTORY_MODE, USER_LEVEL, INVENTORY_EVENTS, InventoryEvent} from '@/lib/schema'
 
 export default class Inventory extends EventEmitter {
   constructor () {
@@ -95,7 +95,15 @@ export default class Inventory extends EventEmitter {
           gameTime: ioji.gameTime
         })
       })
-      .then(() => { resolve(this) })
+      .then(() => {
+        this.emit(INVENTORY_EVENTS.INVENTORY_IMPOTY, new InventoryEvent({
+          type: INVENTORY_EVENTS.INVENTORY_IMPOTY,
+          gameTime: ioJournalItem.gameTime,
+          target: this,
+          ioJournalItem: ioJournalItem
+        }))
+        resolve(this)
+      })
       .catch(err => { reject(err) })
     })
   }
@@ -158,7 +166,15 @@ export default class Inventory extends EventEmitter {
           gameTime: ioji.gameTime
         })
       })
-      .then(() => { resolve(this) })
+      .then(() => {
+        this.emit(INVENTORY_EVENTS.INVENTORY_EXPORT, new InventoryEvent({
+          type: INVENTORY_EVENTS.INVENTORY_EXPORT,
+          gameTime: ioJournalItem.gameTime,
+          target: this,
+          ioJournalItem: ioJournalItem
+        }))
+        resolve(this)
+      })
       .catch(err => { reject(err) })
     })
   }
@@ -169,12 +185,23 @@ export default class Inventory extends EventEmitter {
    * @returns {Promise}
    */
   regist (stocksItemList) {
-    return this.store.commit('SET_STORAGES', stocksItemList)
-    .then(() => {
-      return this.countStorageCost({
-        time: Date.now(),
-        gameTime: this.engine.getGameTime()
+    return new Promise((resolve, reject) => {
+      this.store.commit('SET_STORAGES', stocksItemList)
+      .then(() => {
+        return this.countStorageCost({
+          time: Date.now(),
+          gameTime: this.engine.getGameTime()
+        })
       })
+      .then(() => {
+        this.emit(INVENTORY_EVENTS.INVENTORY_REGIST, new InventoryEvent({
+          type: INVENTORY_EVENTS.INVENTORY_REGIST,
+          gameTime: this.engine.getGameTime(),
+          target: this
+        }))
+        resolve(this)
+      })
+      .catch(err => { reject(err) })
     })
   }
 
@@ -185,28 +212,41 @@ export default class Inventory extends EventEmitter {
    */
   countStorageCost (engineEvent) {
     if (!this.store.state.hasStorageCost || !this.node.Account) {
-      return
+      return Promise.resolve()
     }
-    let Account = this.node.Account
-    let sumOfCost = 0
-    for (let storageItem of this.store.state.storage) {
-      let good = storageItem.good
-      let unit = storageItem.unit
-      let costPerBatch = this.getStorageCost(good)
-      sumOfCost += Math.ceil(unit / this.store.state.batchSize) * costPerBatch
-    }
-    return Account.add({
-      debit: [{
-        amount: sumOfCost,
-        classification: 'CostOfWarehousing'
-      }],
-      credit: [{
-        amount: sumOfCost,
-        classification: 'Cash'
-      }],
-      memo: 'Storage Cost',
-      time: engineEvent.time,
-      gameTime: engineEvent.gameTime
+
+    return new Promise((resolve, reject) => {
+      let Account = this.node.Account
+      let sumOfCost = 0
+      for (let storageItem of this.store.state.storage) {
+        let good = storageItem.good
+        let unit = storageItem.unit
+        let costPerBatch = this.getStorageCost(good)
+        sumOfCost += Math.ceil(unit / this.store.state.batchSize) * costPerBatch
+      }
+      Account.add({
+        debit: [{
+          amount: sumOfCost,
+          classification: 'CostOfWarehousing'
+        }],
+        credit: [{
+          amount: sumOfCost,
+          classification: 'Cash'
+        }],
+        memo: 'Storage Cost',
+        time: engineEvent.time,
+        gameTime: engineEvent.gameTime
+      })
+      .then(() => {
+        this.emit(INVENTORY_EVENTS.INVENTORY_COUNT_STORAGE_COST, new InventoryEvent({
+          type: INVENTORY_EVENTS.INVENTORY_COUNT_STORAGE_COST,
+          gameTime: this.engine.getGameTime(),
+          target: this,
+          storageCost: sumOfCost
+        }))
+        resolve(this)
+      })
+      .catch(err => { reject(err) })
     })
   }
 
@@ -280,6 +320,58 @@ export default class Inventory extends EventEmitter {
       return []
     }
     return _.cloneDeep(s.stocks)
+  }
+
+  getActions (level) {
+    switch (level) {
+      case USER_LEVEL.ADMIN:
+        return ['Inventory.*']
+
+      case USER_LEVEL.STAFF:
+        return [
+          'Inventory.import',
+          'Inventory.export',
+          'Inventory.regist',
+          'Inventory.getStorageCost',
+          'Inventory.getStorage',
+          'Inventory.getStorageUnit',
+          'Inventory.getCostOfSales',
+          'Inventory.getMode',
+          'Inventory.getStocks'
+        ]
+
+      case USER_LEVEL.PLAYER:
+        return [
+          'Inventory.getStorageCost',
+          'Inventory.getStorage',
+          'Inventory.getStorageUnit',
+          'Inventory.getCostOfSales',
+          'Inventory.getMode',
+          'Inventory.getStocks'
+        ]
+
+      default:
+      case USER_LEVEL.GUEST:
+        return []
+    }
+  }
+
+  getListening (level) {
+    switch (level) {
+      case USER_LEVEL.ADMIN:
+      case USER_LEVEL.STAFF:
+      case USER_LEVEL.PLAYER:
+        return [
+          INVENTORY_EVENTS.INVENTORY_EXPORT,
+          INVENTORY_EVENTS.INVENTORY_IMPOTY,
+          INVENTORY_EVENTS.INVENTORY_REGIST,
+          INVENTORY_EVENTS.INVENTORY_COUNT_STORAGE_COST
+        ]
+
+      default:
+      case USER_LEVEL.GUEST:
+        return []
+    }
   }
 
   toObject () {

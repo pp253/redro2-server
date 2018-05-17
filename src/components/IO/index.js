@@ -3,7 +3,7 @@ import _ from 'lodash'
 import store from './store'
 import Node from '@/Node'
 import { PRODUCTION } from '@/lib/utils'
-import { ENGINE_EVENTS, TRANSPORTATION_STATUS } from '@/lib/schema'
+import { ENGINE_EVENTS, TRANSPORTATION_STATUS, USER_LEVEL, IO_EVENTS } from '@/lib/schema'
 
 export default class IO extends EventEmitter {
   constructor () {
@@ -259,6 +259,44 @@ export default class IO extends EventEmitter {
 
   getExportJournal (good) {
     return this.store.state.exportJournal
+  }
+
+  getActions (level) {
+    switch (level) {
+      case USER_LEVEL.ADMIN:
+        return ['*']
+
+      case USER_LEVEL.STAFF:
+      case USER_LEVEL.PLAYER:
+        return [
+          'IO.import',
+          'IO.export',
+          'IO.isImportGoodAvailable',
+          'IO.isExportGoodAvailable',
+          'IO.getImportJournal',
+          'IO.getExportJournal'
+        ]
+
+      default:
+      case USER_LEVEL.GUEST:
+        return []
+    }
+  }
+
+  getListening (level) {
+    switch (level) {
+      case USER_LEVEL.ADMIN:
+      case USER_LEVEL.STAFF:
+      case USER_LEVEL.PLAYER:
+        return [
+          IO_EVENTS.IO_IMPORT,
+          IO_EVENTS.IO_EXPORT
+        ]
+
+      default:
+      case USER_LEVEL.GUEST:
+        return []
+    }
   }
 
   toObject () {

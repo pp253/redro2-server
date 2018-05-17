@@ -45,6 +45,22 @@ export class EngineEvent extends Event {
   }
 }
 
+export class AccountEvent extends Event {
+  constructor (options) {
+    super(options)
+    this.transaction = options.transaction
+    this.isBankrupt = options.isBankrupt
+  }
+}
+
+export class InventoryEvent extends Event {
+  constructor (options) {
+    super(options)
+    this.ioJournalItem = options.ioJournalItem
+    this.storageCost = options.storageCost
+  }
+}
+
 export class IOEvent extends Event {
   constructor (options) {
     super(options)
@@ -78,6 +94,15 @@ export class BiddingMarketEvent extends Event {
   }
 }
 
+export class MarketEvent extends Event {
+  constructor (options) {
+    super(options)
+    this.provider = options.provider
+    this.news = options.news
+    this.needs = options.needs
+  }
+}
+
 /**
  * Events Name
  */
@@ -94,7 +119,15 @@ export var ENGINE_EVENTS = {
 
 export const ACCOUNT_EVENTS = {
   ACCOUNT_BALANCE_CHANGE: 'account-balance-change',
-  ACCOUNT_ADD: 'account-add'
+  ACCOUNT_ADD: 'account-add',
+  ACCOUNT_BANKRUPT: 'account-bankrupt'
+}
+
+export const INVENTORY_EVENTS = {
+  INVENTORY_IMPOTY: 'inventory-improt',
+  INVENTORY_EXPORT: 'inventory-export',
+  INVENTORY_REGIST: 'inventory-regist',
+  INVENTORY_COUNT_STORAGE_COST: 'inventory-count-storage-cost'
 }
 
 export const IO_EVENTS = {
@@ -118,8 +151,14 @@ export const MARKET_EVENTS = {
 /**
  * Stage
  */
+export const USER_LEVEL = {
+  ADMIN: 'ADMIN',
+  STAFF: 'STAFF',
+  PLAYER: 'PLAYER',
+  GUEST: 'GUEST'
+}
 
-export var ENGINE_STAGE = {
+export const ENGINE_STAGE = {
   CONSTRUCTED: 'CONSTRUCTED',
   PREPARE: 'PREPARE',
   READY: 'READY',

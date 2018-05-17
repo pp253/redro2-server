@@ -10,6 +10,7 @@ import MarketReceiver from '@/components/MarketReceiver'
 import InventoryRegister from '@/components/InventoryRegister'
 import AssemblyDepartment from '@/components/AssemblyDepartment'
 import { timeout } from '@/lib/utils'
+import { USER_LEVEL } from '@/lib/schema'
 
 export const COMPONENTS = {
   Inventory: Inventory,
@@ -57,6 +58,14 @@ export default class Node extends EventEmitter {
               throw new Error(`Node:load() Component type ${component.type} is not found.`)
             }
             this[component.type] = new COMPONENTS[component.type]()
+
+            // listen
+            let listening = this[component.type].getListening(USER_LEVEL.ADMIN)
+            for (let eventName of listening) {
+              this[component.type].on(eventName, (event) => {
+                this.emit(eventName, event)
+              })
+            }
           }
           return timeout(100)
         })
@@ -90,17 +99,87 @@ export default class Node extends EventEmitter {
   }
 
   /**
-   * @returns {Object}
-   */
-  toObject () {
-    return this.store.toObject()
-  }
-
-  /**
    * @returns {String}
    */
   getName () {
     return this.store.state.name
+  }
+
+  getComponentsActions (level) {
+    switch (level) {
+      case USER_LEVEL.ADMIN:
+        return ['*']
+
+      case USER_LEVEL.STAFF:
+      case USER_LEVEL.PLAYER:
+        let actions = []
+        for (let component of this.store.state.components) {
+          if (component.enable === false) {
+            continue
+          }
+          actions = actions.concat(this[component.type].getActions(level))
+        }
+        return actions
+
+      default:
+      case USER_LEVEL.GUEST:
+        return []
+    }
+  }
+
+  getComponentsListening (level) {
+    switch (level) {
+      case USER_LEVEL.ADMIN:
+      case USER_LEVEL.STAFF:
+      case USER_LEVEL.PLAYER:
+        let listening = []
+        for (let component of this.store.state.components) {
+          if (component.enable === false) {
+            continue
+          }
+          listening = listening.concat(this[component.type].getListening(level))
+        }
+        return listening
+
+      default:
+      case USER_LEVEL.GUEST:
+        return []
+    }
+  }
+
+  getActions (level) {
+    switch (level) {
+      case USER_LEVEL.ADMIN:
+        return ['*']
+
+      case USER_LEVEL.STAFF:
+      case USER_LEVEL.PLAYER:
+        return [
+          'getName'
+        ]
+
+      default:
+      case USER_LEVEL.GUEST:
+        return []
+    }
+  }
+
+  getListening (level) {
+    switch (level) {
+      default:
+      case USER_LEVEL.ADMIN:
+      case USER_LEVEL.STAFF:
+      case USER_LEVEL.PLAYER:
+      case USER_LEVEL.GUEST:
+        return []
+    }
+  }
+
+  /**
+   * @returns {Object}
+   */
+  toObject () {
+    return this.store.toObject()
   }
 
   /**

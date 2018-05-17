@@ -3,13 +3,14 @@ import _ from 'lodash'
 import store from './store'
 import Node from '@/Node'
 import { PRODUCTION } from '@/lib/utils'
-import { ACCOUNT_LEDGER_SIDE } from '@/lib/schema'
+import { ACCOUNT_LEDGER_SIDE, USER_LEVEL, ACCOUNT_EVENTS, AccountEvent } from '@/lib/schema'
 
 export default class Account extends EventEmitter {
   constructor () {
     super()
     this.type = 'Account'
     this._loaded = false
+    this._bankrupt = false
   }
 
   load (node, options) {
@@ -95,6 +96,14 @@ export default class Account extends EventEmitter {
 
       this.store.dispatch('addTransaction', accountTransaction)
       .then(() => {
+        this.emit(ACCOUNT_EVENTS.ACCOUNT_ADD, new AccountEvent({
+          isBankrupt: this.isBankrupt(),
+          transaction: accountTransaction,
+          type: ACCOUNT_EVENTS.ACCOUNT_ADD,
+          target: this,
+          gameTime: accountTransaction.gameTime
+        }))
+
         if (options && options.noRepay === true) {
           return Promise.resolve()
         }
@@ -195,7 +204,63 @@ export default class Account extends EventEmitter {
   }
 
   isBankrupt () {
-    return (this.getBalance('Cash') + this.getBalance('AccountsReceivable') - this.getBalance('AccountsPayable')) > 0
+    let bankrupt = (this.getBalance('Cash') + this.getBalance('AccountsReceivable') - this.getBalance('AccountsPayable')) > 0
+    if (bankrupt !== this._bankrupt) {
+      this.emit(ACCOUNT_EVENTS.ACCOUNT_BANKRUPT, new AccountEvent({
+        isBankrupt: bankrupt,
+        type: ACCOUNT_EVENTS.ACCOUNT_BANKRUPT,
+        target: this,
+        gameTime: this.engine.getGameTime()
+      }))
+      this._bankrupt = bankrupt
+    }
+    return bankrupt
+  }
+
+  getActions (level) {
+    switch (level) {
+      case USER_LEVEL.ADMIN:
+        return ['Account.*']
+
+      case USER_LEVEL.STAFF:
+        return [
+          'Account.add',
+          'Account.repay',
+          'Account.getBalance',
+          'Account.getJournal',
+          'Account.getLedger',
+          'Account.isBankrupt'
+        ]
+
+      case USER_LEVEL.PLAYER:
+        return [
+          'Account.getBalance',
+          'Account.getJournal',
+          'Account.getLedger',
+          'Account.isBankrupt'
+        ]
+
+      default:
+      case USER_LEVEL.GUEST:
+        return []
+    }
+  }
+
+  getListening (level) {
+    switch (level) {
+      case USER_LEVEL.ADMIN:
+      case USER_LEVEL.STAFF:
+      case USER_LEVEL.PLAYER:
+        return [
+          ACCOUNT_EVENTS.ACCOUNT_ADD,
+          ACCOUNT_EVENTS.ACCOUNT_BALANCE_CHANGE,
+          ACCOUNT_EVENTS.ACCOUNT_BANKRUPT
+        ]
+
+      default:
+      case USER_LEVEL.GUEST:
+        return []
+    }
   }
 
   toObject () {
