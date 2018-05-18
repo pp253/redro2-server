@@ -4,6 +4,7 @@ import Server from '@/Server'
 import response from '@/api/response'
 import * as server from '@/api/server'
 import * as engine from '@/api/engine'
+import { USER_LEVEL } from '@/lib/schema'
 
 const apiRoute = {
   server: server,
@@ -11,7 +12,16 @@ const apiRoute = {
 }
 
 export default function initialize (app) {
-  Server.load(app, {})
+  Server.load(app, {
+    users: [
+      {
+        name: 'pp253',
+        password: '123',
+        level: USER_LEVEL.ADMIN,
+        permissions: []
+      }
+    ]
+  })
   .then(() => {
     app.all('*', (req, res, next) => {
       console.log(req.ip, req.originalUrl)

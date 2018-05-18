@@ -58,7 +58,6 @@ export default class Engine extends EventEmitter {
           let level = levelPer.level
           for (let teamPer of levelPer.teams) {
             for (let rolePer of teamPer.roles) {
-              let role = rolePer.role
               for (let objectTypePer of rolePer.objectTypes) {
                 let objectType = objectTypePer.type
                 // TODO: Not valid by the store model
@@ -307,19 +306,27 @@ export default class Engine extends EventEmitter {
   }
 
   getTeamsByLevel (level) {
-    return this.store.state.permissions.find(permission => permission.level === level).teams
+    let it = this.store.state.permissions.find(permission => permission.level === level)
+    if (it === undefined) {
+      return []
+    }
+    return it.teams
   }
 
   getStaffTeams () {
-    return this.getTeamsByLevel(USER_LEVEL.STAFF).teams
+    return this.getTeamsByLevel(USER_LEVEL.STAFF)
   }
 
   getPlayerTeams () {
-    return this.getTeamsByLevel(USER_LEVEL.PLAYER).teams
+    return this.getTeamsByLevel(USER_LEVEL.PLAYER)
   }
 
   getRoles (level, teamIndex) {
-    return this.getTeamsByLevel(level).find(team => team.index === teamIndex).roles
+    let it = this.getTeamsByLevel(level).find(team => team.index === teamIndex)
+    if (it === undefined) {
+      return []
+    }
+    return it.roles
   }
 
   getRole (level, teamIndex, role) {
@@ -327,11 +334,19 @@ export default class Engine extends EventEmitter {
   }
 
   getRoleObjectTypes (level, teamIndex, role) {
-    return this.getRole(level, teamIndex, role).objectTypes
+    let it = this.getRole(level, teamIndex, role)
+    if (it === undefined) {
+      return []
+    }
+    return it.objectTypes
   }
 
   checkObjectTypePermission (level, teamIndex, role, objectType, action) {
-    let actions = this.getRoleObjectTypes(level, teamIndex, role).find(ob => ob.type === objectType).action
+    let objectTypePer = this.getRoleObjectTypes(level, teamIndex, role).find(ob => ob.type === objectType)
+    if (objectTypePer === undefined) {
+      return false
+    }
+    let actions = objectTypePer.action
     if (actions.length > 0 && actions[0] === '*') {
       return true
     } else if (actions.indexOf(action) !== -1) {

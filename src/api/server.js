@@ -62,12 +62,12 @@ export function addUser (req, res, next) {
     .then(() => {
       let name = req.body.name
       let user = Server.getUserByName(name)
-      req.session = {
+      Object.assign(req.session, {
         name: user.name,
         password: user.password,
         level: user.level,
-        id: user._id.toHexString()
-      }
+        userId: user._id.toHexString()
+      })
 
       resolve(
         ResponseSuccessJSON({
@@ -92,6 +92,15 @@ export function userLogin (req, res, next) {
       let name = req.body.name
       let password = req.body.password
       Server.userLogin(name, password)
+
+      let user = Server.getUserByName(name)
+      Object.assign(req.session, {
+        name: user.name,
+        password: user.password,
+        level: user.level,
+        userId: user._id.toHexString(),
+        v: (req.session.v ? req.session.v : 0) + 1
+      })
       resolve(
         ResponseSuccessJSON({
           user: Server.getUserByName(name)

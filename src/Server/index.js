@@ -1,8 +1,9 @@
 import Engine from '@/Engine'
-import { USER_LEVEL } from '@/lib/schema'
+import { USER_LEVEL, ROOM_EVENTS } from '@/lib/schema'
 import { EventEmitter } from 'events'
 import _ from 'lodash'
 import store from './store'
+import io from '@/lib/io'
 
 export class Server extends EventEmitter {
   constructor () {
@@ -21,6 +22,7 @@ export class Server extends EventEmitter {
       this._loaded = true
 
       this.app = app
+      this.io = io
       this.options = _.cloneDeep(options) || {}
 
       let state = this.options
@@ -28,6 +30,18 @@ export class Server extends EventEmitter {
       store(state)
       .then((store) => {
         this.store = store
+
+        this.io.on('connection', socket => {
+          console.log(`Socket:connection`)
+
+          socket.on(ROOM_EVENTS.ROOM_JOIN, (id, msg) => {
+            if (!socket.handshake.session.userId) {
+              socket.send('Failed to join the room. Maybe the you should reload the browser.')
+              return
+            }
+          })
+        })
+
         resolve(this)
       })
       .catch(err => { reject(err) })
@@ -39,12 +53,47 @@ export class Server extends EventEmitter {
       let engine = new Engine()
       engine.load(this, options)
       .then(() => {
-        this.engines.set(engine.getId(), engine)
-        options.id = engine.getId()
-        return this.store.commit('ADD_ENGINE', options)
+        return new Promise((resolve, reject) => {
+          this.engines.set(engine.getId(), engine)
+          options.id = engine.getId()
+          this.store.commit('ADD_ENGINE', options)
+          .then(() => {
+            resolve(engine)
+          })
+          .catch(err => { reject(err) })
+        })
       })
-      .then(() => {
+      .then((engine) => {
         // TODO: listen on nodes and emit to socket rooms
+        let id = engine.getId()
+        for (let level of [USER_LEVEL.STAFF, USER_LEVEL.PLAYER]) {
+          let teams = engine.getTeamsByLevel(level)
+          for (let teamPer of teams) {
+            let teamIndex = teamPer.index
+            for (let rolePer of teamPer.roles) {
+              let role = rolePer.role
+              for (let objectType of rolePer.objectTypes) {
+                let type = objectType.type
+                let listening = objectType.listening
+                if (type === 'Engine') {
+                  for (let eventName of listening) {
+                    engine.on(eventName, (event) => {
+                      io.to(`${id}/${teamIndex}/${role}`).emit(eventName, event)
+                    })
+                  }
+                } else {
+                  let node = engine.getNode(type)
+                  for (let eventName of listening) {
+                    node.on(eventName, (event) => {
+                      io.to(`${id}/${teamIndex}/${role}`).emit(eventName, event)
+                    })
+                  }
+                }
+              }
+            }
+          }
+        }
+
         resolve(this)
       })
       .catch(err => { reject(err) })

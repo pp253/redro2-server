@@ -3,28 +3,30 @@ import https from 'https'
 import http from 'http'
 import fs from 'fs'
 import express from 'express'
-import session from 'express-session'
+import expresssession from 'express-session'
 import helmet from 'helmet'
 import bodyParser from 'body-parser'
 import expressValidator from 'express-validator'
 import compression from 'compression'
 import cors from 'cors'
-import socket from 'socket.io'
+import sharedsession from 'express-socket.io-session'
 // import memwatch from 'memwatch-next'
 import '@/lib/db-connection'
 import routes from '@/routes'
 import { PRODUCTION } from '@/lib/utils'
 import * as validator from '@/api/validator'
+import io from '@/lib/io'
 
 console.log(`ENV: ${PRODUCTION ? 'production' : 'development'}`)
 
-const app = express()
+export const app = express()
 
 // Security
 app.use(helmet())
 
 // Allow CORS
-app.use(cors())
+// https://div.io/topic/1825
+app.use(cors({origin: 'http://localhost:8080', credentials: true})) // {credentials: '*'}
 
 // Compression
 app.use(compression({ credentials: true, origin: true }))
@@ -46,21 +48,17 @@ app.set('view engine', 'pug')
 app.set('views', './views')
 
 // Session
-app.use(
-  session({
-    secret: 'redro2-zxcvbasdfg',
-    resave: false,
-    saveUninitialized: false
-  })
-)
+const session = expresssession({
+  secret: 'redro2-zxcvbasdfg',
+  resave: true,
+  saveUninitialized: true,
+  rolling: true,
+  proxy: true
+})
+app.use(session)
 
 // Static
 app.use('/', express.static('public'))
-
-// Route
-routes(app)
-
-export let io
 
 if (PRODUCTION) {
   let httpsServer = https.createServer(
@@ -77,7 +75,10 @@ if (PRODUCTION) {
     console.log('Start listening on PORT %d ...', 443)
   })
 
-  io = socket(httpsServer)
+  io.attach(httpsServer)
+  io.use(sharedsession(session, {
+    autoSave: true
+  }))
 
   // Auto redirect from port 80 to 443
   http.createServer((req, res) => {
@@ -91,7 +92,10 @@ if (PRODUCTION) {
     console.log('Start listening on PORT %d ...', 80)
   })
 
-  io = socket(httpServer)
+  io.attach(httpServer)
+  io.use(sharedsession(session, {
+    autoSave: true
+  }))
 
   /*
   memwatch.on('leak', (e) => {
@@ -100,8 +104,7 @@ if (PRODUCTION) {
   */
 }
 
-io.on('connection', e => {
-  console.log(`Socket:connection`)
-})
+// Route
+routes(app)
 
 console.log('Server initialized done')

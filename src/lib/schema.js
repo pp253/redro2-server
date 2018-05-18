@@ -148,6 +148,11 @@ export const MARKET_EVENTS = {
   MARKET_NEEDS_CHANGE: 'market-needs-change'
 }
 
+export const ROOM_EVENTS = {
+  ROOM_JOIN: 'room-join',
+  ROOM_QUIT: 'room-quit'
+}
+
 /**
  * Stage
  */
