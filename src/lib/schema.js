@@ -49,6 +49,8 @@ export class EngineEvent extends Event {
 export class AccountEvent extends Event {
   constructor (options) {
     super(options)
+    this.engineId = options.engineId
+    this.nodeName = options.nodeName
     this.transaction = options.transaction
     this.isBankrupt = options.isBankrupt
   }

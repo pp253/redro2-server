@@ -97,12 +97,15 @@ export default class Account extends EventEmitter {
 
       this.store.dispatch('addTransaction', accountTransaction)
       .then(() => {
+        let journal = this.getJournal()
         this.emit(ACCOUNT_EVENTS.ACCOUNT_ADD, new AccountEvent({
           isBankrupt: this.isBankrupt(),
-          transaction: accountTransaction,
+          transaction: journal[journal.length - 1],
           type: ACCOUNT_EVENTS.ACCOUNT_ADD,
           target: this,
-          gameTime: accountTransaction.gameTime
+          gameTime: accountTransaction.gameTime,
+          nodeName: this.node.getName(),
+          engineId: this.engine.getId()
         }))
 
         if (options && options.noRepay === true) {
@@ -205,13 +208,15 @@ export default class Account extends EventEmitter {
   }
 
   isBankrupt () {
-    let bankrupt = this.getBalance('Cash') > 0
+    let bankrupt = this.getBalance('Cash') <= 0
     if (bankrupt !== this._bankrupt) {
       this.emit(ACCOUNT_EVENTS.ACCOUNT_BANKRUPT, new AccountEvent({
         isBankrupt: bankrupt,
         type: ACCOUNT_EVENTS.ACCOUNT_BANKRUPT,
         target: this,
-        gameTime: this.engine.getGameTime()
+        gameTime: this.engine.getGameTime(),
+        nodeName: this.node.getName(),
+        engineId: this.engine.getId()
       }))
       this._bankrupt = bankrupt
     }
@@ -261,6 +266,17 @@ export default class Account extends EventEmitter {
       default:
       case USER_LEVEL.GUEST:
         return []
+    }
+  }
+
+  toMaskedObject () {
+    return {
+      engineId: this.engine.getId(),
+      nodeName: this.node.getName(),
+      isBankrupt: this.isBankrupt(),
+      journal: this.getJournal(),
+      ledger: this.store.state.ledger.toObject(),
+      initialCash: this.store.state.initialCash
     }
   }
 

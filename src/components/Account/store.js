@@ -35,7 +35,7 @@ export const STORE_CONTENT = {
       }
 
       ledger.items.push(item)
-      ledger.balance += (item.side === ACCOUNT_LEDGER_SIDE.DEBIT ? item.amount : -item.amount)
+      ledger.balance += (item.side === ACCOUNT_LEDGER_SIDE.DEBIT ? parseFloat(item.amount) : parseFloat(-item.amount))
     }
   },
   actions: {

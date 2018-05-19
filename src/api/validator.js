@@ -34,5 +34,15 @@ export default {
   },
   'role': {
     in: 'body'
+  },
+  'nodeName': {
+    in: 'body',
+    notEmpty: true,
+    errorMessage: 'nodeName is required.'
+  },
+  'accountTransaction': {
+    in: 'body',
+    notEmpty: true,
+    errorMessage: 'accountTransaction is required.'
   }
 }

@@ -103,7 +103,11 @@ export function userLogin (req, res, next) {
       })
       resolve(
         ResponseSuccessJSON({
-          user: Server.getUserByName(name)
+          user: {
+            name: user.name,
+            level: user.level,
+            id: user._id.toHexString()
+          }
         })
       )
     })

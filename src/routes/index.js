@@ -4,11 +4,13 @@ import Server from '@/Server'
 import response from '@/api/response'
 import * as server from '@/api/server'
 import * as engine from '@/api/engine'
+import * as account from '@/api/account'
 import { USER_LEVEL } from '@/lib/schema'
 
 const apiRoute = {
   server: server,
-  engine: engine
+  engine: engine,
+  account: account
 }
 
 export default function initialize (app) {

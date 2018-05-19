@@ -15,7 +15,8 @@ export function ResponseErrorJSON (obj) {
   return Object.assign(ResponseJSON({
     error: 1,
     id: 0,
-    msg: 'Unknown error.'
+    msg: 'Unknown error.',
+    raw: obj
   }), obj)
 }
 
@@ -39,6 +40,13 @@ export const ResponseErrorMsg = {
       id: 10,
       msg: `Engine id not found.`,
       more: engineId
+    })
+  },
+  AccountNotFoundInNode (nodeName) {
+    return ResponseErrorJSON({
+      id: 20,
+      msg: `Account not found in node.`,
+      more: nodeName
     })
   }
 }
