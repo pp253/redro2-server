@@ -11,6 +11,7 @@ export default class Account extends EventEmitter {
     this.type = 'Account'
     this._loaded = false
     this._bankrupt = false
+    this.setMaxListeners(10000)
   }
 
   load (node, options) {

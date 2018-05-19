@@ -29,6 +29,7 @@ export default class Node extends EventEmitter {
     super()
     this.type = 'Node'
     this._loaded = false
+    this.setMaxListeners(10000)
   }
 
   load (engine, options) {

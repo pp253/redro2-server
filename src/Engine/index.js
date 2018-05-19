@@ -15,6 +15,7 @@ export default class Engine extends EventEmitter {
       startTime: 0,
       timerId: null
     }
+    this.setMaxListeners(10000)
 
     /**
      * @type {Map<String, Node>}
@@ -80,7 +81,7 @@ export default class Engine extends EventEmitter {
         return this.store.save()
       })
       .then(() => { resolve(this) })
-      .catch(err => { console.error(err); reject(err) })
+      .catch(err => { reject(err) })
     })
   }
 
@@ -114,9 +115,9 @@ export default class Engine extends EventEmitter {
 
         if (ns === ENGINE_STAGE.START) {
           this.nextDay().then(() => { resolve(this) })
+        } else {
+          resolve(this)
         }
-
-        resolve(this)
       })
       .catch(err => { reject(err) })
     })
@@ -169,12 +170,8 @@ export default class Engine extends EventEmitter {
   }
 
   _nextTick () {
-    this.emit(ENGINE_EVENTS.GAME_TIME_CHANGE,
-      this._newEngineEvent(ENGINE_EVENTS.GAME_TIME_CHANGE))
     let gameTime = this.getGameTime()
     let nextTime = gameTime.time + 1
-    let eventName = ENGINE_EVENTS.GAME_DAY_X_TIME_Y(gameTime.day, nextTime)
-    this.emit(eventName, this._newEngineEvent(eventName))
 
     this.store.commit('SET_GAME_TIME', {
       day: gameTime.day,
@@ -185,6 +182,11 @@ export default class Engine extends EventEmitter {
       let now = Date.now()
       let adjustedNextTickMS = (this._timer.startTime + nextTime * 1000 + 1000) - now
       console.log('Ticking!', `day:`, gameTime.day, `time:`, nextTime, `adjust:`, adjustedNextTickMS, Date.now())
+      this.emit(ENGINE_EVENTS.GAME_TIME_CHANGE,
+        this._newEngineEvent(ENGINE_EVENTS.GAME_TIME_CHANGE))
+      let eventName = ENGINE_EVENTS.GAME_DAY_X_TIME_Y(gameTime.day, nextTime)
+      this.emit(eventName, this._newEngineEvent(eventName))
+
       if (nextTime === this.store.state.dayLength - 1) {
         timeout(adjustedNextTickMS > 0 ? adjustedNextTickMS : 0)
         .then(() => { this._nextTickToOffWork() })
@@ -305,6 +307,24 @@ export default class Engine extends EventEmitter {
     return this.store.state._id.toHexString()
   }
 
+  getNodes () {
+    return this.store.state.nodes.toObject()
+  }
+
+  getMaskedObject () {
+    return {
+      name: this.store.state.name,
+      describe: this.store.state.describe,
+      gameTime: this.getGameTime(),
+      gameDays: this.store.state.gameDays,
+      dayLength: this.store.state.dayLength,
+      stage: this.store.state.stage,
+      nodes: this.getNodes(),
+      permissions: [],
+      id: this.getId()
+    }
+  }
+
   getTeamsByLevel (level) {
     let it = this.store.state.permissions.find(permission => permission.level === level)
     if (it === undefined) {
@@ -405,12 +425,29 @@ export default class Engine extends EventEmitter {
     }
   }
 
+  getName () {
+    return this.store.state.name
+  }
+
+  getDescribe () {
+    return this.store.state.describe
+  }
+
+  getGameDays () {
+    return this.store.state.gameDays
+  }
+
+  getDayLength () {
+    return this.store.state.dayLength
+  }
+
   _newEngineEvent (type) {
     return new EngineEvent({
       type: type,
       target: this,
       gameTime: _.cloneDeep(this.getGameTime()),
-      stage: this.getStage()
+      stage: this.getStage(),
+      id: this.getId()
     })
   }
 }

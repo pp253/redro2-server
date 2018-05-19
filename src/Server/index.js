@@ -1,5 +1,6 @@
 import Engine from '@/Engine'
 import { USER_LEVEL, ROOM_EVENTS } from '@/lib/schema'
+import {ResponseSuccessJSON, ResponseErrorJSON, ResponseErrorMsg, reqCheck} from '@/api/response'
 import { EventEmitter } from 'events'
 import _ from 'lodash'
 import store from './store'
@@ -34,11 +35,31 @@ export class Server extends EventEmitter {
         this.io.on('connection', socket => {
           console.log(`Socket:connection`)
 
-          socket.on(ROOM_EVENTS.ROOM_JOIN, (id, msg) => {
+          socket.on(ROOM_EVENTS.ROOM_JOIN, (room) => {
             if (!socket.handshake.session.userId) {
               socket.send('Failed to join the room. Maybe the you should reload the browser.')
               return
             }
+            // Should apply the permission check.
+            if (room === undefined) {
+              socket.send('Room cannot be empty')
+              return
+            }
+            console.log(`Socket:${ROOM_EVENTS.ROOM_JOIN}`, `${room.engineId}/${room.teamIndex}/${room.role}`)
+            socket.join(`${room.engineId}/${room.teamIndex}/${room.role}`)
+          })
+
+          socket.on(ROOM_EVENTS.ROOM_LEAVE, (room) => {
+            if (!socket.handshake.session.userId) {
+              socket.send('Failed to join the room. Maybe the you should reload the browser.')
+              return
+            }
+            // Should apply the permission check.
+            if (room === undefined) {
+              socket.send('Room cannot be empty')
+              return
+            }
+            socket.leave(`${room.engineId}/${room.teamIndex}/${room.role}`)
           })
         })
 
@@ -78,14 +99,20 @@ export class Server extends EventEmitter {
                 if (type === 'Engine') {
                   for (let eventName of listening) {
                     engine.on(eventName, (event) => {
-                      io.to(`${id}/${teamIndex}/${role}`).emit(eventName, event)
+                      let shellowEvent = Object.assign({}, event)
+                      delete shellowEvent.target
+                      delete shellowEvent.provider
+                      io.to(`${id}/${teamIndex}/${role}`).emit(eventName, shellowEvent)
                     })
                   }
                 } else {
                   let node = engine.getNode(type)
                   for (let eventName of listening) {
                     node.on(eventName, (event) => {
-                      io.to(`${id}/${teamIndex}/${role}`).emit(eventName, event)
+                      let shellowEvent = Object.assign({}, event)
+                      delete shellowEvent.target
+                      delete shellowEvent.provider
+                      io.to(`${id}/${teamIndex}/${role}`).emit(eventName, shellowEvent)
                     })
                   }
                 }
@@ -100,9 +127,14 @@ export class Server extends EventEmitter {
     })
   }
 
+  /**
+   *
+   * @param {EngineId} id
+   * @param {Engine}
+   */
   getEngine (id) {
     if (!this.engines.has(id)) {
-      throw new Error(`Server:getEngine() Engine id ${id} is not found.`)
+      throw ResponseErrorMsg.EngineIdNotFound(id)
     }
     return this.engines.get(id)
   }

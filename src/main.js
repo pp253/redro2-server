@@ -10,12 +10,15 @@ import expressValidator from 'express-validator'
 import compression from 'compression'
 import cors from 'cors'
 import sharedsession from 'express-socket.io-session'
+import {EventEmitter} from 'events'
 // import memwatch from 'memwatch-next'
 import '@/lib/db-connection'
 import routes from '@/routes'
 import { PRODUCTION } from '@/lib/utils'
 import * as validator from '@/api/validator'
 import io from '@/lib/io'
+
+EventEmitter.defaultMaxListeners = 10000
 
 console.log(`ENV: ${PRODUCTION ? 'production' : 'development'}`)
 

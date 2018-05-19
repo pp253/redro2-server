@@ -3,13 +3,14 @@ import _ from 'lodash'
 import store from './store'
 import Node from '@/Node'
 import { PRODUCTION } from '@/lib/utils'
-import { ENGINE_EVENTS, TRANSPORTATION_STATUS, USER_LEVEL, IO_EVENTS } from '@/lib/schema'
+import { ENGINE_EVENTS, TRANSPORTATION_STATUS, USER_LEVEL, IO_EVENTS, IOEvent } from '@/lib/schema'
 
 export default class IO extends EventEmitter {
   constructor () {
     super()
     this.type = 'IO'
     this._loaded = false
+    this.setMaxListeners(10000)
   }
 
   load (node, options) {
@@ -18,7 +19,7 @@ export default class IO extends EventEmitter {
         throw new Error('IO:load() `node` should be instance of Node.')
       }
       if (this._loaded) {
-        throw new Error('IO:load() Node has been loaded before.')
+        throw new Error('IO:load() IO has been loaded before.')
       }
       this._loaded = true
 
@@ -59,7 +60,7 @@ export default class IO extends EventEmitter {
 
       // Same good should not in more than 1 item
       let list = ij.list
-      let uniqueMap = new Map()
+      let uniqueMap = new WeakMap()
       for (let ioJournalGoodItem of list) {
         let good = ioJournalGoodItem.good
         if (uniqueMap.has(good)) {
@@ -92,43 +93,62 @@ export default class IO extends EventEmitter {
 
       this.store.commit('ADD_IMPORT', ij)
       .then((store) => {
-        if (ij.transportationStatus === TRANSPORTATION_STATUS.DELIVERING) {
-          let gta = this.node.engine.gameTimeAdd(ij.gameTime, ij.transportationTime)
+        return new Promise((resolve, reject) => {
+          if (ij.transportationStatus === TRANSPORTATION_STATUS.DELIVERING) {
+            let gta = this.node.engine.gameTimeAdd(ij.gameTime, ij.transportationTime)
 
-          this.node.engine.once(ENGINE_EVENTS.GAME_DAY_X_TIME_Y(gta.day, gta.time), (engineEvent) => {
-            let importJournal = this.getImportJournal()
-            let iji = importJournal[importJournal.length - 1].toObject()
-            let id = iji._id.toHexString()
+            this.node.engine.once(ENGINE_EVENTS.GAME_DAY_X_TIME_Y(gta.day, gta.time), (engineEvent) => {
+              let importJournal = this.getImportJournal()
+              let iji = importJournal[importJournal.length - 1].toObject()
+              let id = iji._id.toHexString()
 
-            this.store.commit('COMPLETE_IMPORT', {id: id})
-            .then(() => {
-              return this.node.Inventory.import({
-                from: iji.from,
-                to: iji.to,
-                list: iji.list,
-                price: iji.price,
-                time: engineEvent.time,
-                gameTime: engineEvent.gameTime
+              this.store.commit('COMPLETE_IMPORT', {id: id})
+              .then(() => {
+                return this.node.Inventory.import({
+                  from: iji.from,
+                  to: iji.to,
+                  list: iji.list,
+                  price: iji.price,
+                  time: engineEvent.time,
+                  gameTime: engineEvent.gameTime
+                })
+              })
+              .then(() => {
+                this.emit(IO_EVENTS.IO_COMPLETE, new IOEvent({
+                  type: IO_EVENTS.IO_COMPLETE,
+                  gameTime: engineEvent.gameTime,
+                  target: this,
+                  ioJournalItem: iji
+                }))
+              })
+              .catch(err => {
+                reject(err)
               })
             })
-            .catch(err => {
-              reject(err)
-            })
-          })
 
-          resolve(this)
-        } else {
-          this.node.Inventory.import({
-            from: ij.from,
-            to: ij.to,
-            list: _.cloneDeep(ij.list),
-            price: ij.price,
-            time: ij.time,
-            gameTime: ij.gameTime
-          })
-          .then(() => { resolve(this) })
-          .catch(err => { reject(err) })
-        }
+            resolve(this)
+          } else {
+            this.node.Inventory.import({
+              from: ij.from,
+              to: ij.to,
+              list: _.cloneDeep(ij.list),
+              price: ij.price,
+              time: ij.time,
+              gameTime: ij.gameTime
+            })
+            .then(() => { resolve(this) })
+            .catch(err => { reject(err) })
+          }
+        })
+      })
+      .then(() => {
+        this.emit(IO_EVENTS.IO_IMPORT, new IOEvent({
+          type: IO_EVENTS.IO_IMPORT,
+          gameTime: ij.gameTime,
+          target: this,
+          ioJournalItem: ij
+        }))
+        resolve(this)
       })
       .catch(err => { reject(err) })
     })
@@ -196,6 +216,13 @@ export default class IO extends EventEmitter {
             this.store.commit('COMPLETE_EXPORT', {id: iji._id.toHexString()})
           })
         }
+
+        this.emit(IO_EVENTS.IO_IMPORT, new IOEvent({
+          type: IO_EVENTS.IO_IMPORT,
+          gameTime: ij.gameTime,
+          target: this,
+          ioJournalItem: ij
+        }))
 
         resolve(this)
       })

@@ -16,6 +16,7 @@ export default class InventoryRegister extends EventEmitter {
     super()
     this.type = 'InventoryRegister'
     this._loaded = false
+    this.setMaxListeners(10000)
   }
 
   load (node, options) {

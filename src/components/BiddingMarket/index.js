@@ -19,6 +19,7 @@ export default class BiddingMarket extends EventEmitter {
     super()
     this.type = 'BiddingMarket'
     this._loaded = false
+    this.setMaxListeners(10000)
   }
 
   load (node, options) {

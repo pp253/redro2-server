@@ -10,6 +10,7 @@ export default class MarketReceiver extends EventEmitter {
     super()
     this.type = 'MarketReceiver'
     this._loaded = false
+    this.setMaxListeners(10000)
   }
 
   load (node, options) {

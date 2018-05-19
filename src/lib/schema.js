@@ -24,6 +24,7 @@ export class Event {
     this.target = options.target
     this.time = Date.now()
     this.gameTime = options.gameTime
+    this.id = options.id
   }
 }
 
@@ -64,6 +65,7 @@ export class InventoryEvent extends Event {
 export class IOEvent extends Event {
   constructor (options) {
     super(options)
+    this.ioJournalItem = options.ioJournalItem
   }
 }
 
@@ -107,50 +109,51 @@ export class MarketEvent extends Event {
  * Events Name
  */
 
-export var ENGINE_EVENTS = {
-  GAME_STAGE_CHANGE: 'game-stage-change',
-  GAME_TIME_CHANGE: 'game-time-change',
-  GAME_DAY_CHANGE: 'game-day-change',
-  GAME_ISWORKING_CHANGE: 'game-isworking-change',
-  GAME_ONWORK: 'game-onwork',
-  GAME_OFFWORK: 'game-offwork',
-  GAME_DAY_X_TIME_Y: (day, time) => `game-day-${day}-time-${time}`
+export const ENGINE_EVENTS = {
+  GAME_STAGE_CHANGE: 'GAME_STAGE_CHANGE',
+  GAME_TIME_CHANGE: 'GAME_TIME_CHANGE',
+  GAME_DAY_CHANGE: 'GAME_DAY_CHANGE',
+  GAME_ISWORKING_CHANGE: 'GAME_ISWORKING_CHANGE',
+  GAME_ONWORK: 'GAME_ONWORK',
+  GAME_OFFWORK: 'GAME_OFFWORK',
+  GAME_DAY_X_TIME_Y: (day, time) => `GAME_DAY_${day}_TIME_${time}`
 }
 
 export const ACCOUNT_EVENTS = {
-  ACCOUNT_BALANCE_CHANGE: 'account-balance-change',
-  ACCOUNT_ADD: 'account-add',
-  ACCOUNT_BANKRUPT: 'account-bankrupt'
+  ACCOUNT_BALANCE_CHANGE: 'ACCOUNT_BALANCE_CHANGE',
+  ACCOUNT_ADD: 'ACCOUNT_ADD',
+  ACCOUNT_BANKRUPT: 'ACCOUNT_BANKRUPT'
 }
 
 export const INVENTORY_EVENTS = {
-  INVENTORY_IMPOTY: 'inventory-improt',
-  INVENTORY_EXPORT: 'inventory-export',
-  INVENTORY_REGIST: 'inventory-regist',
-  INVENTORY_COUNT_STORAGE_COST: 'inventory-count-storage-cost'
+  INVENTORY_IMPOTY: 'INVENTORY_IMPROT',
+  INVENTORY_EXPORT: 'INVENTORY_EXPORT',
+  INVENTORY_REGIST: 'INVENTORY_REGIST',
+  INVENTORY_COUNT_STORAGE_COST: 'INVENTORY_COUNT_STORAGE_COST'
 }
 
 export const IO_EVENTS = {
-  IO_IMPORT: 'io-import',
-  IO_EXPORT: 'io-export'
+  IO_IMPORT: 'IO_IMPORT',
+  IO_EXPORT: 'IO_EXPORT',
+  IO_COMPLETE: 'IO_COMPLETE'
 }
 
 export const BIDDING_EVENTS = {
-  BIDDING_RELEASED: 'bidding-released',
-  BIDDING_CANCELED: 'bidding-canceled',
-  BIDDING_SIGNED: 'bidding-signed',
-  BIDDING_BREAKOFF: 'bidding-breakoff',
-  BIDDING_COMPLETED: 'bidding-completed'
+  BIDDING_RELEASED: 'BIDDING_RELEASED',
+  BIDDING_CANCELED: 'BIDDING_CANCELED',
+  BIDDING_SIGNED: 'BIDDING_SIGNED',
+  BIDDING_BREAKOFF: 'BIDDING_BREAKOFF',
+  BIDDING_COMPLETED: 'BIDDING_COMPLETED'
 }
 
 export const MARKET_EVENTS = {
-  MARKET_NEWS_PUBLISHED: 'market-news-published',
-  MARKET_NEEDS_CHANGE: 'market-needs-change'
+  MARKET_NEWS_PUBLISHED: 'MARKET_NEWS_PUBLISHED',
+  MARKET_NEEDS_CHANGE: 'MARKET_NEEDS_CHANGE'
 }
 
 export const ROOM_EVENTS = {
-  ROOM_JOIN: 'room-join',
-  ROOM_QUIT: 'room-quit'
+  ROOM_JOIN: 'ROOM_JOIN',
+  ROOM_LEAVE: 'ROOM_QUIT'
 }
 
 /**

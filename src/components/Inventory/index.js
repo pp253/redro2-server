@@ -11,6 +11,7 @@ export default class Inventory extends EventEmitter {
     super()
     this.type = 'Inventory'
     this._loaded = false
+    this.setMaxListeners(10000)
   }
 
   /**

@@ -1,5 +1,3 @@
-import validator from './validator'
-
 export function ResponseJSON (obj) {
   return Object.assign({
     error: 0,
@@ -34,6 +32,13 @@ export const ResponseErrorMsg = {
       id: 3,
       msg: `Arguments not match.`,
       more: errMsg
+    })
+  },
+  EngineIdNotFound (engineId) {
+    return ResponseErrorJSON({
+      id: 10,
+      msg: `Engine id not found.`,
+      more: engineId
     })
   }
 }

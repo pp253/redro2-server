@@ -10,6 +10,7 @@ export default class AssemblyDepartment extends EventEmitter {
     super()
     this.type = 'AssemblyDepartment'
     this._loaded = false
+    this.setMaxListeners(10000)
   }
 
   load (node, options) {
