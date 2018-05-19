@@ -204,7 +204,7 @@ export default class Account extends EventEmitter {
   }
 
   isBankrupt () {
-    let bankrupt = (this.getBalance('Cash') + this.getBalance('AccountsReceivable') - this.getBalance('AccountsPayable')) > 0
+    let bankrupt = this.getBalance('Cash') > 0
     if (bankrupt !== this._bankrupt) {
       this.emit(ACCOUNT_EVENTS.ACCOUNT_BANKRUPT, new AccountEvent({
         isBankrupt: bankrupt,
