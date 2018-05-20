@@ -31,6 +31,7 @@ export default class Inventory extends EventEmitter {
       this._loaded = true
 
       this.node = node
+      this.engine = node.engine
       this.options = _.cloneDeep(options) || {}
 
       let state = {
@@ -97,8 +98,8 @@ export default class Inventory extends EventEmitter {
         })
       })
       .then(() => {
-        this.emit(INVENTORY_EVENTS.INVENTORY_IMPOTY, new InventoryEvent({
-          type: INVENTORY_EVENTS.INVENTORY_IMPOTY,
+        this.emit(INVENTORY_EVENTS.INVENTORY_IMPORT, new InventoryEvent({
+          type: INVENTORY_EVENTS.INVENTORY_IMPORT,
           gameTime: ioJournalItem.gameTime,
           target: this,
           ioJournalItem: ioJournalItem
@@ -364,7 +365,7 @@ export default class Inventory extends EventEmitter {
       case USER_LEVEL.PLAYER:
         return [
           INVENTORY_EVENTS.INVENTORY_EXPORT,
-          INVENTORY_EVENTS.INVENTORY_IMPOTY,
+          INVENTORY_EVENTS.INVENTORY_IMPORT,
           INVENTORY_EVENTS.INVENTORY_REGIST,
           INVENTORY_EVENTS.INVENTORY_COUNT_STORAGE_COST
         ]
@@ -372,6 +373,18 @@ export default class Inventory extends EventEmitter {
       default:
       case USER_LEVEL.GUEST:
         return []
+    }
+  }
+
+  toMaskedObject () {
+    return {
+      engineId: this.engine.getId(),
+      nodeName: this.node.getName(),
+      storage: this.store.state.storage.toObject(),
+      storageCost: this.store.state.storageCost.toObject(),
+      hasStorageCost: this.store.state.hasStorageCost,
+      batchSize: this.store.state.batchSize,
+      mode: this.getMode()
     }
   }
 

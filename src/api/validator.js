@@ -44,5 +44,15 @@ export default {
     in: 'body',
     notEmpty: true,
     errorMessage: 'accountTransaction is required.'
+  },
+  'ioJournalItem': {
+    in: 'body',
+    notEmpty: true,
+    errorMessage: 'ioJournalItem is required.'
+  },
+  'stocksItemList': {
+    in: 'body',
+    notEmpty: true,
+    errorMessage: 'stocksItemList is required.'
   }
 }

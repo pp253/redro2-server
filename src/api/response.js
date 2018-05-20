@@ -48,6 +48,13 @@ export const ResponseErrorMsg = {
       msg: `Account not found in node.`,
       more: nodeName
     })
+  },
+  InventoryNotFoundInNode (nodeName) {
+    return ResponseErrorJSON({
+      id: 30,
+      msg: `Inventory not found in node.`,
+      more: nodeName
+    })
   }
 }
 

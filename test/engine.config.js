@@ -155,13 +155,13 @@ const RETAILER_COMPONENTS = [
 
 export const NODES = [
   {
-    name: 'ComponentsFactory#1',
+    name: 'ComponentsFactory-1',
     components: COMPONENTS_FACTORY_COMPONENTS,
     wage: 100,
     workers: 8
   },
   {
-    name: 'ComponentsFactory#2',
+    name: 'ComponentsFactory-2',
     components: COMPONENTS_FACTORY_COMPONENTS,
     wage: 100,
     workers: 8
@@ -173,8 +173,8 @@ export const NODES = [
         type: 'BiddingMarket',
         enable: true,
         options: {
-          upstreams: ['ComponentsFactory#1', 'ComponentsFactory#2'],
-          downstreams: ['AssemblyFactory#1', 'AssemblyFactory#2'],
+          upstreams: ['ComponentsFactory-1', 'ComponentsFactory-2'],
+          downstreams: ['AssemblyFactory-1', 'AssemblyFactory-2'],
           breakoffPaneltyRatio: 1.2,
           breakoffCompensationRatio: 0.5,
           transportationTime: 5,
@@ -194,19 +194,19 @@ export const NODES = [
         type: 'InventoryRegister',
         enable: true,
         options: {
-          receivers: ['ComponentsFactory#1', 'ComponentsFactory#2']
+          receivers: ['ComponentsFactory-1', 'ComponentsFactory-2']
         }
       }
     ]
   },
   {
-    name: 'AssemblyFactory#1',
+    name: 'AssemblyFactory-1',
     components: ASSEMBLY_FACTORY_COMPONENTS,
     wage: 150,
     workers: 2
   },
   {
-    name: 'AssemblyFactory#2',
+    name: 'AssemblyFactory-2',
     components: ASSEMBLY_FACTORY_COMPONENTS,
     wage: 150,
     workers: 2
@@ -218,7 +218,7 @@ export const NODES = [
         type: 'AssemblyDepartment',
         enable: true,
         options: {
-          receivers: ['AssemblyFactory#1', 'AssemblyFactory#2'],
+          receivers: ['AssemblyFactory-1', 'AssemblyFactory-2'],
           bom: [
             {
               good: 'Car',
@@ -258,8 +258,8 @@ export const NODES = [
         type: 'BiddingMarket',
         enable: true,
         options: {
-          upstreams: ['AssemblyFactory#1', 'AssemblyFactory#2'],
-          downstreams: ['Retailer#1', 'Retailer#2'],
+          upstreams: ['AssemblyFactory-1', 'AssemblyFactory-2'],
+          downstreams: ['Retailer-1', 'Retailer-2'],
           breakoffPaneltyRatio: 1.2,
           breakoffCompensationRatio: 0.5,
           transportationTime: 5,
@@ -278,13 +278,13 @@ export const NODES = [
     ]
   },
   {
-    name: 'Retailer#1',
+    name: 'Retailer-1',
     components: RETAILER_COMPONENTS,
     wage: 200,
     workers: 2
   },
   {
-    name: 'Retailer#2',
+    name: 'Retailer-2',
     components: RETAILER_COMPONENTS,
     wage: 200,
     workers: 2
@@ -296,7 +296,7 @@ export const NODES = [
         type: 'Market',
         enable: true,
         options: {
-          upstreams: ['Retailer#1', 'Retailer#2'],
+          upstreams: ['Retailer-1', 'Retailer-2'],
           news: [
             {
               title: 'Sample News Day1',
@@ -349,15 +349,15 @@ export const PERMISSIONS = [
             name: 'GM',
             describe: 'GM',
             objectTypes: [
-              {type: 'ComponentsFactory#1'},
-              {type: 'ComponentsFactory#2'},
+              {type: 'ComponentsFactory-1'},
+              {type: 'ComponentsFactory-2'},
               {type: 'ComponentsBiddingMarket'},
-              {type: 'AssemblyFactory#1'},
-              {type: 'AssemblyFactory#2'},
+              {type: 'AssemblyFactory-1'},
+              {type: 'AssemblyFactory-2'},
               {type: 'AssemblyDepartment'},
               {type: 'CarsBiddingMarket'},
-              {type: 'Retailer#1'},
-              {type: 'Retailer#2'},
+              {type: 'Retailer-1'},
+              {type: 'Retailer-2'},
               {type: 'Market'},
               {type: 'Engine'}
             ]
@@ -367,12 +367,12 @@ export const PERMISSIONS = [
             name: 'Scoreboard',
             describe: 'Scoreboard',
             objectTypes: [
-              {type: 'ComponentsFactory#1'},
-              {type: 'ComponentsFactory#2'},
-              {type: 'AssemblyFactory#1'},
-              {type: 'AssemblyFactory#2'},
-              {type: 'Retailer#1'},
-              {type: 'Retailer#2'},
+              {type: 'ComponentsFactory-1'},
+              {type: 'ComponentsFactory-2'},
+              {type: 'AssemblyFactory-1'},
+              {type: 'AssemblyFactory-2'},
+              {type: 'Retailer-1'},
+              {type: 'Retailer-2'},
               {type: 'Engine'}
             ]
           },
@@ -381,11 +381,11 @@ export const PERMISSIONS = [
             name: 'ComponentsBiddingMarket',
             describe: 'ComponentsBiddingMarket',
             objectTypes: [
-              {type: 'ComponentsFactory#1'},
-              {type: 'ComponentsFactory#2'},
+              {type: 'ComponentsFactory-1'},
+              {type: 'ComponentsFactory-2'},
               {type: 'ComponentsBiddingMarket'},
-              {type: 'AssemblyFactory#1'},
-              {type: 'AssemblyFactory#2'},
+              {type: 'AssemblyFactory-1'},
+              {type: 'AssemblyFactory-2'},
               {type: 'Engine'}
             ]
           },
@@ -394,8 +394,8 @@ export const PERMISSIONS = [
             name: 'AssemblyDepartment',
             describe: 'AssemblyDepartment',
             objectTypes: [
-              {type: 'AssemblyFactory#1'},
-              {type: 'AssemblyFactory#2'},
+              {type: 'AssemblyFactory-1'},
+              {type: 'AssemblyFactory-2'},
               {type: 'AssemblyDepartment'},
               {type: 'Engine'}
             ]
@@ -405,12 +405,12 @@ export const PERMISSIONS = [
             name: 'CarsBiddingMarket',
             describe: 'CarsBiddingMarket',
             objectTypes: [
-              {type: 'AssemblyFactory#1'},
-              {type: 'AssemblyFactory#2'},
+              {type: 'AssemblyFactory-1'},
+              {type: 'AssemblyFactory-2'},
               {type: 'AssemblyDepartment'},
               {type: 'CarsBiddingMarket'},
-              {type: 'Retailer#1'},
-              {type: 'Retailer#2'},
+              {type: 'Retailer-1'},
+              {type: 'Retailer-2'},
               {type: 'Engine'}
             ]
           },
@@ -419,8 +419,8 @@ export const PERMISSIONS = [
             name: 'Market',
             describe: 'Market',
             objectTypes: [
-              {type: 'Retailer#1'},
-              {type: 'Retailer#2'},
+              {type: 'Retailer-1'},
+              {type: 'Retailer-2'},
               {type: 'Market'},
               {type: 'Engine'}
             ]
@@ -441,7 +441,7 @@ export const PERMISSIONS = [
             name: 'ComponentsFactory',
             describe: 'ComponentsFactory',
             objectTypes: [
-              {type: 'ComponentsFactory#1'},
+              {type: 'ComponentsFactory-1'},
               {type: 'Engine'}
             ]
           },
@@ -450,7 +450,7 @@ export const PERMISSIONS = [
             name: 'AssemblyFactory',
             describe: 'AssemblyFactory',
             objectTypes: [
-              {type: 'AssemblyFactory#1'},
+              {type: 'AssemblyFactory-1'},
               {type: 'Engine'}
             ]
           },
@@ -459,7 +459,7 @@ export const PERMISSIONS = [
             name: 'Retailer',
             describe: 'Retailer',
             objectTypes: [
-              {type: 'Retailer#1'},
+              {type: 'Retailer-1'},
               {type: 'Engine'}
             ]
           }
@@ -474,7 +474,7 @@ export const PERMISSIONS = [
             name: 'ComponentsFactory',
             describe: 'ComponentsFactory',
             objectTypes: [
-              {type: 'ComponentsFactory#2'},
+              {type: 'ComponentsFactory-2'},
               {type: 'Engine'}
             ]
           },
@@ -483,7 +483,7 @@ export const PERMISSIONS = [
             name: 'AssemblyFactory',
             describe: 'AssemblyFactory',
             objectTypes: [
-              {type: 'AssemblyFactory#2'},
+              {type: 'AssemblyFactory-2'},
               {type: 'Engine'}
             ]
           },
@@ -492,7 +492,7 @@ export const PERMISSIONS = [
             name: 'Retailer',
             describe: 'Retailer',
             objectTypes: [
-              {type: 'Retailer#2'},
+              {type: 'Retailer-2'},
               {type: 'Engine'}
             ]
           }
