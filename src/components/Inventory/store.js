@@ -42,7 +42,7 @@ export const STORE_CONTENT = {
           })
           it = state.storage[state.storage.length - 1]
         }
-        it.unit += stocksItem.left
+        it.unit += parseInt(stocksItem.left)
         it.stocks.push(stocksItem)
       }
     },
@@ -62,7 +62,7 @@ export const STORE_CONTENT = {
           })
           it = state.storage[state.storage.length - 1]
         }
-        it.unit = stocksItem.unit
+        it.unit = parseInt(stocksItem.unit)
         it.stocks.push(stocksItem)
       }
     },
@@ -76,16 +76,16 @@ export const STORE_CONTENT = {
       for (let stocksItem of stocksItemList) {
         let good = stocksItem.good
         let it = state.storage.find((item) => item.good === good)
-        it.unit -= stocksItem.unit
+        it.unit -= parseInt(stocksItem.unit)
 
-        let left = stocksItem.unit
+        let left = parseInt(stocksItem.unit)
         for (let idx = it.stocks.findIndex(item => item.left > 0); idx >= 0 && idx < it.stocks.length; idx++) {
           let lit = it.stocks[idx]
           if (left > lit.left) {
-            left -= lit.left
+            left -= parseInt(lit.left)
             lit.left = 0
           } else {
-            lit.left -= left
+            lit.left -= parseInt(left)
             left = 0
             break
           }

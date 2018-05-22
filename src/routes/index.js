@@ -6,13 +6,15 @@ import * as server from '@/api/server'
 import * as engine from '@/api/engine'
 import * as account from '@/api/account'
 import * as inventory from '@/api/inventory'
+import * as io from '@/api/io'
 import { USER_LEVEL } from '@/lib/schema'
 
 const apiRoute = {
   server: server,
   engine: engine,
   account: account,
-  inventory: inventory
+  inventory: inventory,
+  io: io
 }
 
 export default function initialize (app) {

@@ -25,6 +25,8 @@ export class Event {
     this.time = Date.now()
     this.gameTime = options.gameTime
     this.id = options.id
+    this.engineId = options.engineId
+    this.nodeName = options.nodeName
   }
 }
 
@@ -49,8 +51,6 @@ export class EngineEvent extends Event {
 export class AccountEvent extends Event {
   constructor (options) {
     super(options)
-    this.engineId = options.engineId
-    this.nodeName = options.nodeName
     this.transaction = options.transaction
     this.isBankrupt = options.isBankrupt
   }
@@ -128,7 +128,7 @@ export const ACCOUNT_EVENTS = {
 }
 
 export const INVENTORY_EVENTS = {
-  INVENTORY_IMPORT: 'INVENTORY_IMPROT',
+  INVENTORY_IMPORT: 'INVENTORY_IMPORT',
   INVENTORY_EXPORT: 'INVENTORY_EXPORT',
   INVENTORY_REGIST: 'INVENTORY_REGIST',
   INVENTORY_COUNT_STORAGE_COST: 'INVENTORY_COUNT_STORAGE_COST'
@@ -137,7 +137,8 @@ export const INVENTORY_EVENTS = {
 export const IO_EVENTS = {
   IO_IMPORT: 'IO_IMPORT',
   IO_EXPORT: 'IO_EXPORT',
-  IO_COMPLETE: 'IO_COMPLETE'
+  IO_IMPORT_COMPLETE: 'IO_IMPORT_COMPLETE',
+  IO_EXPORT_COMPLETE: 'IO_EXPORT_COMPLETE'
 }
 
 export const BIDDING_EVENTS = {

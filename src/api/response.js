@@ -11,13 +11,13 @@ export function ResponseSuccessJSON (obj) {
   }), obj)
 }
 
-export function ResponseErrorJSON (obj) {
+export function ResponseErrorJSON (err) {
   return Object.assign(ResponseJSON({
     error: 1,
     id: 0,
-    msg: 'Unknown error.',
-    raw: obj
-  }), obj)
+    message: 'Unknown error.',
+    raw: err.message
+  }), err)
 }
 
 export const ResponseErrorMsg = {
@@ -25,34 +25,48 @@ export const ResponseErrorMsg = {
   ApiModuleNotExist (moduleName) {
     return ResponseErrorJSON({
       id: 1,
-      msg: `ModuleName='${moduleName}' is not exist.`
+      message: `ModuleName='${moduleName}' is not exist.`
     })
   },
   ApiArgumentValidationError (errMsg) {
     return ResponseErrorJSON({
       id: 3,
-      msg: `Arguments not match.`,
+      message: `Arguments not match.`,
       more: errMsg
     })
   },
   EngineIdNotFound (engineId) {
     return ResponseErrorJSON({
       id: 10,
-      msg: `Engine id not found.`,
+      message: `Engine id not found.`,
       more: engineId
     })
   },
   AccountNotFoundInNode (nodeName) {
     return ResponseErrorJSON({
       id: 20,
-      msg: `Account not found in node.`,
+      message: `Account not found in node.`,
       more: nodeName
     })
   },
   InventoryNotFoundInNode (nodeName) {
     return ResponseErrorJSON({
       id: 30,
-      msg: `Inventory not found in node.`,
+      message: `Inventory not found in node.`,
+      more: nodeName
+    })
+  },
+  IONotFoundInNode (nodeName) {
+    return ResponseErrorJSON({
+      id: 40,
+      message: `IO not found in node.`,
+      more: nodeName
+    })
+  },
+  BiddingMarketReceiverNotFoundInNode (nodeName) {
+    return ResponseErrorJSON({
+      id: 50,
+      message: `BiddingMarketReceiver not found in node.`,
       more: nodeName
     })
   }

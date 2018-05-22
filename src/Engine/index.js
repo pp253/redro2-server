@@ -161,6 +161,7 @@ export default class Engine extends EventEmitter {
       this._newEngineEvent(ENGINE_EVENTS.GAME_TIME_CHANGE))
     let eventName = ENGINE_EVENTS.GAME_DAY_X_TIME_Y(this.getGameTime().day, 0)
     this.emit(eventName, this._newEngineEvent(eventName))
+
     console.log('TickingStart!', `day:`, this.getGameTime().day, Date.now())
 
     this._timer.startTime = Date.now()
@@ -181,11 +182,12 @@ export default class Engine extends EventEmitter {
     .then(() => {
       let now = Date.now()
       let adjustedNextTickMS = (this._timer.startTime + nextTime * 1000 + 1000) - now
-      console.log('Ticking!', `day:`, gameTime.day, `time:`, nextTime, `adjust:`, adjustedNextTickMS, Date.now())
       this.emit(ENGINE_EVENTS.GAME_TIME_CHANGE,
         this._newEngineEvent(ENGINE_EVENTS.GAME_TIME_CHANGE))
       let eventName = ENGINE_EVENTS.GAME_DAY_X_TIME_Y(gameTime.day, nextTime)
       this.emit(eventName, this._newEngineEvent(eventName))
+
+      console.log('Ticking!', `day:`, gameTime.day, `time:`, nextTime, `adjust:`, adjustedNextTickMS, Date.now())
 
       if (nextTime === this.store.state.dayLength - 1) {
         timeout(adjustedNextTickMS > 0 ? adjustedNextTickMS : 0)
@@ -198,17 +200,8 @@ export default class Engine extends EventEmitter {
   }
 
   _nextTickToOffWork () {
-    this.emit(ENGINE_EVENTS.GAME_TIME_CHANGE,
-      this._newEngineEvent(ENGINE_EVENTS.GAME_TIME_CHANGE))
-    this.emit(ENGINE_EVENTS.GAME_ISWORKING_CHANGE,
-      this._newEngineEvent(ENGINE_EVENTS.GAME_ISWORKING_CHANGE))
-    this.emit(ENGINE_EVENTS.GAME_OFFWORK,
-      this._newEngineEvent(ENGINE_EVENTS.GAME_OFFWORK))
     let gameTime = this.getGameTime()
     let nextTime = gameTime.time + 1
-    let eventName = ENGINE_EVENTS.GAME_DAY_X_TIME_Y(gameTime.day, nextTime)
-    this.emit(eventName, this._newEngineEvent(eventName))
-    console.log('TickingToOffWork!', `day:`, gameTime.day, `time:`, nextTime, Date.now())
 
     this.store.commit('SET_GAME_TIME', {
       day: gameTime.day,
@@ -216,6 +209,17 @@ export default class Engine extends EventEmitter {
       isWorking: false
     })
     .then(() => {
+      this.emit(ENGINE_EVENTS.GAME_TIME_CHANGE,
+      this._newEngineEvent(ENGINE_EVENTS.GAME_TIME_CHANGE))
+      this.emit(ENGINE_EVENTS.GAME_ISWORKING_CHANGE,
+      this._newEngineEvent(ENGINE_EVENTS.GAME_ISWORKING_CHANGE))
+      this.emit(ENGINE_EVENTS.GAME_OFFWORK,
+      this._newEngineEvent(ENGINE_EVENTS.GAME_OFFWORK))
+      let eventName = ENGINE_EVENTS.GAME_DAY_X_TIME_Y(gameTime.day, nextTime)
+      this.emit(eventName, this._newEngineEvent(eventName))
+
+      console.log('TickingToOffWork!', `day:`, gameTime.day, `time:`, nextTime, Date.now())
+
       if (gameTime.day === this.store.state.gameDays) {
         this.nextStage()
       }

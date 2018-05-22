@@ -102,7 +102,9 @@ export default class Inventory extends EventEmitter {
           type: INVENTORY_EVENTS.INVENTORY_IMPORT,
           gameTime: ioJournalItem.gameTime,
           target: this,
-          ioJournalItem: ioJournalItem
+          ioJournalItem: ioJournalItem,
+          nodeName: this.node.getName(),
+          engineId: this.engine.getId()
         }))
         resolve(this)
       })
@@ -173,7 +175,9 @@ export default class Inventory extends EventEmitter {
           type: INVENTORY_EVENTS.INVENTORY_EXPORT,
           gameTime: ioJournalItem.gameTime,
           target: this,
-          ioJournalItem: ioJournalItem
+          ioJournalItem: ioJournalItem,
+          nodeName: this.node.getName(),
+          engineId: this.engine.getId()
         }))
         resolve(this)
       })
@@ -199,7 +203,9 @@ export default class Inventory extends EventEmitter {
         this.emit(INVENTORY_EVENTS.INVENTORY_REGIST, new InventoryEvent({
           type: INVENTORY_EVENTS.INVENTORY_REGIST,
           gameTime: this.engine.getGameTime(),
-          target: this
+          target: this,
+          nodeName: this.node.getName(),
+          engineId: this.engine.getId()
         }))
         resolve(this)
       })
@@ -244,7 +250,9 @@ export default class Inventory extends EventEmitter {
           type: INVENTORY_EVENTS.INVENTORY_COUNT_STORAGE_COST,
           gameTime: this.engine.getGameTime(),
           target: this,
-          storageCost: sumOfCost
+          storageCost: sumOfCost,
+          nodeName: this.node.getName(),
+          engineId: this.engine.getId()
         }))
         resolve(this)
       })

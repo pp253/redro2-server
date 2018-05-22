@@ -85,7 +85,9 @@ export default class BiddingMarket extends EventEmitter {
           time: bi.time,
           gameTime: bi.gameTime,
           provider: this.node.getName(),
-          item: bi
+          item: bi,
+          nodeName: this.node.getName(),
+          engineId: this.engine.getId()
         }))
 
         resolve(this)
@@ -127,7 +129,9 @@ export default class BiddingMarket extends EventEmitter {
           time: bi.time,
           gameTime: bi.gameTime,
           provider: this.node.getName(),
-          item: bi
+          item: bi,
+          nodeName: this.node.getName(),
+          engineId: this.engine.getId()
         }))
 
         resolve(this)
@@ -176,7 +180,9 @@ export default class BiddingMarket extends EventEmitter {
           time: bi.time,
           gameTime: bi.gameTime,
           provider: this.node.getName(),
-          item: bi
+          item: bi,
+          nodeName: this.node.getName(),
+          engineId: this.engine.getId()
         }))
 
         resolve(this)
@@ -264,7 +270,9 @@ export default class BiddingMarket extends EventEmitter {
           time: bi.time,
           gameTime: bi.gameTime,
           provider: this.node.getName(),
-          item: bi
+          item: bi,
+          nodeName: this.node.getName(),
+          engineId: this.engine.getId()
         }))
 
         resolve(this)
@@ -328,7 +336,9 @@ export default class BiddingMarket extends EventEmitter {
           time: bi.time,
           gameTime: bi.gameTime,
           provider: this.node.getName(),
-          item: bi
+          item: bi,
+          nodeName: this.node.getName(),
+          engineId: this.engine.getId()
         }))
 
         resolve(this)

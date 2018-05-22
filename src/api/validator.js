@@ -54,5 +54,15 @@ export default {
     in: 'body',
     notEmpty: true,
     errorMessage: 'stocksItemList is required.'
+  },
+  'biddingItem': {
+    in: 'body',
+    notEmpty: true,
+    errorMessage: 'biddingItem is required.'
+  },
+  'biddingStageChange': {
+    in: 'body',
+    notEmpty: true,
+    errorMessage: 'biddingStageChange is required.'
   }
 }

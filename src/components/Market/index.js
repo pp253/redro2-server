@@ -86,7 +86,9 @@ export default class Market extends EventEmitter {
           gameTime: this.engine.getGameTime(),
           target: this,
           provider: this.node.getName(),
-          needs: this.getNeeds()
+          needs: this.getNeeds(),
+          nodeName: this.node.getName(),
+          engineId: this.engine.getId()
         }))
 
         resolve(this)
@@ -108,7 +110,9 @@ export default class Market extends EventEmitter {
           gameTime: this.engine.getGameTime(),
           target: this,
           provider: this.node.getName(),
-          needs: this.getNeeds()
+          needs: this.getNeeds(),
+          nodeName: this.node.getName(),
+          engineId: this.engine.getId()
         }))
 
         resolve(this)
@@ -180,7 +184,9 @@ export default class Market extends EventEmitter {
           gameTime: engineEvent.gameTime,
           provider: this,
           news: this.getAvailableNews(),
-          needs: this.getNeeds()
+          needs: this.getNeeds(),
+          nodeName: this.node.getName(),
+          engineId: this.engine.getId()
         }))
       })
     })

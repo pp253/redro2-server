@@ -60,13 +60,13 @@ export default class IO extends EventEmitter {
 
       // Same good should not in more than 1 item
       let list = ij.list
-      let uniqueMap = new WeakMap()
+      let uniqueSet = new Set()
       for (let ioJournalGoodItem of list) {
         let good = ioJournalGoodItem.good
-        if (uniqueMap.has(good)) {
+        if (uniqueSet.has(good)) {
           throw new Error('IO:import() Same good should not in more than 1 item.')
         }
-        uniqueMap.set(good, true)
+        uniqueSet.add(good)
       }
 
       // Available Goods check
@@ -95,35 +95,38 @@ export default class IO extends EventEmitter {
       .then((store) => {
         return new Promise((resolve, reject) => {
           if (ij.transportationStatus === TRANSPORTATION_STATUS.DELIVERING) {
-            let gta = this.node.engine.gameTimeAdd(ij.gameTime, ij.transportationTime)
+            let gta = this.engine.gameTimeAdd(ij.gameTime, ij.transportationTime)
 
-            this.node.engine.once(ENGINE_EVENTS.GAME_DAY_X_TIME_Y(gta.day, gta.time), (engineEvent) => {
-              let importJournal = this.getImportJournal()
-              let iji = importJournal[importJournal.length - 1].toObject()
-              let id = iji._id.toHexString()
+            let importJournal = store.state.importJournal.toObject()
+            let iji = importJournal[importJournal.length - 1]
 
-              this.store.commit('COMPLETE_IMPORT', {id: id})
+            this.engine.once(ENGINE_EVENTS.GAME_DAY_X_TIME_Y(gta.day, gta.time), (engineEvent) => {
+              this.store.commit('COMPLETE_IMPORT', {id: iji._id.toHexString()})
               .then(() => {
-                return this.node.Inventory.import({
-                  from: iji.from,
-                  to: iji.to,
-                  list: iji.list,
-                  price: iji.price,
-                  time: engineEvent.time,
-                  gameTime: engineEvent.gameTime
+                return new Promise((resolve, reject) => {
+                  this.node.Inventory.import({
+                    from: iji.from,
+                    to: iji.to,
+                    list: iji.list,
+                    price: iji.price,
+                    time: engineEvent.time,
+                    gameTime: engineEvent.gameTime
+                  })
+                  .then(() => { resolve() })
+                  .catch(err => { reject(err) })
                 })
               })
               .then(() => {
-                this.emit(IO_EVENTS.IO_COMPLETE, new IOEvent({
-                  type: IO_EVENTS.IO_COMPLETE,
+                this.emit(IO_EVENTS.IO_IMPORT_COMPLETE, new IOEvent({
+                  type: IO_EVENTS.IO_IMPORT_COMPLETE,
                   gameTime: engineEvent.gameTime,
                   target: this,
-                  ioJournalItem: iji
+                  ioJournalItem: iji,
+                  nodeName: this.node.getName(),
+                  engineId: this.engine.getId()
                 }))
               })
-              .catch(err => {
-                reject(err)
-              })
+              .catch(err => { reject(err) })
             })
 
             resolve(this)
@@ -142,11 +145,15 @@ export default class IO extends EventEmitter {
         })
       })
       .then(() => {
+        let importJournal = this.getImportJournal()
+        let iji = importJournal[importJournal.length - 1].toObject()
         this.emit(IO_EVENTS.IO_IMPORT, new IOEvent({
           type: IO_EVENTS.IO_IMPORT,
           gameTime: ij.gameTime,
           target: this,
-          ioJournalItem: ij
+          ioJournalItem: iji,
+          nodeName: this.node.getName(),
+          engineId: this.engine.getId()
         }))
         resolve(this)
       })
@@ -207,21 +214,35 @@ export default class IO extends EventEmitter {
       .then(() => {
         return this.store.commit('ADD_EXPORT', ij)
       })
-      .then(() => {
-        let exportJournal = this.getExportJournal()
-        let iji = exportJournal[exportJournal.length - 1].toObject()
+      .then((store) => {
+        let exportJournal = store.state.exportJournal.toObject()
+        let iji = exportJournal[exportJournal.length - 1]
+
         if (iji.transportationStatus === TRANSPORTATION_STATUS.DELIVERING) {
-          let gta = this.node.engine.gameTimeAdd(iji.gameTime, iji.transportationTime)
-          this.node.engine.once(ENGINE_EVENTS.GAME_DAY_X_TIME_Y(gta.day, gta.time), () => {
+          let gta = this.engine.gameTimeAdd(iji.gameTime, iji.transportationTime)
+          this.engine.once(ENGINE_EVENTS.GAME_DAY_X_TIME_Y(gta.day, gta.time), (engineEvent) => {
             this.store.commit('COMPLETE_EXPORT', {id: iji._id.toHexString()})
+            .then(() => {
+              this.emit(IO_EVENTS.IO_EXPORT_COMPLETE, new IOEvent({
+                type: IO_EVENTS.IO_EXPORT_COMPLETE,
+                gameTime: engineEvent.gameTime,
+                target: this,
+                ioJournalItem: iji,
+                nodeName: this.node.getName(),
+                engineId: this.engine.getId()
+              }))
+            })
+            .catch(err => { reject(err) })
           })
         }
 
-        this.emit(IO_EVENTS.IO_IMPORT, new IOEvent({
-          type: IO_EVENTS.IO_IMPORT,
-          gameTime: ij.gameTime,
+        this.emit(IO_EVENTS.IO_EXPORT, new IOEvent({
+          type: IO_EVENTS.IO_EXPORT,
+          gameTime: iji.gameTime,
           target: this,
-          ioJournalItem: ij
+          ioJournalItem: iji,
+          nodeName: this.node.getName(),
+          engineId: this.engine.getId()
         }))
 
         resolve(this)
@@ -317,12 +338,36 @@ export default class IO extends EventEmitter {
       case USER_LEVEL.PLAYER:
         return [
           IO_EVENTS.IO_IMPORT,
-          IO_EVENTS.IO_EXPORT
+          IO_EVENTS.IO_EXPORT,
+          IO_EVENTS.IO_IMPORT_COMPLETE,
+          IO_EVENTS.IO_EXPORT_COMPLETE
         ]
 
       default:
       case USER_LEVEL.GUEST:
         return []
+    }
+  }
+
+  toMaskedObject () {
+    return {
+      engineId: this.engine.getId(),
+      nodeName: this.node.getName(),
+
+      enableImport: this.store.state.enableImport,
+      importJournal: this.store.state.importJournal.toObject(),
+      availableImportGoods: this.store.state.availableImportGoods.toObject(),
+      hasImportLimit: this.store.state.hasImportLimit,
+      rejectNotAvailableImportGoods: this.store.state.rejectNotAvailableImportGoods,
+
+      enableExport: this.store.state.enableExport,
+      exportJournal: this.store.state.exportJournal.toObject(),
+      availableExportGoods: this.store.state.availableExportGoods.toObject(),
+      hasExportLimit: this.store.state.hasExportLimit,
+      rejectNotAvailableExportGoods: this.store.state.rejectNotAvailableExportGoods,
+
+      transportationCost: this.store.state.transportationCost,
+      batchSize: this.store.state.batchSize
     }
   }
 

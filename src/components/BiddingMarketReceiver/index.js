@@ -215,7 +215,16 @@ export default class BiddingMarketReceiver extends EventEmitter {
     return this.store.toObject()
   }
 
-  toMaskedObject () {}
+  toMaskedObject () {
+    return {
+      engineId: this.engine.getId(),
+      nodeName: this.node.getName(),
+      enableUpstream: this.store.state.enableUpstream,
+      upstreamProvider: this.store.state.upstreamProvider,
+      enableDownstream: this.store.state.enableDownstream,
+      downstreamProvider: this.store.state.downstreamProvider
+    }
+  }
 
   getId () {
     return this.store.state._id.toHexString()

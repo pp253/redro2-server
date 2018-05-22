@@ -13,18 +13,18 @@ export function getInfo (req, res, next) {
       let nodeName = req.body.nodeName
       let engine = Server.getEngine(engineId)
       let node = engine.getNode(nodeName)
-      if (!node.Inventory) {
-        throw ResponseErrorMsg.InventoryNotFoundInNode(nodeName)
+      if (!node.IO) {
+        throw ResponseErrorMsg.IONotFoundInNode(nodeName)
       }
       resolve(ResponseSuccessJSON({
-        inventory: node.Inventory.toMaskedObject()
+        io: node.IO.toMaskedObject()
       }))
     })
     .catch(err => { reject(ResponseErrorJSON(err)) })
   })
 }
 
-export function importInventory (req, res, next) {
+export function importIO (req, res, next) {
   return new Promise((resolve, reject) => {
     reqCheck(req, {
       engineId: validator.engineId,
@@ -36,15 +36,15 @@ export function importInventory (req, res, next) {
       let nodeName = req.body.nodeName
       let engine = Server.getEngine(engineId)
       let node = engine.getNode(nodeName)
-      if (!node.Inventory) {
-        throw ResponseErrorMsg.InventoryNotFoundInNode(nodeName)
+      if (!node.IO) {
+        throw ResponseErrorMsg.IONotFoundInNode(nodeName)
       }
       let ioJournalItem = req.body.ioJournalItem
-      return node.Inventory.import(ioJournalItem)
+      return node.IO.import(ioJournalItem)
     })
-    .then((inventory) => {
+    .then((io) => {
       resolve(ResponseSuccessJSON({
-        inventory: inventory.toMaskedObject()
+        io: io.toMaskedObject()
       }))
     })
     .catch(err => {
@@ -54,7 +54,7 @@ export function importInventory (req, res, next) {
   })
 }
 
-export function exportInventory (req, res, next) {
+export function exportIO (req, res, next) {
   return new Promise((resolve, reject) => {
     reqCheck(req, {
       engineId: validator.engineId,
@@ -66,45 +66,15 @@ export function exportInventory (req, res, next) {
       let nodeName = req.body.nodeName
       let engine = Server.getEngine(engineId)
       let node = engine.getNode(nodeName)
-      if (!node.Inventory) {
-        throw ResponseErrorMsg.InventoryNotFoundInNode(nodeName)
+      if (!node.IO) {
+        throw ResponseErrorMsg.IONotFoundInNode(nodeName)
       }
       let ioJournalItem = req.body.ioJournalItem
-      return node.Inventory.export(ioJournalItem)
+      return node.IO.export(ioJournalItem)
     })
-    .then((inventory) => {
+    .then((io) => {
       resolve(ResponseSuccessJSON({
-        inventory: inventory.toMaskedObject()
-      }))
-    })
-    .catch(err => {
-      console.error(err)
-      reject(ResponseErrorJSON(err))
-    })
-  })
-}
-
-export function regist (req, res, next) {
-  return new Promise((resolve, reject) => {
-    reqCheck(req, {
-      engineId: validator.engineId,
-      nodeName: validator.nodeName,
-      stocksItemList: validator.stocksItemList
-    })
-    .then(() => {
-      let engineId = req.body.engineId
-      let nodeName = req.body.nodeName
-      let engine = Server.getEngine(engineId)
-      let node = engine.getNode(nodeName)
-      if (!node.Inventory) {
-        throw ResponseErrorMsg.InventoryNotFoundInNode(nodeName)
-      }
-      let stocksItemList = req.body.stocksItemList
-      return node.Inventory.regist(stocksItemList)
-    })
-    .then((inventory) => {
-      resolve(ResponseSuccessJSON({
-        inventory: inventory.toMaskedObject()
+        io: io.toMaskedObject()
       }))
     })
     .catch(err => {
