@@ -222,7 +222,12 @@ export default class BiddingMarketReceiver extends EventEmitter {
       enableUpstream: this.store.state.enableUpstream,
       upstreamProvider: this.store.state.upstreamProvider,
       enableDownstream: this.store.state.enableDownstream,
-      downstreamProvider: this.store.state.downstreamProvider
+      downstreamProvider: this.store.state.downstreamProvider,
+      upstream: {
+        enable: this.store.state.enableUpstream,
+        biddings: this.getUpstreamBiddings(),
+        breakoffPaneltyRatio: ''
+      }
     }
   }
 

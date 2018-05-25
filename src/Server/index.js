@@ -101,7 +101,6 @@ export class Server extends EventEmitter {
                     engine.on(eventName, (event) => {
                       let shellowEvent = Object.assign({}, event)
                       delete shellowEvent.target
-                      delete shellowEvent.provider
                       io.to(`${id}/${teamIndex}/${role}`).emit(eventName, shellowEvent)
                     })
                   }
@@ -111,7 +110,6 @@ export class Server extends EventEmitter {
                     node.on(eventName, (event) => {
                       let shellowEvent = Object.assign({}, event)
                       delete shellowEvent.target
-                      delete shellowEvent.provider
                       io.to(`${id}/${teamIndex}/${role}`).emit(eventName, shellowEvent)
                     })
                   }

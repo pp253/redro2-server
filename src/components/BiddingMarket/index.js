@@ -175,7 +175,7 @@ export default class BiddingMarket extends EventEmitter {
         let bi = this.getBiddingById(biddingStageChange.id)
 
         this.emit(BIDDING_EVENTS.BIDDING_SIGNED, new BiddingMarketEvent({
-          type: BIDDING_EVENTS.BIDDING_CANCELED,
+          type: BIDDING_EVENTS.BIDDING_SIGNED,
           target: this,
           time: bi.time,
           gameTime: bi.gameTime,
@@ -265,7 +265,7 @@ export default class BiddingMarket extends EventEmitter {
         let bi = this.getBiddingById(BiddingStageChange.id)
 
         this.emit(BIDDING_EVENTS.BIDDING_BREAKOFF, new BiddingMarketEvent({
-          type: BIDDING_EVENTS.BIDDING_CANCELED,
+          type: BIDDING_EVENTS.BIDDING_BREAKOFF,
           target: this,
           time: bi.time,
           gameTime: bi.gameTime,
@@ -331,7 +331,7 @@ export default class BiddingMarket extends EventEmitter {
         let bi = this.getBiddingById(BiddingStageChange.id)
 
         this.emit(BIDDING_EVENTS.BIDDING_COMPLETED, new BiddingMarketEvent({
-          type: BIDDING_EVENTS.BIDDING_CANCELED,
+          type: BIDDING_EVENTS.BIDDING_COMPLETED,
           target: this,
           time: bi.time,
           gameTime: bi.gameTime,
@@ -395,11 +395,11 @@ export default class BiddingMarket extends EventEmitter {
       case USER_LEVEL.ADMIN:
       case USER_LEVEL.STAFF:
         return [
-          BIDDING_EVENTS.BIDDING_BREAKOFF,
-          BIDDING_EVENTS.BIDDING_CANCELED,
-          BIDDING_EVENTS.BIDDING_COMPLETED,
           BIDDING_EVENTS.BIDDING_RELEASED,
-          BIDDING_EVENTS.BIDDING_SIGNED
+          BIDDING_EVENTS.BIDDING_CANCELED,
+          BIDDING_EVENTS.BIDDING_SIGNED,
+          BIDDING_EVENTS.BIDDING_BREAKOFF,
+          BIDDING_EVENTS.BIDDING_COMPLETED
         ]
 
       default:

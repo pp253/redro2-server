@@ -29,7 +29,6 @@ export function releaseToUpstream (req, res, next) {
     reqCheck(req, {
       engineId: validator.engineId,
       nodeName: validator.nodeName,
-      provider: validator.nodeName,
       biddingItem: validator.biddingItem
     })
     .then(() => {
@@ -57,7 +56,6 @@ export function signToUpstream (req, res, next) {
     reqCheck(req, {
       engineId: validator.engineId,
       nodeName: validator.nodeName,
-      provider: validator.nodeName,
       biddingStageChange: validator.biddingStageChange
     })
     .then(() => {
