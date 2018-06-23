@@ -7,6 +7,7 @@ import * as engine from '@/api/engine'
 import * as account from '@/api/account'
 import * as inventory from '@/api/inventory'
 import * as io from '@/api/io'
+import * as biddingmarketreceiver from '@/api/biddingmarketreceiver'
 import { USER_LEVEL } from '@/lib/schema'
 
 const apiRoute = {
@@ -14,7 +15,8 @@ const apiRoute = {
   engine: engine,
   account: account,
   inventory: inventory,
-  io: io
+  io: io,
+  biddingmarketreceiver: biddingmarketreceiver
 }
 
 export default function initialize (app) {

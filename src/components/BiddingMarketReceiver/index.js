@@ -216,19 +216,48 @@ export default class BiddingMarketReceiver extends EventEmitter {
   }
 
   toMaskedObject () {
-    return {
+    let obj = {
       engineId: this.engine.getId(),
-      nodeName: this.node.getName(),
-      enableUpstream: this.store.state.enableUpstream,
-      upstreamProvider: this.store.state.upstreamProvider,
-      enableDownstream: this.store.state.enableDownstream,
-      downstreamProvider: this.store.state.downstreamProvider,
-      upstream: {
+      nodeName: this.node.getName()
+    }
+
+    if (this.store.state.enableUpstream) {
+      let upstreamObject = this.upstreamProvider.BiddingMarket.toObject()
+      obj.upstream = {
         enable: this.store.state.enableUpstream,
+        provider: this.upstreamProvider.getId(),
+        name: this.upstreamProvider.getName(),
         biddings: this.getUpstreamBiddings(),
-        breakoffPaneltyRatio: ''
+        breakoffPaneltyRatio: upstreamObject.breakoffPaneltyRatio,
+        breakoffCompensationRatio: upstreamObject.breakoffCompensationRatio,
+        transportationTime: upstreamObject.transportationTime,
+        transportationStatus: upstreamObject.transportationStatus
+      }
+    } else {
+      obj.upstream = {
+        enable: false
       }
     }
+
+    if (this.store.state.enableDownstream) {
+      let downstreamObject = this.downstreamProvider.BiddingMarket.toObject()
+      obj.downstream = {
+        enable: this.store.state.enableDownstream,
+        provider: this.downstreamProvider.getId(),
+        name: this.downstreamProvider.getName(),
+        biddings: this.getDownstreamBiddings(),
+        breakoffPaneltyRatio: downstreamObject.breakoffPaneltyRatio,
+        breakoffCompensationRatio: downstreamObject.breakoffCompensationRatio,
+        transportationTime: downstreamObject.transportationTime,
+        transportationStatus: downstreamObject.transportationStatus
+      }
+    } else {
+      obj.downstream = {
+        enable: false
+      }
+    }
+
+    return obj
   }
 
   getId () {
