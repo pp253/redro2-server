@@ -126,8 +126,8 @@ export default class BiddingMarket extends EventEmitter {
         this.emit(BIDDING_EVENTS.BIDDING_CANCELED, new BiddingMarketEvent({
           type: BIDDING_EVENTS.BIDDING_CANCELED,
           target: this,
-          time: bi.time,
-          gameTime: bi.gameTime,
+          time: biddingStageChange.time || Date.now(),
+          gameTime: biddingStageChange.gameTime || this.engine.getGameTime(),
           provider: this.node.getName(),
           item: bi,
           nodeName: this.node.getName(),
@@ -235,8 +235,8 @@ export default class BiddingMarket extends EventEmitter {
           counterObject: this.node.getName()
         }],
         memo: 'Breakoff Panelty',
-        time: BiddingStageChange.time,
-        gameTime: BiddingStageChange.gameTime
+        time: BiddingStageChange.time || Date.now(),
+        gameTime: BiddingStageChange.gameTime || this.engine.getGameTime()
       })
       .then(() => {
         return breakoffeder.Account.add({
@@ -251,8 +251,8 @@ export default class BiddingMarket extends EventEmitter {
             counterObject: this.node.getName()
           }],
           memo: 'Breakoff Compensation',
-          time: BiddingStageChange.time,
-          gameTime: BiddingStageChange.gameTime
+          time: BiddingStageChange.time || Date.now(),
+          gameTime: BiddingStageChange.gameTime || this.engine.getGameTime()
         })
       })
       .then(() => {

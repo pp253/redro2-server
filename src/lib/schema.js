@@ -94,7 +94,7 @@ export class BiddingMarketEvent extends Event {
     super(options)
     this.provider = options.provider
     this.news = options.news
-    this.needs = options.needs
+    this.item = options.item
   }
 }
 

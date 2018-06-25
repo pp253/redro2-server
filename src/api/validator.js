@@ -64,5 +64,10 @@ export default {
     in: 'body',
     notEmpty: true,
     errorMessage: 'biddingStageChange is required.'
+  },
+  'marketJournalItem': {
+    in: 'body',
+    notEmpty: true,
+    errorMessage: 'marketJournalItem is required.'
   }
 }

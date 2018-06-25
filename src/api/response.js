@@ -69,6 +69,41 @@ export const ResponseErrorMsg = {
       message: `BiddingMarketReceiver not found in node.`,
       more: nodeName
     })
+  },
+  BiddingMarketNotFoundInNode (nodeName) {
+    return ResponseErrorJSON({
+      id: 60,
+      message: `BiddingMarket not found in node.`,
+      more: nodeName
+    })
+  },
+  MarketReceiverNotFoundInNode (nodeName) {
+    return ResponseErrorJSON({
+      id: 70,
+      message: `MarketReceiver not found in node.`,
+      more: nodeName
+    })
+  },
+  MarketNotFoundInNode (nodeName) {
+    return ResponseErrorJSON({
+      id: 80,
+      message: `Market not found in node.`,
+      more: nodeName
+    })
+  },
+  AssemblyDepartmentNotFoundInNode (nodeName) {
+    return ResponseErrorJSON({
+      id: 90,
+      message: `Market not found in node.`,
+      more: nodeName
+    })
+  },
+  InventoryRegisterNotFoundInNode (nodeName) {
+    return ResponseErrorJSON({
+      id: 100,
+      message: `InventoryRegister not found in node.`,
+      more: nodeName
+    })
   }
 }
 

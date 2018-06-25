@@ -247,6 +247,10 @@ export default class AssemblyDepartment extends EventEmitter {
     return this.store.toObject()
   }
 
+  toMaskedObject () {
+    return this.toObject()
+  }
+
   getId () {
     return this.store.state._id.toHexString()
   }

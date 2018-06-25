@@ -225,7 +225,7 @@ export default class BiddingMarketReceiver extends EventEmitter {
       let upstreamObject = this.upstreamProvider.BiddingMarket.toObject()
       obj.upstream = {
         enable: this.store.state.enableUpstream,
-        provider: this.upstreamProvider.getId(),
+        provider: this.upstreamProvider.getName(),
         name: this.upstreamProvider.getName(),
         biddings: this.getUpstreamBiddings(),
         breakoffPaneltyRatio: upstreamObject.breakoffPaneltyRatio,
@@ -243,7 +243,7 @@ export default class BiddingMarketReceiver extends EventEmitter {
       let downstreamObject = this.downstreamProvider.BiddingMarket.toObject()
       obj.downstream = {
         enable: this.store.state.enableDownstream,
-        provider: this.downstreamProvider.getId(),
+        provider: this.downstreamProvider.getName(),
         name: this.downstreamProvider.getName(),
         biddings: this.getDownstreamBiddings(),
         breakoffPaneltyRatio: downstreamObject.breakoffPaneltyRatio,

@@ -18,7 +18,7 @@ import { PRODUCTION } from '@/lib/utils'
 import * as validator from '@/api/validator'
 import io from '@/lib/io'
 
-EventEmitter.defaultMaxListeners = 10000
+EventEmitter.defaultMaxListeners = 1000000
 
 console.log(`ENV: ${PRODUCTION ? 'production' : 'development'}`)
 

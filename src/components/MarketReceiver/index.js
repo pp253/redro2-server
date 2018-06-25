@@ -101,6 +101,13 @@ export default class MarketReceiver extends EventEmitter {
     return this.store.toObject()
   }
 
+  toMaskedObject () {
+    return {
+      provider: this.store.provider,
+      news: this.getProvider().getAvailableNews()
+    }
+  }
+
   getId () {
     return this.store.state._id.toHexString()
   }

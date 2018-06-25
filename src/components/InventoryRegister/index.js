@@ -95,6 +95,10 @@ export default class InventoryRegister extends EventEmitter {
     return this.store.toObject()
   }
 
+  toMaskedObject () {
+    return this.toObject()
+  }
+
   getId () {
     return this.store.state._id.toHexString()
   }

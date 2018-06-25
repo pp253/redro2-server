@@ -94,7 +94,7 @@ export function signToUpstream (req, res, next) {
         throw ResponseErrorMsg.BiddingMarketReceiverNotFoundInNode(nodeName)
       }
       let biddingStageChange = req.body.biddingStageChange
-      return node.BiddingMarketReceiver.releaseToUpstream(biddingStageChange)
+      return node.BiddingMarketReceiver.signToUpstream(biddingStageChange)
     })
     .then((biddingMarketReceiver) => {
       resolve(ResponseSuccessJSON({
