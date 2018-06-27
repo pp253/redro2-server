@@ -3,7 +3,7 @@ import _ from 'lodash'
 import store from './store'
 import Node from '@/Node'
 import { PRODUCTION } from '@/lib/utils'
-import { USER_LEVEL } from '@/lib/schema'
+import { USER_LEVEL, MARKET_EVENTS } from '@/lib/schema'
 
 export default class MarketReceiver extends EventEmitter {
   constructor () {
@@ -31,6 +31,16 @@ export default class MarketReceiver extends EventEmitter {
       store(state)
       .then((store) => {
         this.store = store
+        this.provider = this.engine.getNode(this.getProvider())
+
+        for (let eventName of [
+          MARKET_EVENTS.MARKET_NEEDS_CHANGE,
+          MARKET_EVENTS.MARKET_NEWS_PUBLISHED
+        ]) {
+          this.provider.Market.on(eventName, (marketEvent) => {
+            this.emit(eventName, marketEvent)
+          })
+        }
 
         resolve(this)
       })

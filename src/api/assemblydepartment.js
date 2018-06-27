@@ -13,11 +13,11 @@ export function getInfo (req, res, next) {
       let nodeName = req.body.nodeName
       let engine = Server.getEngine(engineId)
       let node = engine.getNode(nodeName)
-      if (!node.MarketReceiver) {
-        throw ResponseErrorMsg.MarketReceiverNotFoundInNode(nodeName)
+      if (!node.AssemblyDepartment) {
+        throw ResponseErrorMsg.AssemblyDepartmentNotFoundInNode(nodeName)
       }
       resolve(ResponseSuccessJSON({
-        marketreceiver: node.MarketReceiver.toMaskedObject()
+        assemblydepartment: node.AssemblyDepartment.toMaskedObject()
       }))
     })
     .catch(err => { reject(ResponseErrorJSON(err)) })

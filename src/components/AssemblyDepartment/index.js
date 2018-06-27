@@ -91,8 +91,8 @@ export default class AssemblyDepartment extends EventEmitter {
         to: this.node.getName(),
         list: componentsList,
         price: sumOfCostOfSales,
-        time: ioJournalItem.time,
-        gameTime: ioJournalItem.gameTime
+        time: ioJournalItem.time || Date.now(),
+        gameTime: ioJournalItem.gameTime || this.engine.getGameTime()
       })
       .then(() => {
         return account.add({
@@ -107,8 +107,8 @@ export default class AssemblyDepartment extends EventEmitter {
             counterObject: to
           }],
           memo: 'Assemble',
-          time: ioJournalItem.time,
-          gameTime: ioJournalItem.gameTime
+          time: ioJournalItem.time || Date.now(),
+          gameTime: ioJournalItem.gameTime || this.engine.getGameTime()
         })
       })
       .then(() => {
@@ -124,8 +124,8 @@ export default class AssemblyDepartment extends EventEmitter {
             counterObject: to
           }],
           memo: 'Assemble',
-          time: ioJournalItem.time,
-          gameTime: ioJournalItem.gameTime
+          time: ioJournalItem.time || Date.now(),
+          gameTime: ioJournalItem.gameTime || this.engine.getGameTime()
         })
       })
       .then(() => {
@@ -134,8 +134,8 @@ export default class AssemblyDepartment extends EventEmitter {
           to: to,
           list: productsList,
           price: sumOfCostOfSales,
-          time: ioJournalItem.time,
-          gameTime: ioJournalItem.gameTime
+          time: ioJournalItem.time || Date.now(),
+          gameTime: ioJournalItem.gameTime || this.engine.getGameTime()
         })
       })
       .then(() => {
@@ -152,8 +152,8 @@ export default class AssemblyDepartment extends EventEmitter {
             counterObject: to
           }],
           memo: 'Assemble',
-          time: ioJournalItem.time,
-          gameTime: ioJournalItem.gameTime
+          time: ioJournalItem.time || Date.now(),
+          gameTime: ioJournalItem.gameTime || this.engine.getGameTime()
         })
       })
       .then(() => {

@@ -4,6 +4,7 @@ import { StocksItemSchema } from '@/components/Inventory/model'
 
 export const MarketNewsSchema = new mongoose.Schema({
   title: {type: String},
+  banner: {type: String},
   content: {type: String},
   releasedGameTime: {type: schema.GameTimeSchema},
   marketNeeds: [StocksItemSchema]
