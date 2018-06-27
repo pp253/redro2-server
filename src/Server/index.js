@@ -1,5 +1,5 @@
 import Engine from '@/Engine'
-import { USER_LEVEL, ROOM_EVENTS } from '@/lib/schema'
+import { USER_LEVEL, ROOM_EVENTS, SERVER_EVENTS } from '@/lib/schema'
 import {ResponseSuccessJSON, ResponseErrorJSON, ResponseErrorMsg, reqCheck} from '@/api/response'
 import { EventEmitter } from 'events'
 import _ from 'lodash'
@@ -96,12 +96,13 @@ export class Server extends EventEmitter {
               for (let objectType of rolePer.objectTypes) {
                 let type = objectType.type
                 let listening = objectType.listening
+                let room = `${id}/${teamIndex}/${role}${teamIndex !== 0 ? '-' + teamIndex : ''}`
                 if (type === 'Engine') {
                   for (let eventName of listening) {
                     engine.on(eventName, (event) => {
                       let shellowEvent = Object.assign({}, event)
                       delete shellowEvent.target
-                      io.to(`${id}/${teamIndex}/${role}`).emit(eventName, shellowEvent)
+                      io.to(room).emit(eventName, shellowEvent)
                     })
                   }
                 } else {
@@ -110,10 +111,11 @@ export class Server extends EventEmitter {
                     node.on(eventName, (event) => {
                       let shellowEvent = Object.assign({}, event)
                       delete shellowEvent.target
-                      io.to(`${id}/${teamIndex}/${role}`).emit(eventName, shellowEvent)
+                      io.to(room).emit(eventName, shellowEvent)
                     })
                   }
                 }
+                console.log(room)
               }
             }
           }
@@ -240,6 +242,10 @@ export class Server extends EventEmitter {
     return this.store.state.users.find(user => user._id.equals(userId))
   }
 
+  getUsers () {
+    return this.store.state.users
+  }
+
   getUserLevel (userId) {
     let user = this.getUser(userId)
     if (user === undefined) {
@@ -283,6 +289,26 @@ export class Server extends EventEmitter {
         return [
           'userLogin'
         ]
+    }
+  }
+
+  getListening (level) {
+    switch (level) {
+      case USER_LEVEL.ADMIN:
+      case USER_LEVEL.STAFF:
+      case USER_LEVEL.PLAYER:
+        return [
+          ENGINE_EVENTS.GAME_DAY_CHANGE,
+          ENGINE_EVENTS.GAME_ISWORKING_CHANGE,
+          ENGINE_EVENTS.GAME_OFFWORK,
+          ENGINE_EVENTS.GAME_ONWORK,
+          ENGINE_EVENTS.GAME_STAGE_CHANGE,
+          ENGINE_EVENTS.GAME_TIME_CHANGE
+        ]
+
+      default:
+      case USER_LEVEL.GUEST:
+        return []
     }
   }
 

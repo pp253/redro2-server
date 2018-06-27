@@ -325,6 +325,8 @@ export default class Engine extends EventEmitter {
       stage: this.store.state.stage,
       nodes: this.getNodes(),
       permissions: [],
+      playerTeams: this.getPlayerTeams(),
+      staffTeams: this.getStaffTeams(),
       id: this.getId()
     }
   }

@@ -75,6 +75,9 @@ export default class Market extends EventEmitter {
       }
       marketJournalItem.price = price
 
+      marketJournalItem.time = marketJournalItem.time || Date.now()
+      marketJournalItem.gameTime = marketJournalItem.gameTime || this.engine.getGameTime()
+
       this.store.save()
       .then(() => {
         return this.engine.getNode(marketJournalItem.from)
@@ -181,8 +184,8 @@ export default class Market extends EventEmitter {
         this.emit(MARKET_EVENTS.MARKET_NEWS_PUBLISHED, new BiddingMarketEvent({
           type: MARKET_EVENTS.MARKET_NEWS_PUBLISHED,
           target: this,
+          provider: this.node.getName(),
           gameTime: engineEvent.gameTime,
-          provider: this,
           news: this.getAvailableNews(),
           needs: this.getNeeds(),
           nodeName: this.node.getName(),
@@ -270,7 +273,14 @@ export default class Market extends EventEmitter {
   }
 
   toMaskedObject () {
-    return this.toObject()
+    return {
+      engineId: this.engine.getId(),
+      nodeName: this.node.getName(),
+
+      upstreams: this.store.state.upstreams,
+      news: this.store.state.news,
+      needs: this.getNeeds()
+    }
   }
 
   getId () {
