@@ -4,6 +4,7 @@ import store from './store'
 import Node from '@/Node'
 import { PRODUCTION } from '@/lib/utils'
 import { USER_LEVEL } from '@/lib/schema'
+import { ResponseErrorMsg } from '@/api/response'
 
 /**
  * @typedef BiddingStageChange
@@ -22,10 +23,10 @@ export default class InventoryRegister extends EventEmitter {
   load (node, options) {
     return new Promise((resolve, reject) => {
       if (PRODUCTION && !(node instanceof Node)) {
-        throw new Error('InventoryRegister:load() `node` should be instance of Node.')
+        throw ResponseErrorMsg.NodeNotAnInstanceOfNode()
       }
       if (this._loaded) {
-        throw new Error('InventoryRegister:load() Node has been loaded before.')
+        throw ResponseErrorMsg.InventoryRegisterHasLoaded(node.getName())
       }
       this._loaded = true
 

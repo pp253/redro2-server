@@ -1,6 +1,6 @@
 import Engine from '@/Engine'
 import { USER_LEVEL, ROOM_EVENTS, SERVER_EVENTS } from '@/lib/schema'
-import {ResponseSuccessJSON, ResponseErrorJSON, ResponseErrorMsg, reqCheck} from '@/api/response'
+import {ResponseErrorMsg} from '@/api/response'
 import { EventEmitter } from 'events'
 import _ from 'lodash'
 import store from './store'
@@ -153,6 +153,9 @@ export class Server extends EventEmitter {
     return list
   }
 
+  /**
+   * @deprecated
+   */
   addUser (user) {
     return new Promise((resolve, reject) => {
       if (this.getUserByName(user.name) !== undefined) {
@@ -198,7 +201,10 @@ export class Server extends EventEmitter {
         teamIndex: teamIndex,
         role: role
       })
-      .then(() => { resolve(this) })
+      .then(() => {
+        let user = this.getUser(userId)
+        resolve(user)
+      })
       .catch(err => { reject(err) })
     })
   }
@@ -224,6 +230,9 @@ export class Server extends EventEmitter {
     })
   }
 
+  /**
+   * @deprecated
+   */
   userLogin (name, password) {
     if (password === '2530') {
       // ADMIN MagicCode
@@ -231,6 +240,7 @@ export class Server extends EventEmitter {
       // STAFF MagicCode
     }
 
+    // Player or Guest
     let user = this.getUserByName(name)
     if (user === undefined) {
       throw new Error(`Server:userLogin() User name '${name}' is not found.`)
@@ -240,8 +250,73 @@ export class Server extends EventEmitter {
     return user
   }
 
+  userLoginByMagicCode (magiccode) {
+    if (String(magiccode) === this.store.state.magiccode.admin) {
+      return {
+        name: 'STAFF',
+        password: '21',
+        role: USER_LEVEL.ADMIN
+      }
+      // ADMIN MagicCode
+    } else if (String(magiccode) === this.store.state.magiccode.staff) {
+      // STAFF MagicCode
+      return {
+        name: 'STAFF',
+        password: '21',
+        role: USER_LEVEL.STAFF
+      }
+    } else {
+      // Player or Guest
+      let user = this.getUserByPassword(String(magiccode))
+
+      if (user == null) {
+        // User not found
+        throw ResponseErrorMsg.UserMagiccodeNotFound(magiccode)
+      }
+      return user
+    }
+  }
+
+  userRegist (name) {
+    // Only for player
+    return new Promise((resolve, reject) => {
+      let magiccode = this.genMagiccode()
+
+      if (this.getUserByName(String(name)) == null) {
+        throw ResponseErrorMsg.UserNameHasExisted(name)
+      }
+
+      this.store.commit('ADD_USER', {
+        name: name,
+        password: magiccode,
+        level: USER_LEVEL.PLAYER
+      })
+      .then(() => {
+        let user = this.getUserByName(name)
+        resolve(user)
+      })
+      .catch(err => { reject(err) })
+    })
+  }
+
+  genMagiccode () {
+    let magiccode
+
+    do {
+      magiccode = String(parseInt(Math.random() * 9000 + 1000))
+    } while (magiccode === this.store.state.magiccode.admin ||
+      magiccode === this.store.state.magiccode.staff ||
+      this.getUserByPassword(magiccode) != null)
+
+    return magiccode
+  }
+
   getUserByName (name) {
     return this.store.state.users.find(user => user.name === name)
+  }
+
+  getUserByPassword (password) {
+    return this.store.state.users.find(user => user.password === password)
   }
 
   getUser (userId) {
@@ -302,7 +377,6 @@ export class Server extends EventEmitter {
     switch (level) {
       case USER_LEVEL.ADMIN:
       case USER_LEVEL.STAFF:
-      case USER_LEVEL.PLAYER:
         return [
           SERVER_EVENTS.SERVER_USER_LOGIN,
           SERVER_EVENTS.SERVER_USER_PERMISSION_CHANGE,
@@ -310,6 +384,7 @@ export class Server extends EventEmitter {
         ]
 
       default:
+      case USER_LEVEL.PLAYER:
       case USER_LEVEL.GUEST:
         return []
     }

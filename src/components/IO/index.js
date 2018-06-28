@@ -4,6 +4,7 @@ import store from './store'
 import Node from '@/Node'
 import { PRODUCTION } from '@/lib/utils'
 import { ENGINE_EVENTS, TRANSPORTATION_STATUS, USER_LEVEL, IO_EVENTS, IOEvent } from '@/lib/schema'
+import { ResponseErrorMsg } from '@/api/response'
 
 export default class IO extends EventEmitter {
   constructor () {
@@ -16,10 +17,10 @@ export default class IO extends EventEmitter {
   load (node, options) {
     return new Promise((resolve, reject) => {
       if (PRODUCTION && !(node instanceof Node)) {
-        throw new Error('IO:load() `node` should be instance of Node.')
+        throw ResponseErrorMsg.NodeNotAnInstanceOfNode()
       }
       if (this._loaded) {
-        throw new Error('IO:load() IO has been loaded before.')
+        throw ResponseErrorMsg.IOHasLoaded(node.getName())
       }
       this._loaded = true
 
@@ -64,7 +65,7 @@ export default class IO extends EventEmitter {
       for (let ioJournalGoodItem of list) {
         let good = ioJournalGoodItem.good
         if (uniqueSet.has(good)) {
-          throw new Error('IO:import() Same good should not in more than 1 item.')
+          throw ResponseErrorMsg.IOUniqueGood(this.node.getName(), good)
         }
         uniqueSet.add(good)
       }
@@ -74,7 +75,7 @@ export default class IO extends EventEmitter {
         let good = ioJournalGoodItem.good
         let unit = ioJournalGoodItem.unit
         if (!this.isImportGoodAvailable(good, unit)) {
-          throw new Error(`IO:import() Goods '${good}' (${unit}) imported is not available.`)
+          throw ResponseErrorMsg.IOImportNotAvailable(this.node.getName(), good, unit)
         }
       }
 
@@ -88,7 +89,7 @@ export default class IO extends EventEmitter {
       }
 
       if (!this.node.Inventory) {
-        throw new Error('IO:import() Inventory is required.')
+        throw ResponseErrorMsg.IOInventoryRequired(this.node.getName())
       }
 
       this.store.commit('ADD_IMPORT', ij)
@@ -176,7 +177,7 @@ export default class IO extends EventEmitter {
         let good = ioJournalGoodItem.good
         let unit = ioJournalGoodItem.unit
         if (!this.isExportGoodAvailable(good, unit)) {
-          throw new Error(`IO:export() Goods ${good} (${unit}) exported is not available.`)
+          throw ResponseErrorMsg.IOExportNotAvailable(this.node.getName(), good, unit)
         }
         this.store.immediate('SUB_EXPORT_LEFT', {
           good: good,
@@ -185,7 +186,7 @@ export default class IO extends EventEmitter {
       }
 
       if (!this.node.Inventory) {
-        throw new Error('IO:export() Inventory is required.')
+        throw ResponseErrorMsg.IOInventoryRequired(this.node.getName())
       }
 
       this.node.Inventory.export(ij)

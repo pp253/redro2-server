@@ -4,6 +4,7 @@ import store from './store'
 import Node from '@/Node'
 import { PRODUCTION } from '@/lib/utils'
 import { MARKET_EVENTS, BiddingMarketEvent, ENGINE_EVENTS, USER_LEVEL, MarketEvent } from '@/lib/schema'
+import { ResponseErrorMsg } from '@/api/response'
 
 export default class Market extends EventEmitter {
   constructor () {
@@ -16,10 +17,10 @@ export default class Market extends EventEmitter {
   load (node, options) {
     return new Promise((resolve, reject) => {
       if (PRODUCTION && !(node instanceof Node)) {
-        throw new Error('Market:load() `node` should be instance of Node.')
+        throw ResponseErrorMsg.NodeNotAnInstanceOfNode()
       }
       if (this._loaded) {
-        throw new Error('Market:load() Node has been loaded before.')
+        throw ResponseErrorMsg.MarketHasLoaded(node.getName())
       }
       this._loaded = true
 
@@ -46,17 +47,17 @@ export default class Market extends EventEmitter {
     return new Promise((resolve, reject) => {
       // Check from upstreams
       if (!this.isUpstreams(marketJournalItem.from)) {
-        throw new Error('Market:buy() Market seller must from the upstreams of market.')
+        throw ResponseErrorMsg.MarketInvalidSeller(this.node.getName())
       }
 
       // Check for the needed good
       for (let item of marketJournalItem.list) {
         let it = this.getNeededGood(item.good)
         if (it === undefined) {
-          throw new Error('Market:buy() Seller can only sell the goods that market needed.')
+          throw ResponseErrorMsg.MarketInvalidSellingGoods(this.node.getName())
         }
         if (item.unit > it.left) {
-          throw new Error('Market:buy() The market has no more needs of the good.')
+          throw ResponseErrorMsg.MarketSupplyMoreThanDemand(this.node.getName(), item.good, item.left, item.unit)
         }
         item.unitPrice = it.unitPrice
 

@@ -17,6 +17,14 @@ export default {
     },
     errorMessage: 'EngineId is required.'
   },
+  'userId': {
+    in: 'body',
+    notEmpty: true,
+    isObjectId: {
+      errorMessage: 'UserId is not a valid ObjectId'
+    },
+    errorMessage: 'UserId is required.'
+  },
   'options': {
     in: 'body',
     notEmpty: true,
@@ -69,5 +77,10 @@ export default {
     in: 'body',
     notEmpty: true,
     errorMessage: 'marketJournalItem is required.'
+  },
+  'teamIndex': {
+    in: 'body',
+    notEmpty: true,
+    errorMessage: 'teamIndex is required.'
   }
 }

@@ -14,7 +14,7 @@ export function getEnginesList (req, res, next) {
       )
     })
     .catch(err => {
-      reject(ResponseErrorJSON({ more: err }))
+      reject(ResponseErrorJSON(err))
     })
   })
 }
@@ -37,12 +37,12 @@ export function createEngine (req, res, next) {
     })
     .catch(err => {
       console.error(err)
-      reject(ResponseErrorJSON({ more: err }))
+      reject(ResponseErrorJSON(err))
     })
   })
 }
 
-export function addUser (req, res, next) {
+export function checkUser (req, res, next) {
   return new Promise((resolve, reject) => {
     reqCheck(req, {
       name: validator.name,
@@ -69,19 +69,110 @@ export function addUser (req, res, next) {
         userId: user._id.toHexString()
       })
 
-      resolve(
-        ResponseSuccessJSON({
-          user: user
-        })
-      )
+      resolve(ResponseSuccessJSON({user: user}))
     })
     .catch(err => {
       console.error(err)
-      reject(ResponseErrorJSON({ more: err }))
+      reject(ResponseErrorJSON(err))
     })
   })
 }
 
+/**
+ * @deprecated
+ */
+export function addUser (req, res, next) {
+  return new Promise((resolve, reject) => {
+    reqCheck(req, {
+      name: validator.name,
+      password: validator.password,
+      role: validator.role
+    })
+    .then(() => {
+      let name = req.body.name
+      let password = req.body.password
+      let role = req.body.role || USER_LEVEL.GUEST
+      return Server.addUser({
+        name: name,
+        password: password,
+        role: role
+      })
+    })
+    .then(() => {
+      // TODO: BUG here
+      let name = req.body.name
+      let user = Server.getUserByName(name)
+      Object.assign(req.session, {
+        name: user.name,
+        password: user.password,
+        level: user.level,
+        userId: user._id.toHexString()
+      })
+
+      resolve(ResponseSuccessJSON({user: user}))
+    })
+    .catch(err => {
+      console.error(err)
+      reject(ResponseErrorJSON(err))
+    })
+  })
+}
+
+export function userRegist (req, res, next) {
+  return new Promise((resolve, reject) => {
+    reqCheck(req, {
+      name: validator.name
+    })
+    .then(() => {
+      let name = req.body.name
+      return Server.userRegist(name)
+    })
+    .then(user => {
+      resolve(ResponseSuccessJSON({user: user}))
+    })
+    .catch(err => {
+      console.error(err)
+      reject(ResponseErrorJSON(err))
+    })
+  })
+}
+
+export function addUserRole (req, res, next) {
+  return new Promise((resolve, reject) => {
+    reqCheck(req, {
+      userId: validator.userId,
+      engineId: validator.engineId,
+      teamIndex: validator.teamIndex,
+      role: validator.role
+    })
+    .then(() => {
+      let userId = req.body.userId
+      let engineId = req.body.engineId
+      let teamIndex = req.body.teamIndex
+      let role = req.body.role
+
+      if (req.session.userId !== userId || Server.getUser(userId) == null) {
+        throw ResponseErrorMsg.UserHasNotLogin()
+      }
+
+      return Server.addUserRole(userId, engineId, teamIndex, role)
+    })
+    .then(user => {
+      resolve(ResponseSuccessJSON({user: user}))
+    })
+    .catch(err => {
+      console.error(err)
+      reject(ResponseErrorJSON(err))
+    })
+  })
+}
+
+/**
+ * @deprecated
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ */
 export function userLogin (req, res, next) {
   return new Promise((resolve, reject) => {
     reqCheck(req, {
@@ -101,19 +192,43 @@ export function userLogin (req, res, next) {
         userId: user._id.toHexString(),
         v: (req.session.v ? req.session.v : 0) + 1
       })
-      resolve(
-        ResponseSuccessJSON({
-          user: {
-            name: user.name,
-            level: user.level,
-            id: user._id.toHexString()
-          }
-        })
-      )
+      resolve(ResponseSuccessJSON({user: user}))
     })
     .catch(err => {
       console.error(err)
-      reject(ResponseErrorJSON({ more: err }))
+      reject(ResponseErrorJSON(err))
     })
+  })
+}
+
+export function userLoginByMagicCode (req, res, next) {
+  return new Promise((resolve, reject) => {
+    reqCheck(req, {
+      magiccode: validator.password
+    })
+    .then(() => {
+      let magiccode = req.body.magiccode
+      let user = Server.userLoginByMagicCode(magiccode)
+      Object.assign(req.session, {
+        name: user.name,
+        password: user.password,
+        level: user.level,
+        userId: user._id.toHexString(),
+        v: (req.session.v ? req.session.v : 0) + 1
+      })
+
+      resolve(ResponseSuccessJSON({user: user}))
+    })
+    .catch(err => {
+      console.error(err)
+      reject(ResponseErrorJSON(err))
+    })
+  })
+}
+
+export function userLogout (req, res, next) {
+  return new Promise((resolve, reject) => {
+    req.session = null
+    resolve(ResponseSuccessJSON())
   })
 }

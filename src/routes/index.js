@@ -31,14 +31,10 @@ const apiRoute = {
 
 export default function initialize (app) {
   Server.load(app, {
-    users: [
-      {
-        name: 'pp253',
-        password: '123',
-        level: USER_LEVEL.ADMIN,
-        permissions: []
-      }
-    ]
+    magiccode: {
+      admin: '2530',
+      staff: '21'
+    }
   })
   .then(() => {
     app.all('*', (req, res, next) => {

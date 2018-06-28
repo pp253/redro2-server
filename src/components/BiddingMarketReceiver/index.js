@@ -4,6 +4,7 @@ import { BIDDING_EVENTS, USER_LEVEL } from '@/lib/schema'
 import store from './store'
 import Node from '@/Node'
 import { PRODUCTION } from '@/lib/utils'
+import { ResponseErrorMsg } from '@/api/response'
 
 /**
  * @typedef BiddingStageChange
@@ -22,10 +23,10 @@ export default class BiddingMarketReceiver extends EventEmitter {
   load (node, options) {
     return new Promise((resolve, reject) => {
       if (PRODUCTION && !(node instanceof Node)) {
-        throw new Error('BiddingMarketReceiver:load() `node` should be instance of Node.')
+        throw ResponseErrorMsg.NodeNotAnInstanceOfNode()
       }
       if (this._loaded) {
-        throw new Error('BiddingMarketReceiver:load() Node has been loaded before.')
+        throw ResponseErrorMsg.BiddingMarketReceiver(node.getName())
       }
       this._loaded = true
 
@@ -124,28 +125,28 @@ export default class BiddingMarketReceiver extends EventEmitter {
 
   getUpstreamBiddings () {
     if (!this.store.state.enableUpstream) {
-      throw new Error('BiddingMarketReceiver:getUpstreamBiddings() Upstream provider is disabled.')
+      throw ResponseErrorMsg.BiddingMarketReceiverUpstreamProviderIsDisabled(this.node.getName())
     }
     return this.upstreamProvider.BiddingMarket.getBiddings()
   }
 
   getUpstreamBiddingById (id) {
     if (!this.store.state.enableUpstream) {
-      throw new Error('BiddingMarketReceiver:getUpstreamBiddingById() Upstream provider is disabled.')
+      throw ResponseErrorMsg.BiddingMarketReceiverUpstreamProviderIsDisabled(this.node.getName())
     }
     return this.upstreamProvider.BiddingMarket.getBiddingById(id)
   }
 
   getDownstreamBiddings () {
     if (!this.store.state.enableDownstream) {
-      throw new Error('BiddingMarketReceiver:getDownstreamBiddings() Downstream provider is disabled.')
+      throw ResponseErrorMsg.BiddingMarketReceiverDownstreamProviderIsDisabled(this.node.getName())
     }
     return this.downstreamProvider.BiddingMarket.getBiddings()
   }
 
   getDownstreamBiddingById (id) {
     if (!this.store.state.enableDownstream) {
-      throw new Error('BiddingMarketReceiver:getDownstreamBiddingById() Downstream provider is disabled.')
+      throw ResponseErrorMsg.BiddingMarketReceiverDownstreamProviderIsDisabled(this.node.getName())
     }
     return this.downstreamProvider.BiddingMarket.getBiddingById(id)
   }

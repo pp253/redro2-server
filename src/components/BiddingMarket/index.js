@@ -4,6 +4,7 @@ import {BiddingMarketEvent, BIDDING_EVENTS, BIDDING_ITEM_STAGE, BIDDING_CHAIN, T
 import store from './store'
 import Node from '@/Node'
 import { PRODUCTION } from '@/lib/utils'
+import { ResponseErrorMsg } from '@/api/response'
 
 /**
  * @typedef BiddingStageChange
@@ -25,10 +26,10 @@ export default class BiddingMarket extends EventEmitter {
   load (node, options) {
     return new Promise((resolve, reject) => {
       if (PRODUCTION && !(node instanceof Node)) {
-        throw new Error('BiddingMarket:load() `node` should be instance of Node.')
+        throw ResponseErrorMsg.NodeNotAnInstanceOfNode()
       }
       if (this._loaded) {
-        throw new Error('BiddingMarket:load() Node has been loaded before.')
+        throw ResponseErrorMsg.BiddingMarketHasLoaded(node.getName())
       }
       this._loaded = true
 
@@ -73,7 +74,7 @@ export default class BiddingMarket extends EventEmitter {
       } else if (this.isDownstreams(biddingItem.publisher)) {
         biddingItem.publishedFromChain = BIDDING_CHAIN.DOWNSTREAM
       } else {
-        throw new Error('BiddingMarket:release() publisher should be either one of the upstreams or downstreams.')
+        throw ResponseErrorMsg.BiddingMarketInvalidPublisher(this.node.getName())
       }
 
       this.store.commit('ADD_BIDDING', biddingItem)
@@ -103,17 +104,17 @@ export default class BiddingMarket extends EventEmitter {
   cancel (biddingStageChange) {
     return new Promise((resolve, reject) => {
       if (!biddingStageChange.id || !biddingStageChange.operator) {
-        throw new Error('BiddingMarket:cancel() `id` and `operator` is required.')
+        throw ResponseErrorMsg.BiddingMarketInvalidIdOrOperator(this.node.getName())
       }
 
       let bi = this.getBiddingById(biddingStageChange.id)
 
       if (bi.stage !== BIDDING_ITEM_STAGE.BIDDING) {
-        throw new Error('BiddingMarket:cancel() Bidding item could be canceled only when bidding.')
+        throw ResponseErrorMsg.BiddingMarketCanceledWrongStage(this.node.getName())
       }
 
       if (PRODUCTION && bi.publisher !== biddingStageChange.operator) {
-        throw new Error('BiddingMarket:cancel() operator is not the `publisher`.')
+        throw ResponseErrorMsg.BiddingMarketOperatorNotPublisher(this.node.getName())
       }
 
       this.store.commit('SET_BIDDING_STAGE', {
@@ -147,22 +148,22 @@ export default class BiddingMarket extends EventEmitter {
   sign (biddingStageChange) {
     return new Promise((resolve, reject) => {
       if (!biddingStageChange.id || !biddingStageChange.operator) {
-        throw new Error('BiddingMarket:sign() `id` and `operator` is required.')
+        throw ResponseErrorMsg.BiddingMarketInvalidIdOrOperator(this.node.getName())
       }
 
       let bi = this.getBiddingById(biddingStageChange.id)
 
       if (bi.stage !== BIDDING_ITEM_STAGE.BIDDING) {
-        throw new Error('BiddingMarket:sign() Bidding item could be signed only when bidding.')
+        throw ResponseErrorMsg.BiddingMarketSignedWrongStage(this.node.getName())
       }
 
       if (bi.publishedFromChain === BIDDING_CHAIN.UPSTREAM) {
         if (!this.isDownstreams(biddingStageChange.operator)) {
-          throw new Error('BiddingMarket:sign() Signer should be one of downstreams.')
+          throw ResponseErrorMsg.BiddingMarketSignerNotDownstream(this.node.getName())
         }
       } else {
         if (!this.isUpstreams(biddingStageChange.operator)) {
-          throw new Error('BiddingMarket:sign() Signer should be one of upstreams.')
+          throw ResponseErrorMsg.BiddingMarketSignerNotUpstream(this.node.getName())
         }
       }
 
@@ -198,13 +199,13 @@ export default class BiddingMarket extends EventEmitter {
   breakoff (BiddingStageChange) {
     return new Promise((resolve, reject) => {
       if (!BiddingStageChange.id || !BiddingStageChange.operator) {
-        throw new Error('BiddingMarket:breakoff() `id` and `operator` is required.')
+        throw ResponseErrorMsg.BiddingMarketInvalidIdOrOperator(this.node.getName())
       }
 
       let bi = this.getBiddingById(BiddingStageChange.id)
 
       if (bi.stage !== BIDDING_ITEM_STAGE.SIGNED) {
-        throw new Error('BiddingMarket:breakoff() Bidding item could be signed only when signed.')
+        throw ResponseErrorMsg.BiddingMarketBreakoffWrongStage(this.node.getName())
       }
 
       let breakoffer
@@ -217,7 +218,7 @@ export default class BiddingMarket extends EventEmitter {
         breakoffer = this.engine.getNode(bi.signer)
         breakoffeder = this.engine.getNode(bi.publisher)
       } else {
-        throw new Error('BiddingMarket:breakoff() operator should be either the publisher or signer.')
+        throw ResponseErrorMsg.BiddingMarketOperatorNotPublisherNorSigner(this.node.getName())
       }
 
       let breakoffPaneltyAmount = bi.price * this.store.state.breakoffPaneltyRatio
@@ -288,13 +289,13 @@ export default class BiddingMarket extends EventEmitter {
   deliver (BiddingStageChange) {
     return new Promise((resolve, reject) => {
       if (!BiddingStageChange.id) {
-        throw new Error('BiddingMarket:deliver() `id` is required.')
+        throw ResponseErrorMsg.BiddingMarketOperatorInvalidId(this.node.getName())
       }
 
       let bi = this.getBiddingById(BiddingStageChange.id)
 
       if (bi.stage !== BIDDING_ITEM_STAGE.SIGNED) {
-        throw new Error('BiddingMarket:deliver() Bidding item could be signed only when signed.')
+        throw ResponseErrorMsg.BiddingMarketDeliveredWrongStage(this.node.getName())
       }
 
       let upstream

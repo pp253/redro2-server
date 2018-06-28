@@ -4,6 +4,7 @@ import store from './store'
 import Node from '@/Node'
 import { PRODUCTION } from '@/lib/utils'
 import { USER_LEVEL, MARKET_EVENTS } from '@/lib/schema'
+import { ResponseErrorMsg } from '@/api/response'
 
 export default class MarketReceiver extends EventEmitter {
   constructor () {
@@ -16,10 +17,10 @@ export default class MarketReceiver extends EventEmitter {
   load (node, options) {
     return new Promise((resolve, reject) => {
       if (PRODUCTION && !(node instanceof Node)) {
-        throw new Error('MarketReceiver:load() `node` should be instance of Node.')
+        throw ResponseErrorMsg.NodeNotAnInstanceOfNode()
       }
       if (this._loaded) {
-        throw new Error('MarketReceiver:load() Node has been loaded before.')
+        throw ResponseErrorMsg.MarketReceiverHasLoaded(node.getName())
       }
       this._loaded = true
 

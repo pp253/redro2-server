@@ -5,6 +5,7 @@ import Node from '@/Node'
 import { PRODUCTION } from '@/lib/utils'
 import { ENGINE_EVENTS } from '@/Engine'
 import {INVENTORY_MODE, USER_LEVEL, INVENTORY_EVENTS, InventoryEvent} from '@/lib/schema'
+import { ResponseErrorMsg } from '@/api/response'
 
 export default class Inventory extends EventEmitter {
   constructor () {
@@ -23,10 +24,10 @@ export default class Inventory extends EventEmitter {
   load (node, options) {
     return new Promise((resolve, reject) => {
       if (PRODUCTION && !(node instanceof Node)) {
-        throw new Error('Inventory:load() `node` should be instance of Node.')
+        throw ResponseErrorMsg.NodeNotAnInstanceOfNode()
       }
       if (this._loaded) {
-        throw new Error('Inventory:load() Node has been loaded before.')
+        throw ResponseErrorMsg.InventoryHasLoaded(node.getName())
       }
       this._loaded = true
 
@@ -130,7 +131,7 @@ export default class Inventory extends EventEmitter {
       for (let stocksItem of ioji.list) {
         let su = this.getStorageUnit(stocksItem.good)
         if (su < stocksItem.unit) {
-          throw new RangeError('Inventory:export() Out of stocks.')
+          throw ResponseErrorMsg.InventoryOutOfStacks(this.node.getName(), stocksItem.good, su, stocksItem.unit)
         }
         sumOfCostOfSales += this.getCostOfSales(stocksItem.good, stocksItem.unit)
       }
@@ -299,7 +300,7 @@ export default class Inventory extends EventEmitter {
   getCostOfSales (good, unit) {
     let su = this.getStorageUnit(good)
     if (su < unit) {
-      throw new Error('Inventory:getCostOfSales() Out of stocks.')
+      throw ResponseErrorMsg.InventoryOutOfStacks(this.node.getName(), good, su, unit)
     }
 
     let s = this.getStorage(good)

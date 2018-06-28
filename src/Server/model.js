@@ -38,7 +38,11 @@ export const UserSchema = new mongoose.Schema({
 
 export const ServerSchema = new mongoose.Schema({
   engines: [EngineSchema],
-  users: [UserSchema]
+  users: [UserSchema],
+  magiccode: {
+    admin: String,
+    staff: String
+  }
 }, {
   // Fix a bug https://github.com/Automattic/mongoose/issues/5574
   usePushEach: true

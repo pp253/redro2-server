@@ -4,6 +4,7 @@ import store from './store'
 import Node from '@/Node'
 import { PRODUCTION } from '@/lib/utils'
 import { INVENTORY_MODE, USER_LEVEL } from '@/lib/schema'
+import { ResponseErrorMsg } from '@/api/response'
 
 export default class AssemblyDepartment extends EventEmitter {
   constructor () {
@@ -16,10 +17,10 @@ export default class AssemblyDepartment extends EventEmitter {
   load (node, options) {
     return new Promise((resolve, reject) => {
       if (PRODUCTION && !(node instanceof Node)) {
-        throw new Error('AssemblyDepartment:load() `node` should be instance of Node.')
+        throw ResponseErrorMsg.NodeNotAnInstanceOfNode()
       }
       if (this._loaded) {
-        throw new Error('AssemblyDepartment:load() Node has been loaded before.')
+        throw ResponseErrorMsg.AssemblyDepartmentHasLoaded(node.getName())
       }
       this._loaded = true
 
@@ -49,7 +50,7 @@ export default class AssemblyDepartment extends EventEmitter {
       // Check is receiver or not
       let to = ioJournalItem.to
       if (!this.isReceiver(to)) {
-        throw new Error(`AssemblyDepartment:assemble() ${to} is not one of the receivers.`)
+        throw ResponseErrorMsg.AssemblyDepartmentInvalidReceiver(this.node.getName(), to)
       }
 
       // Check the inventory of receiver
@@ -61,7 +62,7 @@ export default class AssemblyDepartment extends EventEmitter {
         let good = item.good
         let unit = item.unit
         if (!this.isAvailableForAssemble(to, good, unit)) {
-          throw new Error(`AssemblyDepartment:assemble() ${to} is not available for assembling ${unit} of ${good}.`)
+          throw ResponseErrorMsg.AssemblyDepartmentNotAvailable(this.node.getName(), to, good, unit)
         }
 
         // Count the Sum of Cost
@@ -170,7 +171,7 @@ export default class AssemblyDepartment extends EventEmitter {
   getBOM (good) {
     let it = this.getAssemblableGoods().find(item => item.good === good)
     if (it === undefined) {
-      throw new Error(`AssemblyDepartment:getBOM() No such good like ${good}`)
+      throw ResponseErrorMsg.AssemblyDepartmentNoBOMForGood(this.node.getName(), good)
     }
     return it.components
   }

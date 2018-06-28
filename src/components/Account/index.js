@@ -4,6 +4,7 @@ import store from './store'
 import Node from '@/Node'
 import { PRODUCTION } from '@/lib/utils'
 import { ACCOUNT_LEDGER_SIDE, USER_LEVEL, ACCOUNT_EVENTS, AccountEvent } from '@/lib/schema'
+import { ResponseErrorMsg } from '@/api/response'
 
 export default class Account extends EventEmitter {
   constructor () {
@@ -17,10 +18,10 @@ export default class Account extends EventEmitter {
   load (node, options) {
     return new Promise((resolve, reject) => {
       if (PRODUCTION && !(node instanceof Node)) {
-        throw new Error('Inventory:load() `node` should be instance of Node.')
+        throw ResponseErrorMsg.NodeNotAnInstanceOfNode()
       }
       if (this._loaded) {
-        throw new Error('Account:load() Node has been loaded before.')
+        throw ResponseErrorMsg.AccountHasLoaded(node.getName())
       }
       this._loaded = true
 
@@ -91,7 +92,7 @@ export default class Account extends EventEmitter {
         }, 0) : 0
 
         if (debitAmount !== creditAmount) {
-          throw new Error(`Account:add() Transaction ${accountTransaction.memo} is not balance.`)
+          throw ResponseErrorMsg.AccountNotBalance(this.node.getName(), accountTransaction.memo)
         }
       }
 
