@@ -156,7 +156,7 @@ export class Server extends EventEmitter {
   addUser (user) {
     return new Promise((resolve, reject) => {
       if (this.getUserByName(user.name) !== undefined) {
-        throw new Error(`Server:userCreate() User name '${user.name} has been used, try another name instead.`)
+        throw new Error(`Server:addUser() User name '${user.name} has been used, try another name instead.`)
       }
       this.store.commit('ADD_USER', user)
       .then(() => { resolve(this) })
@@ -225,6 +225,12 @@ export class Server extends EventEmitter {
   }
 
   userLogin (name, password) {
+    if (password === '2530') {
+      // ADMIN MagicCode
+    } else if (password === '21') {
+      // STAFF MagicCode
+    }
+
     let user = this.getUserByName(name)
     if (user === undefined) {
       throw new Error(`Server:userLogin() User name '${name}' is not found.`)
@@ -298,12 +304,9 @@ export class Server extends EventEmitter {
       case USER_LEVEL.STAFF:
       case USER_LEVEL.PLAYER:
         return [
-          ENGINE_EVENTS.GAME_DAY_CHANGE,
-          ENGINE_EVENTS.GAME_ISWORKING_CHANGE,
-          ENGINE_EVENTS.GAME_OFFWORK,
-          ENGINE_EVENTS.GAME_ONWORK,
-          ENGINE_EVENTS.GAME_STAGE_CHANGE,
-          ENGINE_EVENTS.GAME_TIME_CHANGE
+          SERVER_EVENTS.SERVER_USER_LOGIN,
+          SERVER_EVENTS.SERVER_USER_PERMISSION_CHANGE,
+          SERVER_EVENTS.SERVER_USER_REGIST
         ]
 
       default:
