@@ -36,7 +36,12 @@ export class Server extends EventEmitter {
           console.log(`Socket:connection`)
 
           socket.on(ROOM_EVENTS.ROOM_JOIN, (room) => {
-            if (!socket.handshake.session.userId) {
+            let session = socket.handshake.session
+            if (!session) {
+              socket.send('Login first!')
+              return
+            }
+            if (![USER_LEVEL.ADMIN, USER_LEVEL.STAFF].includes(session.level) && !session.userId) {
               socket.send('Failed to join the room. Maybe the you should reload the browser.')
               return
             }
@@ -50,8 +55,13 @@ export class Server extends EventEmitter {
           })
 
           socket.on(ROOM_EVENTS.ROOM_LEAVE, (room) => {
-            if (!socket.handshake.session.userId) {
-              socket.send('Failed to join the room. Maybe the you should reload the browser.')
+            let session = socket.handshake.session
+            if (!session) {
+              socket.send('Login first!')
+              return
+            }
+            if (![USER_LEVEL.ADMIN, USER_LEVEL.STAFF].includes(session.level) && !session.userId) {
+              socket.send('Failed to leave the room. Maybe the you should reload the browser.')
               return
             }
             // Should apply the permission check.
@@ -252,18 +262,18 @@ export class Server extends EventEmitter {
 
   userLoginByMagicCode (magiccode) {
     if (String(magiccode) === this.store.state.magiccode.admin) {
-      return {
-        name: 'STAFF',
-        password: '21',
-        role: USER_LEVEL.ADMIN
-      }
       // ADMIN MagicCode
+      return {
+        name: USER_LEVEL.ADMIN,
+        password: this.store.state.magiccode.admin,
+        level: USER_LEVEL.ADMIN
+      }
     } else if (String(magiccode) === this.store.state.magiccode.staff) {
       // STAFF MagicCode
       return {
-        name: 'STAFF',
-        password: '21',
-        role: USER_LEVEL.STAFF
+        name: USER_LEVEL.STAFF,
+        password: this.store.state.magiccode.staff,
+        level: USER_LEVEL.STAFF
       }
     } else {
       // Player or Guest
@@ -282,7 +292,7 @@ export class Server extends EventEmitter {
     return new Promise((resolve, reject) => {
       let magiccode = this.genMagiccode()
 
-      if (this.getUserByName(String(name)) == null) {
+      if (this.getUserByName(String(name)) != null) {
         throw ResponseErrorMsg.UserNameHasExisted(name)
       }
 

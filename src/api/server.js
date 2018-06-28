@@ -189,7 +189,7 @@ export function userLogin (req, res, next) {
         name: user.name,
         password: user.password,
         level: user.level,
-        userId: user._id.toHexString(),
+        userId: user._id && user._id.toHexString(),
         v: (req.session.v ? req.session.v : 0) + 1
       })
       resolve(ResponseSuccessJSON({user: user}))
@@ -213,7 +213,7 @@ export function userLoginByMagicCode (req, res, next) {
         name: user.name,
         password: user.password,
         level: user.level,
-        userId: user._id.toHexString(),
+        userId: user._id && user._id.toHexString(),
         v: (req.session.v ? req.session.v : 0) + 1
       })
 
