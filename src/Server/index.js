@@ -125,7 +125,6 @@ export class Server extends EventEmitter {
                     })
                   }
                 }
-                console.log(room)
               }
             }
           }
