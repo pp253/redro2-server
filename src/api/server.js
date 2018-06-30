@@ -44,37 +44,12 @@ export function createEngine (req, res, next) {
 
 export function checkUser (req, res, next) {
   return new Promise((resolve, reject) => {
-    reqCheck(req, {
-      name: validator.name,
-      password: validator.password,
-      role: validator.role
-    })
-    .then(() => {
-      let name = req.body.name
-      let password = req.body.password
-      let role = req.body.role || USER_LEVEL.GUEST
-      return Server.addUser({
-        name: name,
-        password: password,
-        role: role
-      })
-    })
-    .then(() => {
-      let name = req.body.name
-      let user = Server.getUserByName(name)
-      Object.assign(req.session, {
-        name: user.name,
-        password: user.password,
-        level: user.level,
-        userId: user._id.toHexString()
-      })
-
-      resolve(ResponseSuccessJSON({user: user}))
-    })
-    .catch(err => {
-      console.error(err)
-      reject(ResponseErrorJSON(err))
-    })
+    resolve(ResponseSuccessJSON({user: req.session && {
+      name: req.session.name,
+      password: req.session.password,
+      level: req.session.level,
+      userId: req.session.userId
+    }}))
   })
 }
 

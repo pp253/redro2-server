@@ -99,10 +99,19 @@ export default class MarketReceiver extends EventEmitter {
 
   getListening (level) {
     switch (level) {
-      default:
       case USER_LEVEL.ADMIN:
       case USER_LEVEL.STAFF:
+        return [
+          MARKET_EVENTS.MARKET_NEEDS_CHANGE,
+          MARKET_EVENTS.MARKET_NEWS_PUBLISHED
+        ]
+
       case USER_LEVEL.PLAYER:
+        return [
+          MARKET_EVENTS.MARKET_NEWS_PUBLISHED
+        ]
+
+      default:
       case USER_LEVEL.GUEST:
         return []
     }

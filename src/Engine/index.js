@@ -1,9 +1,8 @@
 import { EventEmitter } from 'events'
 import _ from 'lodash'
 import store from './store'
-import Server from '@/Server'
 import Node from '@/Node'
-import { timeout, PRODUCTION } from '@/lib/utils'
+import { timeout } from '@/lib/utils'
 import { ENGINE_EVENTS, ENGINE_STAGE, EngineEvent, USER_LEVEL } from '@/lib/schema'
 
 export default class Engine extends EventEmitter {
@@ -25,9 +24,6 @@ export default class Engine extends EventEmitter {
 
   load (server, options) {
     return new Promise((resolve, reject) => {
-      if (PRODUCTION && !(server instanceof Server)) {
-        throw new Error('Engine:load() `server` should be instance of Server.')
-      }
       if (this._loaded) {
         throw new Error('Engine:load() Engine has been loaded before.')
       }
