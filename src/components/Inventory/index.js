@@ -3,8 +3,7 @@ import _ from 'lodash'
 import store from './store'
 import Node from '@/Node'
 import { PRODUCTION } from '@/lib/utils'
-import { ENGINE_EVENTS } from '@/Engine'
-import {INVENTORY_MODE, USER_LEVEL, INVENTORY_EVENTS, InventoryEvent} from '@/lib/schema'
+import {INVENTORY_MODE, USER_LEVEL, INVENTORY_EVENTS, InventoryEvent, ENGINE_EVENTS} from '@/lib/schema'
 import { ResponseErrorMsg } from '@/api/response'
 
 export default class Inventory extends EventEmitter {
@@ -45,16 +44,18 @@ export default class Inventory extends EventEmitter {
       store(state)
       .then((store) => {
         this.store = store
-        resolve(this)
 
         /**
          * Computing Storage cost.
          */
         if (this.store.state.mode === INVENTORY_MODE.PERPETUAL && this.store.state.hasStorageCost) {
-          this.node.engine.on(ENGINE_EVENTS.GAME_OFFWORK, (engineEvent) => {
+          this.engine.on(ENGINE_EVENTS.GAME_OFFWORK, (engineEvent) => {
+            console.log('count storage cost')
             this.countStorageCost(engineEvent)
           })
         }
+
+        resolve(this)
       })
       .catch(err => { reject(err) })
     })
@@ -232,6 +233,10 @@ export default class Inventory extends EventEmitter {
         let unit = storageItem.unit
         let costPerBatch = this.getStorageCost(good)
         sumOfCost += Math.ceil(unit / this.store.state.batchSize) * costPerBatch
+      }
+      if (sumOfCost === 0) {
+        resolve(this)
+        return
       }
       Account.add({
         debit: [{
