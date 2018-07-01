@@ -10,7 +10,7 @@ import MarketReceiver from '@/components/MarketReceiver'
 import InventoryRegister from '@/components/InventoryRegister'
 import AssemblyDepartment from '@/components/AssemblyDepartment'
 import { timeout } from '@/lib/utils'
-import { USER_LEVEL, ENGINE_EVENTS, EngineEvent } from '@/lib/schema'
+import { USER_LEVEL, ENGINE_EVENTS } from '@/lib/schema'
 
 export const COMPONENTS = {
   Inventory: Inventory,
