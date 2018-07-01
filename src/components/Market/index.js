@@ -56,8 +56,8 @@ export default class Market extends EventEmitter {
         if (it === undefined) {
           throw ResponseErrorMsg.MarketInvalidSellingGoods(this.node.getName())
         }
-        if (item.unit > it.left) {
-          throw ResponseErrorMsg.MarketSupplyMoreThanDemand(this.node.getName(), item.good, item.left, item.unit)
+        if (item.unit > it.unit) {
+          throw ResponseErrorMsg.MarketSupplyMoreThanDemand(this.node.getName(), item.good, item.unit, item.unit)
         }
         item.unitPrice = it.unitPrice
 
@@ -143,7 +143,7 @@ export default class Market extends EventEmitter {
     if (it === undefined) {
       return 0
     } else {
-      return it.left
+      return it.unit
     }
   }
 
@@ -184,6 +184,16 @@ export default class Market extends EventEmitter {
       .then(() => {
         this.emit(MARKET_EVENTS.MARKET_NEWS_PUBLISHED, new BiddingMarketEvent({
           type: MARKET_EVENTS.MARKET_NEWS_PUBLISHED,
+          target: this,
+          provider: this.node.getName(),
+          gameTime: engineEvent.gameTime,
+          news: this.getAvailableNews(),
+          needs: this.getNeeds(),
+          nodeName: this.node.getName(),
+          engineId: this.engine.getId()
+        }))
+        this.emit(MARKET_EVENTS.MARKET_NEEDS_CHANGE, new MarketEvent({
+          type: MARKET_EVENTS.MARKET_NEEDS_CHANGE,
           target: this,
           provider: this.node.getName(),
           gameTime: engineEvent.gameTime,

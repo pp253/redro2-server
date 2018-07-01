@@ -29,18 +29,16 @@ export const STORE_CONTENT = {
       } else {
         if (state.accumulateNeeds === true) {
           it.needs += marketNeeds.needs
-          it.left += marketNeeds.needs
           it.price = marketNeeds.price
         } else {
           it.needs = marketNeeds.needs
-          it.left = marketNeeds.needs
           it.price = marketNeeds.price
         }
       }
     },
     SUB_MARKET_NEEDS (state, marketNeeds) {
       let it = state.marketNeeds.find(needs => needs.good === marketNeeds.good)
-      it.left = marketNeeds.unit
+      it.unit = parseInt(it.unit - marketNeeds.unit)
     },
     SET_ACCUMULATE_NEEDS (state, payload) {
       state.accumulateNeeds = payload.accumulateNeeds
