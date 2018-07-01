@@ -26,7 +26,7 @@ export function getInfo (req, res, next) {
     .then(() => {
       let engineId = req.body.engineId
       let engine = Server.getEngine(engineId)
-      resolve(ResponseSuccessJSON(engine.getMaskedObject()))
+      resolve(ResponseSuccessJSON(engine.toMaskedObject()))
     })
     .catch(err => { reject(ResponseErrorJSON(err)) })
   })
@@ -45,7 +45,7 @@ export function nextStage (req, res, next) {
     .then(() => {
       let engineId = req.body.engineId
       let engine = Server.getEngine(engineId)
-      resolve(ResponseSuccessJSON(engine.getMaskedObject()))
+      resolve(ResponseSuccessJSON(engine.toMaskedObject()))
     })
     .catch(err => { reject(ResponseErrorJSON(err)) })
   })
@@ -62,7 +62,7 @@ export function nextDay (req, res, next) {
       return engine.nextDay()
     })
     .then((engine) => {
-      resolve(ResponseSuccessJSON(engine.getMaskedObject()))
+      resolve(ResponseSuccessJSON(engine.toMaskedObject()))
     })
     .catch(err => { reject(ResponseErrorJSON(err)) })
   })

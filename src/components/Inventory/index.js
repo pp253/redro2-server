@@ -50,7 +50,6 @@ export default class Inventory extends EventEmitter {
          */
         if (this.store.state.mode === INVENTORY_MODE.PERPETUAL && this.store.state.hasStorageCost) {
           this.engine.on(ENGINE_EVENTS.GAME_OFFWORK, (engineEvent) => {
-            console.log('count storage cost')
             this.countStorageCost(engineEvent)
           })
         }

@@ -3,6 +3,12 @@ import { ResponseSuccessJSON, ResponseErrorJSON, ResponseErrorMsg, reqCheck } fr
 import Server from '@/Server'
 import { USER_LEVEL } from '@/lib/schema'
 
+export function getInfo (req, res, next) {
+  return new Promise((resolve, reject) => {
+    resolve(ResponseSuccessJSON(Server.toMaskedObject()))
+  })
+}
+
 export function getEnginesList (req, res, next) {
   return new Promise((resolve, reject) => {
     reqCheck(req)

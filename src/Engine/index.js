@@ -56,11 +56,16 @@ export default class Engine extends EventEmitter {
           for (let teamPer of levelPer.teams) {
             for (let rolePer of teamPer.roles) {
               for (let objectTypePer of rolePer.objectTypes) {
+                if (objectTypePer.listening && objectTypePer.listening.length > 0) {
+                  continue
+                }
                 let objectType = objectTypePer.type
-                // TODO: Not valid by the store model
                 let actions
                 let listening
-                if (objectType === 'Engine') {
+                if (objectType === 'Server') {
+                  actions = this.server.getActions(level)
+                  listening = this.server.getListening(level)
+                } else if (objectType === 'Engine') {
                   actions = this.getActions(level)
                   listening = this.getListening(level)
                 } else {
@@ -311,7 +316,7 @@ export default class Engine extends EventEmitter {
     return this.store.state.nodes.toObject()
   }
 
-  getMaskedObject () {
+  toMaskedObject () {
     return {
       name: this.store.state.name,
       describe: this.store.state.describe,

@@ -95,7 +95,6 @@ export class Server extends EventEmitter {
         })
       })
       .then((engine) => {
-        // TODO: listen on nodes and emit to socket rooms
         let id = engine.getId()
         for (let level of [USER_LEVEL.STAFF, USER_LEVEL.PLAYER]) {
           let teams = engine.getTeamsByLevel(level)
@@ -107,7 +106,15 @@ export class Server extends EventEmitter {
                 let type = objectType.type
                 let listening = objectType.listening
                 let room = `${id}/${teamIndex}/${role}${teamIndex !== 0 ? '-' + teamIndex : ''}`
-                if (type === 'Engine') {
+                if (type === 'Server') {
+                  for (let eventName of listening) {
+                    this.on(eventName, (event) => {
+                      let shellowEvent = Object.assign({}, event)
+                      delete shellowEvent.target
+                      io.to(room).emit(eventName, shellowEvent)
+                    })
+                  }
+                } else if (type === 'Engine') {
                   for (let eventName of listening) {
                     engine.on(eventName, (event) => {
                       let shellowEvent = Object.assign({}, event)
@@ -401,6 +408,12 @@ export class Server extends EventEmitter {
 
   toObject () {
     return this.store.toObject()
+  }
+
+  toMaskedObject () {
+    return {
+      users: this.getUsers()
+    }
   }
 
   getId () {

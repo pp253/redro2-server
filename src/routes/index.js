@@ -13,7 +13,7 @@ import * as market from '@/api/market'
 import * as marketreceiver from '@/api/marketreceiver'
 import * as assemblydepartment from '@/api/assemblydepartment'
 import * as inventoryregister from '@/api/inventoryregister'
-import { USER_LEVEL } from '@/lib/schema'
+import * as scoreboard from '@/api/scoreboard'
 
 const apiRoute = {
   server: server,
@@ -26,7 +26,8 @@ const apiRoute = {
   market: market,
   marketreceiver: marketreceiver,
   assemblydepartment: assemblydepartment,
-  inventoryregister: inventoryregister
+  inventoryregister: inventoryregister,
+  scoreboard: scoreboard
 }
 
 export default function initialize (app) {
