@@ -17,7 +17,9 @@ export const NodeScheme = new mongoose.Schema({
   name: {type: String, default: 'UnknownNodeName'},
   components: [NodeComponentItemScheme],
   time: {type: Date, default: Date.now},
-  id: mongoose.Schema.Types.ObjectId
+  id: mongoose.Schema.Types.ObjectId,
+  workers: {type: Number, default: 10},
+  wage: {type: Number, default: 100}
 })
 
 const NodeModel = mongoose.model('node', NodeScheme)

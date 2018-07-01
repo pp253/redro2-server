@@ -10,7 +10,7 @@ import MarketReceiver from '@/components/MarketReceiver'
 import InventoryRegister from '@/components/InventoryRegister'
 import AssemblyDepartment from '@/components/AssemblyDepartment'
 import { timeout } from '@/lib/utils'
-import { USER_LEVEL } from '@/lib/schema'
+import { USER_LEVEL, ENGINE_EVENTS, EngineEvent } from '@/lib/schema'
 
 export const COMPONENTS = {
   Inventory: Inventory,
@@ -50,6 +50,25 @@ export default class Node extends EventEmitter {
       store(initState)
         .then(store => {
           this.store = store
+
+          if (this.store.state.workers > 0) {
+            this.engine.on(ENGINE_EVENTS.GAME_OFFWORK, (engineEvent) => {
+              let totalWage = this.store.state.workers * this.store.state.wage
+              this.node.Account.add({
+                debit: [{
+                  amount: totalWage,
+                  classification: 'SalaryAndWages'
+                }],
+                credit: [{
+                  amount: totalWage,
+                  classification: 'Cash'
+                }],
+                memo: 'Workers Wage',
+                time: engineEvent.gameTime,
+                gameTime: engineEvent.time
+              })
+            })
+          }
 
           for (let component of this.store.state.components) {
             if (component.enable === false) {
