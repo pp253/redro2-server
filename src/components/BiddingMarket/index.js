@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events'
 import _ from 'lodash'
-import {BiddingMarketEvent, BIDDING_EVENTS, BIDDING_ITEM_STAGE, BIDDING_CHAIN, TRANSPORTATION_STATUS, USER_LEVEL} from '@/lib/schema'
+import {BiddingMarketEvent, BIDDING_EVENTS, BIDDING_ITEM_STAGE, BIDDING_CHAIN, TRANSPORTATION_STATUS, USER_LEVEL, ENGINE_EVENTS} from '@/lib/schema'
 import store from './store'
 import Node from '@/Node'
 import { PRODUCTION } from '@/lib/utils'
@@ -64,6 +64,8 @@ export default class BiddingMarket extends EventEmitter {
       // check sum of costs of goods is the same as price
       let sumOfCost = 0
       for (let stocksItem of biddingItem.goods) {
+        stocksItem.unit = parseInt(stocksItem.unit)
+        stocksItem.unitPrice = parseInt(stocksItem.unitPrice)
         sumOfCost += stocksItem.unit * stocksItem.unitPrice
       }
       biddingItem.price = sumOfCost
@@ -185,6 +187,20 @@ export default class BiddingMarket extends EventEmitter {
           nodeName: this.node.getName(),
           engineId: this.engine.getId()
         }))
+
+        let bid = bi._id
+        let signer = bi.signer
+        let gta = this.engine.gameTimeAdd(bi.timeLimit)
+        this.engine.on(ENGINE_EVENTS.GAME_DAY_X_TIME_Y(gta.day, gta.time), () => {
+          let biddingItem = this.getBiddingById(bid)
+          if (biddingItem.stage !== BIDDING_ITEM_STAGE.SIGNED) {
+            return
+          }
+          this.breakoff({
+            id: bid,
+            operator: signer
+          })
+        })
 
         resolve(this)
       })
