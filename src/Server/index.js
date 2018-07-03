@@ -1,5 +1,5 @@
 import Engine from '@/Engine'
-import { USER_LEVEL, ROOM_EVENTS, SERVER_EVENTS } from '@/lib/schema'
+import { USER_LEVEL, ROOM_EVENTS, SERVER_EVENTS, ServerEvent } from '@/lib/schema'
 import {ResponseErrorMsg} from '@/api/response'
 import { EventEmitter } from 'events'
 import _ from 'lodash'
@@ -195,15 +195,11 @@ export class Server extends EventEmitter {
     })
   }
 
-  addUserRole (userId, engindId, teamIndex, role) {
+  addUserRole (userId, engineId, teamIndex, role) {
     return new Promise((resolve, reject) => {
       let user = this.getUser(userId)
       if (user === undefined) {
         throw new Error(`Server:addUserRole() User id '${userId}' is not found.`)
-      }
-      let permission = user.permissions.find(permission => permission.engineId.equals(engindId))
-      if (permission !== undefined) {
-        throw new Error(`Server:addUserRole() Permission of engine id '${engindId}' was existed.`)
       }
       let level = user.level
       if (![USER_LEVEL.ADMIN, USER_LEVEL.STAFF].includes(level)) {
@@ -213,35 +209,52 @@ export class Server extends EventEmitter {
       }
       this.store.commit('ADD_USER_ROLE', {
         userId: userId,
-        engindId: engindId,
-        teamIndex: teamIndex,
+        engineId: engineId,
+        teamIndex: parseInt(teamIndex),
         role: role
       })
       .then(() => {
         let user = this.getUser(userId)
+
+        this.emit(SERVER_EVENTS.SERVER_USER_PERMISSION_CHANGE, new ServerEvent({
+          type: SERVER_EVENTS.SERVER_USER_PERMISSION_CHANGE,
+          target: this,
+          user: user
+        }))
+
         resolve(user)
       })
       .catch(err => { reject(err) })
     })
   }
 
-  changeUserRole (userId, engindId, teamIndex, role) {
+  changeUserRole (userId, engineId, teamIndex, role) {
     return new Promise((resolve, reject) => {
       let user = this.getUser(userId)
       if (user === undefined) {
         throw new Error(`Server:changeUserRole() User id '${userId}' is not found.`)
       }
-      let permission = user.permissions.find(permission => permission.engineId.equals(engindId))
+      let permission = user.permissions.find(permission => permission.engineId.equals(engineId))
       if (permission === undefined) {
-        throw new Error(`Server:changeUserRole() Permission of engine id '${engindId}' is not found.`)
+        throw new Error(`Server:changeUserRole() Permission of engine id '${engineId}' is not found.`)
       }
       this.store.commit('CHANGE_USER_ROLE', {
         userId: userId,
-        engindId: engindId,
-        teamIndex: teamIndex,
+        engineId: engineId,
+        teamIndex: parseInt(teamIndex),
         role: role
       })
-      .then(() => { resolve(this) })
+      .then(() => {
+        let user = this.getUser(userId)
+
+        this.emit(SERVER_EVENTS.SERVER_USER_PERMISSION_CHANGE, new ServerEvent({
+          type: SERVER_EVENTS.SERVER_USER_PERMISSION_CHANGE,
+          target: this,
+          user: user
+        }))
+
+        resolve(user)
+      })
       .catch(err => { reject(err) })
     })
   }

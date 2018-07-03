@@ -54,7 +54,8 @@ export function checkUser (req, res, next) {
       name: req.session.name,
       password: req.session.password,
       level: req.session.level,
-      userId: req.session.userId
+      userId: req.session.userId,
+      _id: req.session.userId
     }}))
   })
 }
@@ -209,7 +210,12 @@ export function userLoginByMagicCode (req, res, next) {
 
 export function userLogout (req, res, next) {
   return new Promise((resolve, reject) => {
-    req.session = null
-    resolve(ResponseSuccessJSON())
+    req.session.destroy(err => {
+      if (err) {
+        reject(ResponseErrorJSON(err))
+        return
+      }
+      resolve(ResponseSuccessJSON())
+    })
   })
 }

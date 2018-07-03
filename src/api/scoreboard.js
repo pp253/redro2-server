@@ -51,6 +51,8 @@ export function getInfo (req, res, next) {
           gameTime: engineMaskedObject.gameTime,
           gameDays: engineMaskedObject.gameDays,
           dayLength: engineMaskedObject.dayLength,
+          playerTeams: engineMaskedObject.playerTeams,
+          staffTeams: engineMaskedObject.staffTeams,
 
           accounts: accounts,
           biddingMarkets: biddingMarkets

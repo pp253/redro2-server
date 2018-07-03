@@ -19,9 +19,15 @@ export const STORE_CONTENT = {
       let user = state.users.find(user => user._id.equals(payload.userId))
       user.level = payload.level
     },
-    ADD_USER_ROLE (state, permission) {
-      let user = state.users.find(user => user._id.equals(permission.userId))
-      user.permissions.push(permission)
+    ADD_USER_ROLE (state, payload) {
+      let user = state.users.find(user => user._id.equals(payload.userId))
+      let permissionOfGame = user.permissions && user.permissions.find(permission => permission.engineId.equals(payload.engineId))
+      if (permissionOfGame) {
+        permissionOfGame.teamIndex = parseInt(payload.teamIndex)
+        permissionOfGame.role = payload.role
+      } else {
+        user.permissions.push(payload)
+      }
     },
     CHANGE_USER_ROLE (state, payload) {
       let user = state.users.find(user => user._id.equals(payload.userId))

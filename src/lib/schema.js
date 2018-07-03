@@ -36,6 +36,16 @@ export class Event {
   stage: this.store.state.stage
 }
 */
+
+export class ServerEvent {
+  constructor (options) {
+    this.type = options.type
+    this.target = options.target
+    this.time = Date.now()
+    this.user = options.user
+  }
+}
+
 /**
  * @typedef {Object} EngineEvent
  * @extends Event
