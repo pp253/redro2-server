@@ -82,7 +82,10 @@ if (PRODUCTION) {
     console.log('Start listening on PORT %d ...', 443)
   })
 
-  io.attach(httpsServer)
+  io.attach(httpsServer, {
+    pingInterval: 10000,
+    pingTimeout: 5000
+  })
   io.use(sharedsession(session, {
     autoSave: true
   }))
@@ -99,7 +102,10 @@ if (PRODUCTION) {
     console.log('Start listening on PORT %d ...', 80)
   })
 
-  io.attach(httpServer)
+  io.attach(httpServer, {
+    pingInterval: 10000,
+    pingTimeout: 5000
+  })
   io.use(sharedsession(session, {
     autoSave: true
   }))
