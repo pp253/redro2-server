@@ -185,6 +185,14 @@ export default class IO extends EventEmitter {
         })
       }
 
+      // Count the Transportation Cost
+      let trCost = 0
+      for (let ioJournalGoodItem of list) {
+        let unit = ioJournalGoodItem.unit
+        trCost += Math.ceil(unit / this.store.state.batchSize) * this.store.state.transportationCost
+      }
+      ij.transportationCost = trCost
+
       if (!this.node.Inventory) {
         throw ResponseErrorMsg.IOInventoryRequired(this.node.getName())
       }

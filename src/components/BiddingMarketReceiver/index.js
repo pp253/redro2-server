@@ -84,6 +84,9 @@ export default class BiddingMarketReceiver extends EventEmitter {
   }
 
   releaseToUpstream (biddingItem) {
+    if (this.node.Account.isBankrupt()) {
+      throw ResponseErrorMsg.BiddingMarketReceiverCannotReleasedWhenBankrupt(this.node.getName())
+    }
     return this.upstreamProvider.BiddingMarket.release(biddingItem)
   }
 
@@ -91,7 +94,30 @@ export default class BiddingMarketReceiver extends EventEmitter {
     return this.upstreamProvider.BiddingMarket.cancel(biddingStageChange)
   }
 
+  cancelAllToUpstream () {
+    return new Promise((resolve, reject) => {
+      let jobSeq = Promise.resolve()
+      let biddings = this.getUpstreamBiddings()
+      for (let bidding of biddings) {
+        if (bidding.publisher !== this.node.getName()) {
+          continue
+        }
+        jobSeq.then(() => {
+          return this.cancelToUpstream({
+            id: bidding._id,
+            operator: this.node.getName()
+          })
+        })
+      }
+      jobSeq.then((biddingMarket) => { resolve(biddingMarket) })
+      .catch(err => { reject(err) })
+    })
+  }
+
   signToUpstream (biddingStageChange) {
+    if (this.node.Account.isBankrupt()) {
+      throw ResponseErrorMsg.BiddingMarketReceiverCannotSignWhenBankrupt(this.node.getName())
+    }
     return this.upstreamProvider.BiddingMarket.sign(biddingStageChange)
   }
 
@@ -99,11 +125,34 @@ export default class BiddingMarketReceiver extends EventEmitter {
     return this.upstreamProvider.BiddingMarket.breakoff(biddingStageChange)
   }
 
+  breakoffAllToUpstream () {
+    return new Promise((resolve, reject) => {
+      let jobSeq = Promise.resolve()
+      let biddings = this.getUpstreamBiddings()
+      for (let bidding of biddings) {
+        if (bidding.publisher !== this.node.getName()) {
+          continue
+        }
+        jobSeq.then(() => {
+          return this.breakoffToUpstream({
+            id: bidding._id,
+            operator: this.node.getName()
+          })
+        })
+      }
+      jobSeq.then((biddingMarket) => { resolve(biddingMarket) })
+      .catch(err => { reject(err) })
+    })
+  }
+
   deliverToUpstream (biddingStageChange) {
     return this.upstreamProvider.BiddingMarket.deliver(biddingStageChange)
   }
 
   releaseToDownstream (biddingItem) {
+    if (this.node.Account.isBankrupt()) {
+      throw ResponseErrorMsg.BiddingMarketReceiverCannotReleasedWhenBankrupt(this.node.getName())
+    }
     return this.downstreamProvider.BiddingMarket.release(biddingItem)
   }
 
@@ -111,12 +160,55 @@ export default class BiddingMarketReceiver extends EventEmitter {
     return this.downstreamProvider.BiddingMarket.cancel(biddingStageChange)
   }
 
+  cancelAllToDownstream () {
+    return new Promise((resolve, reject) => {
+      let jobSeq = Promise.resolve()
+      let biddings = this.getDownstreamBiddings()
+      for (let bidding of biddings) {
+        if (bidding.publisher !== this.node.getName()) {
+          continue
+        }
+        jobSeq.then(() => {
+          return this.cancelToDownstream({
+            id: bidding._id,
+            operator: this.node.getName()
+          })
+        })
+      }
+      jobSeq.then((biddingMarket) => { resolve(biddingMarket) })
+      .catch(err => { reject(err) })
+    })
+  }
+
   signToDownstream (biddingStageChange) {
+    if (this.node.Account.isBankrupt()) {
+      throw ResponseErrorMsg.BiddingMarketReceiverCannotSignWhenBankrupt(this.node.getName())
+    }
     return this.downstreamProvider.BiddingMarket.sign(biddingStageChange)
   }
 
   breakoffToDownstream (biddingStageChange) {
     return this.downstreamProvider.BiddingMarket.breakoff(biddingStageChange)
+  }
+
+  breakoffAllToDownstream () {
+    return new Promise((resolve, reject) => {
+      let jobSeq = Promise.resolve()
+      let biddings = this.getDownstreamBiddings()
+      for (let bidding of biddings) {
+        if (bidding.publisher !== this.node.getName()) {
+          continue
+        }
+        jobSeq.then(() => {
+          return this.breakoffToDownstream({
+            id: bidding._id,
+            operator: this.node.getName()
+          })
+        })
+      }
+      jobSeq.then((biddingMarket) => { resolve(biddingMarket) })
+      .catch(err => { reject(err) })
+    })
   }
 
   deliverToDownstream (biddingStageChange) {

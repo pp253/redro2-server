@@ -165,6 +165,20 @@ export const ResponseErrorMsg = {
       more: nodeName
     })
   },
+  BiddingMarketReceiverCannotReleasedWhenBankrupt (nodeName) {
+    return ResponseErrorJSON({
+      id: 54,
+      message: `You can't release biddings when you are bankrupt.`,
+      more: nodeName
+    })
+  },
+  BiddingMarketReceiverCannotSignWhenBankrupt (nodeName) {
+    return ResponseErrorJSON({
+      id: 55,
+      message: `You can't sign biddings when you are bankrupt.`,
+      more: nodeName
+    })
+  },
 
   BiddingMarketNotFoundInNode (nodeName) {
     return ResponseErrorJSON({

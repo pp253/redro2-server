@@ -53,6 +53,9 @@ export default class Node extends EventEmitter {
 
           if (this.store.state.workers > 0) {
             this.engine.on(ENGINE_EVENTS.GAME_OFFWORK, (engineEvent) => {
+              if (this.Account.isBankrupt()) {
+                return
+              }
               let totalWage = this.store.state.workers * this.store.state.wage
               this.Account.add({
                 debit: [{

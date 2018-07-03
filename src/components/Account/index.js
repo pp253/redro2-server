@@ -220,6 +220,21 @@ export default class Account extends EventEmitter {
         engineId: this.engine.getId()
       }))
       this._bankrupt = bankrupt
+
+      if (bankrupt === true) {
+        let jobSeq = Promise.resolve()
+        if (this.node.BiddingMarketReceiver) {
+          jobSeq.then(() => {
+            return this.node.BiddingMarketReceiver.cancelAllToUpstream()
+          }).then(() => {
+            return this.node.BiddingMarketReceiver.cancelAllToDownstream()
+          }).then(() => {
+            return this.node.BiddingMarketReceiver.breakoffAllToUpstream()
+          }).then(() => {
+            return this.node.BiddingMarketReceiver.breakoffAllToDownstream()
+          })
+        }
+      }
     }
     return bankrupt
   }

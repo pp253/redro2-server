@@ -220,7 +220,7 @@ export default class Inventory extends EventEmitter {
    * @returns {Promise}
    */
   countStorageCost (engineEvent) {
-    if (!this.store.state.hasStorageCost || !this.node.Account) {
+    if (!this.store.state.hasStorageCost || !this.node.Account || this.node.Account.isBankrupt()) {
       return Promise.resolve()
     }
 
