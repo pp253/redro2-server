@@ -60,12 +60,6 @@ export default class Market extends EventEmitter {
           throw ResponseErrorMsg.MarketSupplyMoreThanDemand(this.node.getName(), item.good, item.unit, item.unit)
         }
         item.unitPrice = it.unitPrice
-
-        // minus the left
-        this.store.immediate('SUB_MARKET_NEEDS', {
-          good: item.good,
-          unit: item.unit
-        })
       }
 
       // Check the goods price
@@ -83,6 +77,16 @@ export default class Market extends EventEmitter {
       .then(() => {
         return this.engine.getNode(marketJournalItem.from)
           .MarketReceiver.sell(marketJournalItem)
+      })
+      .then(() => {
+        for (let item of marketJournalItem.list) {
+          // minus the left
+          this.store.immediate('SUB_MARKET_NEEDS', {
+            good: item.good,
+            unit: item.unit
+          })
+        }
+        return this.store.save()
       })
       .then(() => {
         this.emit(MARKET_EVENTS.MARKET_NEEDS_CHANGE, new MarketEvent({
@@ -180,7 +184,7 @@ export default class Market extends EventEmitter {
     let eventName = ENGINE_EVENTS.GAME_DAY_X_TIME_Y(marketNews.releasedGameTime.day, marketNews.releasedGameTime.time)
     this.engine.once(eventName, (engineEvent) => {
       // Set the needs
-      this.store.dispatch('setMarketNeeds', marketNews.marketNeeds)
+      this.store.commit('SET_BATCH_MARKET_NEEDS', marketNews.marketNeeds)
       .then(() => {
         this.emit(MARKET_EVENTS.MARKET_NEWS_PUBLISHED, new BiddingMarketEvent({
           type: MARKET_EVENTS.MARKET_NEWS_PUBLISHED,

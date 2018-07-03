@@ -36,6 +36,9 @@ export const STORE_CONTENT = {
         }
       }
     },
+    SET_BATCH_MARKET_NEEDS (state, marketNeedsList) {
+      state.marketNeeds = marketNeedsList.slice()
+    },
     SUB_MARKET_NEEDS (state, marketNeeds) {
       let it = state.marketNeeds.find(needs => needs.good === marketNeeds.good)
       it.unit = parseInt(it.unit - marketNeeds.unit)
