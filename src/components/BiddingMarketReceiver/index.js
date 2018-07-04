@@ -294,7 +294,7 @@ export default class BiddingMarketReceiver extends EventEmitter {
           BIDDING_EVENTS.BIDDING_RELEASED,
           BIDDING_EVENTS.BIDDING_CANCELED,
           BIDDING_EVENTS.BIDDING_SIGNED,
-          BIDDING_EVENTS.BIDDING_CANCELED,
+          BIDDING_EVENTS.BIDDING_BREAKOFF,
           BIDDING_EVENTS.BIDDING_COMPLETED
         ]
 
