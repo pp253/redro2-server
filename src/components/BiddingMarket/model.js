@@ -22,10 +22,12 @@ export const BiddingItemSchema = new mongoose.Schema({
   publisher: {type: String, required: true},
   signer: {type: String},
   price: {type: Number, default: 0},
-  timeLimit: {type: Number, default: 300},
+  timeLimit: {type: Number, default: 600},
   memo: String,
   time: schema.TimeType,
-  gameTime: schema.GameTimeSchema
+  gameTime: schema.GameTimeSchema,
+  signedGameTime: schema.GameTimeSchema,
+  deliveredGameTime: schema.GameTimeSchema
 })
 
 export const BiddingMarketSchema = new mongoose.Schema({

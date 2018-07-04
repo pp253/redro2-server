@@ -25,6 +25,29 @@ export const STORE_CONTENT = {
     SET_BIDDING_SIGNER (state, payload) {
       let it = state.biddings.find(bidding => bidding._id.equals(payload.id))
       it.signer = payload.signer
+    },
+    SET_BIDDING_SIGN_GAMETIME (state, payload) {
+      let it = state.biddings.find(bidding => bidding._id.equals(payload.id))
+      it.signedGameTime = payload.signedGameTime
+    },
+    SET_BIDDING_DELIVER_GAMETIME (state, payload) {
+      let it = state.biddings.find(bidding => bidding._id.equals(payload.id))
+      it.deliveredGameTime = payload.deliveredGameTime
+    },
+    SET_BIDDING_SIGN (state, payload) {
+      let it = state.biddings.find(bidding => bidding._id.equals(payload.id))
+      it.stage = payload.stage
+      it.signer = payload.signer
+      it.signedGameTime = payload.signedGameTime
+    },
+    SET_BIDDING_DELIVER (state, payload) {
+      let it = state.biddings.find(bidding => bidding._id.equals(payload.id))
+      it.stage = payload.stage
+      it.deliveredGameTime = payload.deliveredGameTime
+    },
+    SET_BIDDING_BREAKOFF (state, payload) {
+      let it = state.biddings.find(bidding => bidding._id.equals(payload.id))
+      it.stage = payload.stage
     }
   },
   actions: {
@@ -32,6 +55,7 @@ export const STORE_CONTENT = {
       return new Promise((resolve, reject) => {
         context.commit('SET_BIDDING_STAGE', payload)
         context.commit('SET_BIDDING_SIGNER', payload)
+        context.commit('SET_BIDDING_SIGN_GAMETIME', payload)
         resolve()
       })
     }

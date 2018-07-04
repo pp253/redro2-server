@@ -169,10 +169,11 @@ export default class BiddingMarket extends EventEmitter {
         }
       }
 
-      this.store.dispatch('setBiddingSign', {
+      this.store.commit('SET_BIDDING_SIGN', {
         id: biddingStageChange.id,
         stage: BIDDING_ITEM_STAGE.SIGNED,
-        signer: biddingStageChange.operator
+        signer: biddingStageChange.operator,
+        signedGameTime: this.engine.getGameTime()
       })
       .then(() => {
         let bi = this.getBiddingById(biddingStageChange.id)
@@ -273,7 +274,7 @@ export default class BiddingMarket extends EventEmitter {
         })
       })
       .then(() => {
-        return this.store.commit('SET_BIDDING_STAGE', {
+        return this.store.commit('SET_BIDDING_BREAKOFF', {
           id: BiddingStageChange.id,
           stage: BIDDING_ITEM_STAGE.BREAKOFF
         })
@@ -339,9 +340,10 @@ export default class BiddingMarket extends EventEmitter {
 
       upstream.IO.export(ioJournalItem)
       .then(() => {
-        return this.store.commit('SET_BIDDING_STAGE', {
+        return this.store.commit('SET_BIDDING_DELIVER', {
           id: BiddingStageChange.id,
-          stage: BIDDING_ITEM_STAGE.COMPLETED
+          stage: BIDDING_ITEM_STAGE.COMPLETED,
+          deliveredGameTime: this.engine.getGameTime()
         })
       })
       .then(() => {
