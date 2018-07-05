@@ -33,8 +33,6 @@ export class Server extends EventEmitter {
         this.store = store
 
         this.io.on('connection', socket => {
-          console.log(`Socket:connection`)
-
           socket.on(ROOM_EVENTS.ROOM_JOIN, (room) => {
             let session = socket.handshake.session
             if (!session) {
@@ -50,7 +48,6 @@ export class Server extends EventEmitter {
               socket.send('Room cannot be empty')
               return
             }
-            console.log(`Socket:${ROOM_EVENTS.ROOM_JOIN}`, `${room.engineId}/${room.teamIndex}/${room.role}`)
             socket.join(`${room.engineId}/${room.teamIndex}/${room.role}`)
           })
 
