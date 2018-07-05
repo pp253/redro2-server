@@ -144,25 +144,26 @@ export default class Account extends EventEmitter {
       }
 
       let cashAmount = this.getBalance('Cash')
-      let jobSeq = []
+      let jobSeq = Promise.resolve()
       for (let counterObject in payableMap) {
+        if (cashAmount <= 0) {
+          break
+        }
         let payableAmount = payableMap[counterObject]
         if (payableAmount <= 0) {
           continue
         }
+        let repayAmount = payableAmount > cashAmount ? cashAmount : payableAmount
         cashAmount -= payableAmount
-        if (cashAmount <= 0) {
-          break
-        }
 
-        jobSeq.push(this.engine.getNode(counterObject).Account.add({
+        jobSeq.then(this.engine.getNode(counterObject).Account.add({
           debit: [{
-            amount: payableAmount,
+            amount: repayAmount,
             classification: 'Cash',
             counterObject: this.node.getName()
           }],
           credit: [{
-            amount: payableAmount,
+            amount: repayAmount,
             classification: 'AccountsReceivable',
             counterObject: this.node.getName()
           }],
@@ -170,14 +171,14 @@ export default class Account extends EventEmitter {
           time: accountTransaction.time,
           gameTime: accountTransaction.gameTime
         }, {noRepay: true}))
-        jobSeq.push(this.node.Account.add({
+        jobSeq.then(this.node.Account.add({
           debit: [{
-            amount: payableAmount,
+            amount: repayAmount,
             classification: 'AccountsPayable',
             counterObject: counterObject
           }],
           credit: [{
-            amount: payableAmount,
+            amount: repayAmount,
             classification: 'Cash',
             counterObject: counterObject
           }],
@@ -187,8 +188,8 @@ export default class Account extends EventEmitter {
         }, {noRepay: true}))
       }
 
-      Promise.all(jobSeq)
-      .then(() => { resolve() })
+      jobSeq
+      .then(() => { resolve(this) })
       .catch(err => { reject(err) })
     })
   }
