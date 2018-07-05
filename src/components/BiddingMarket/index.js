@@ -44,7 +44,8 @@ export default class BiddingMarket extends EventEmitter {
         breakoffPaneltyRatio: this.options.breakoffPaneltyRatio || 1.2,
         breakoffCompensationRatio: this.options.breakoffCompensationRatio || 0.5,
         transportationTime: this.options.transportationTime || 300,
-        transportationStatus: this.options.transportationStatus || TRANSPORTATION_STATUS.DELIVERING
+        transportationStatus: this.options.transportationStatus || TRANSPORTATION_STATUS.DELIVERING,
+        defaultTimeLimit: this.options.defaultTimeLimit || 600
       }
       store(state)
       .then((store) => {
@@ -333,7 +334,7 @@ export default class BiddingMarket extends EventEmitter {
         price: bi.price,
         transportationTime: this.store.state.transportationTime,
         transportationStatus: this.store.state.transportationStatus,
-        memo: 'Purchasing from Bidding Market',
+        memo: bi._id,
         time: BiddingStageChange.time || Date.now(),
         gameTime: BiddingStageChange.gameTime || this.engine.getGameTime()
       }
@@ -432,7 +433,9 @@ export default class BiddingMarket extends EventEmitter {
     return this.store.toObject()
   }
 
-  toMaskedObject () {}
+  toMaskedObject () {
+    return this.toObject()
+  }
 
   getId () {
     return this.store.state._id.toHexString()

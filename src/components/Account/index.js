@@ -189,6 +189,7 @@ export default class Account extends EventEmitter {
 
       Promise.all(jobSeq)
       .then(() => { resolve() })
+      .catch(err => { reject(err) })
     })
   }
 

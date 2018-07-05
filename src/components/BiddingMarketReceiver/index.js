@@ -324,7 +324,8 @@ export default class BiddingMarketReceiver extends EventEmitter {
         breakoffPaneltyRatio: upstreamObject.breakoffPaneltyRatio,
         breakoffCompensationRatio: upstreamObject.breakoffCompensationRatio,
         transportationTime: upstreamObject.transportationTime,
-        transportationStatus: upstreamObject.transportationStatus
+        transportationStatus: upstreamObject.transportationStatus,
+        defaultTimeLimit: upstreamObject.defaultTimeLimit
       }
     } else {
       obj.upstream = {
@@ -342,7 +343,8 @@ export default class BiddingMarketReceiver extends EventEmitter {
         breakoffPaneltyRatio: downstreamObject.breakoffPaneltyRatio,
         breakoffCompensationRatio: downstreamObject.breakoffCompensationRatio,
         transportationTime: downstreamObject.transportationTime,
-        transportationStatus: downstreamObject.transportationStatus
+        transportationStatus: downstreamObject.transportationStatus,
+        defaultTimeLimit: downstreamObject.defaultTimeLimit
       }
     } else {
       obj.downstream = {

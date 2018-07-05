@@ -34,8 +34,9 @@ export const BiddingMarketSchema = new mongoose.Schema({
   upstreams: [{type: String}],
   downstreams: [{type: String}],
   biddings: [BiddingItemSchema],
+  defaultTimeLimit: {type: Number, default: 600},
   breakoffPaneltyRatio: {type: Number, default: 1.2},
-  breakoffCompensationRatio: {type: Number, default: 0.5},
+  breakoffCompensationRatio: {type: Number, default: 1.2},
   transportationTime: {type: Number, default: 300},
   transportationStatus: {type: String, default: schema.TRANSPORTATION_STATUS.DELIVERING}
 }, {

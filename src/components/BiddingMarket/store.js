@@ -11,7 +11,8 @@ export const STORE_CONTENT = {
     breakoffPaneltyRatio: 1.2,
     breakoffCompensationRatio: 0.5,
     transportationTime: 300,
-    transportationStatus: schema.TRANSPORTATION_STATUS.DELIVERING
+    transportationStatus: schema.TRANSPORTATION_STATUS.DELIVERING,
+    defaultTimeLimit: 600
   },
   getters: {},
   mutations: {
