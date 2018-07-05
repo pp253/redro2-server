@@ -336,7 +336,7 @@ export default class BiddingMarket extends EventEmitter {
         transportationStatus: this.store.state.transportationStatus,
         memo: bi._id,
         time: BiddingStageChange.time || Date.now(),
-        gameTime: BiddingStageChange.gameTime || this.engine.getGameTime()
+        gameTime: this.engine.getGameTime()
       }
 
       upstream.IO.export(ioJournalItem)

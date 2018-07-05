@@ -229,6 +229,7 @@ export default class IO extends EventEmitter {
 
         if (iji.transportationStatus === TRANSPORTATION_STATUS.DELIVERING) {
           let gta = this.engine.gameTimeAdd(iji.gameTime, iji.transportationTime)
+          console.log(gta)
           this.engine.once(ENGINE_EVENTS.GAME_DAY_X_TIME_Y(gta.day, gta.time), (engineEvent) => {
             this.store.commit('COMPLETE_EXPORT', {id: iji._id.toHexString()})
             .then(() => {

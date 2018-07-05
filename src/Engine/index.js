@@ -232,7 +232,11 @@ export default class Engine extends EventEmitter {
   resume () {}
 
   getGameTime () {
-    return this.store.state.gameTime
+    return {
+      isWorking: this.store.state.gameTime.isWorking,
+      day: this.store.state.gameTime.day,
+      time: this.store.state.gameTime.time
+    }
   }
 
   /**
