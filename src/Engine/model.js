@@ -39,7 +39,8 @@ export const EngineSchema = new mongoose.Schema({
   gameDays: {type: Number, default: 0},
   dayLength: {type: Number, default: 0},
   id: {type: mongoose.Schema.Types.ObjectId},
-  permissions: [LevelPermissionSchema]
+  permissions: [LevelPermissionSchema],
+  hidden: {type: Boolean, default: false}
 }, {
   // Fix a bug https://github.com/Automattic/mongoose/issues/5574
   usePushEach: true

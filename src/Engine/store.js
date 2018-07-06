@@ -15,7 +15,8 @@ export const STORE_CONTENT = {
     },
     gameDays: 3,
     dayLength: 120,
-    permissions: []
+    permissions: [],
+    hidden: false
   },
   getters: {},
   mutations: {
@@ -44,6 +45,9 @@ export const STORE_CONTENT = {
     },
     SET_DAY_LENGTH (state, payload) {
       state.dayLength = payload.dayLength
+    },
+    SET_HIDDEN (state, payload) {
+      state.hidden = payload.hidden
     }
   },
   actions: {

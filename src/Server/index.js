@@ -160,7 +160,8 @@ export class Server extends EventEmitter {
         name: content.name,
         describe: content.describe,
         stage: content.stage,
-        id: content._id
+        id: content._id,
+        hidden: content.hidden
       })
     }
     return list

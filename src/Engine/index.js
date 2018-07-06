@@ -320,6 +320,14 @@ export default class Engine extends EventEmitter {
     return this.store.state.nodes.toObject()
   }
 
+  hidden () {
+    return this.store.commit('SET_HIDDEN', {hidden: true})
+  }
+
+  unhidden () {
+    return this.store.commit('SET_HIDDEN', {hidden: false})
+  }
+
   toMaskedObject () {
     return {
       name: this.store.state.name,

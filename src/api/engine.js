@@ -67,3 +67,37 @@ export function nextDay (req, res, next) {
     .catch(err => { reject(ResponseErrorJSON(err)) })
   })
 }
+
+export function hidden (req, res, next) {
+  return new Promise((resolve, reject) => {
+    reqCheck(req, {
+      engineId: validator.engineId
+    })
+    .then(() => {
+      let engineId = req.body.engineId
+      let engine = Server.getEngine(engineId)
+      return engine.hidden()
+    })
+    .then((engine) => {
+      resolve(ResponseSuccessJSON(engine.toMaskedObject()))
+    })
+    .catch(err => { reject(ResponseErrorJSON(err)) })
+  })
+}
+
+export function unhidden (req, res, next) {
+  return new Promise((resolve, reject) => {
+    reqCheck(req, {
+      engineId: validator.engineId
+    })
+    .then(() => {
+      let engineId = req.body.engineId
+      let engine = Server.getEngine(engineId)
+      return engine.unhidden()
+    })
+    .then((engine) => {
+      resolve(ResponseSuccessJSON(engine.toMaskedObject()))
+    })
+    .catch(err => { reject(ResponseErrorJSON(err)) })
+  })
+}
