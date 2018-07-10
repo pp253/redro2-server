@@ -25,7 +25,8 @@ export const IOJournalItemSchema = new mongoose.Schema({
   transportationStatus: {type: String, default: schema.TRANSPORTATION_STATUS.COMPLETED},
   memo: String,
   time: schema.TimeType,
-  gameTime: schema.GameTimeSchema
+  gameTime: schema.GameTimeSchema,
+  serial: {type: Number}
 })
 
 export const AvailableIOGoodSchema = new mongoose.Schema({

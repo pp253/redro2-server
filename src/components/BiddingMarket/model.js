@@ -27,7 +27,8 @@ export const BiddingItemSchema = new mongoose.Schema({
   time: schema.TimeType,
   gameTime: schema.GameTimeSchema,
   signedGameTime: schema.GameTimeSchema,
-  deliveredGameTime: schema.GameTimeSchema
+  deliveredGameTime: schema.GameTimeSchema,
+  serial: {type: Number}
 })
 
 export const BiddingMarketSchema = new mongoose.Schema({

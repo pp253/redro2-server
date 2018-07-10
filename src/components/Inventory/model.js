@@ -13,7 +13,8 @@ export const StocksItemSchema = new mongoose.Schema({
 export const StorageItemSchema = new mongoose.Schema({
   good: {type: String, required: true},
   unit: {type: Number, required: true},
-  stocks: [StocksItemSchema]
+  stocks: [StocksItemSchema],
+  journal: [StocksItemSchema]
 }, {_id: false})
 
 export const StorageCostItemSchema = new mongoose.Schema({

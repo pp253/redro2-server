@@ -44,6 +44,7 @@ export const STORE_CONTENT = {
         }
         it.unit += parseInt(stocksItem.left)
         it.stocks.push(stocksItem)
+        it.journal.push(_.cloneDeep(stocksItem))
       }
     },
     SET_STORAGES (state, stocksItemList) {
@@ -60,10 +61,11 @@ export const STORE_CONTENT = {
             unit: 0,
             stocks: []
           })
-          it = state.storage[state.storage.length - 1]
+          it = state.storage.find(item => item.good === good)
         }
         it.unit = parseInt(stocksItem.unit)
         it.stocks.push(stocksItem)
+        it.journal.push(_.cloneDeep(stocksItem))
       }
     },
     /**
@@ -90,6 +92,10 @@ export const STORE_CONTENT = {
             break
           }
         }
+
+        let newStocksItem = _.cloneDeep(stocksItem)
+        newStocksItem.unit = -parseInt(newStocksItem.unit)
+        it.journal.push(newStocksItem)
       }
     },
     SET_HAS_STORAGE_COST (state, payload) {

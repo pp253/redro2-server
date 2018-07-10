@@ -20,6 +20,7 @@ export default class BiddingMarket extends EventEmitter {
     super()
     this.type = 'BiddingMarket'
     this._loaded = false
+    this.serial = 0
     this.setMaxListeners(10000)
   }
 
@@ -80,9 +81,12 @@ export default class BiddingMarket extends EventEmitter {
         throw ResponseErrorMsg.BiddingMarketInvalidPublisher(this.node.getName())
       }
 
+      biddingItem.serial = this.serial++
+      let serial = biddingItem.serial
+
       this.store.commit('ADD_BIDDING', biddingItem)
       .then(() => {
-        let bi = this.store.state.biddings[this.store.state.biddings.length - 1]
+        let bi = this.store.state.biddings.find(item => item.serial === serial)
         this.emit(BIDDING_EVENTS.BIDDING_RELEASED, new BiddingMarketEvent({
           type: BIDDING_EVENTS.BIDDING_RELEASED,
           target: this,
