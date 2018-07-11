@@ -197,9 +197,6 @@ export default class IO extends EventEmitter {
         throw ResponseErrorMsg.IOInventoryRequired(this.node.getName())
       }
 
-      ij.serial = this.serial++
-      let serial = ij.serial
-
       this.node.Inventory.export(ij)
       .then(() => { return this.engine.getNode(ij.to).IO.import(ij) })
       .then(() => {
@@ -228,7 +225,7 @@ export default class IO extends EventEmitter {
       })
       .then((store) => {
         let exportJournal = store.state.exportJournal.toObject()
-        let iji = exportJournal.find(item => item.serial === serial)
+        let iji = exportJournal[exportJournal.legnth - 1]
 
         if (iji.transportationStatus === TRANSPORTATION_STATUS.DELIVERING) {
           let gta = this.engine.gameTimeAdd(iji.gameTime, iji.transportationTime)
