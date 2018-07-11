@@ -40,7 +40,6 @@ export const AccountTransactionSchema = new mongoose.Schema({
   credit: [AccountItemSchema],
   memo: String,
   time: {type: Date, default: Date.now},
-  serial: {type: Number},
   gameTime: schema.GameTimeSchema,
   unbalance: {type: Boolean, default: false}
 })

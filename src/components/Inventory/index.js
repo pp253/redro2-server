@@ -78,7 +78,6 @@ export default class Inventory extends EventEmitter {
           continue
         }
         item.left = item.unit
-        item.gameTime = this.engine.getGameTime()
       }
 
       this.store.commit('ADD_STORAGES', ioji.list)
@@ -135,7 +134,6 @@ export default class Inventory extends EventEmitter {
           throw ResponseErrorMsg.InventoryOutOfStacks(this.node.getName(), stocksItem.good, su, stocksItem.unit)
         }
         sumOfCostOfSales += this.getCostOfSales(stocksItem.good, stocksItem.unit)
-        stocksItem.gameTime = this.engine.getGameTime()
       }
 
       this.store.commit('TAKE_STORAGES', ioji.list)
@@ -195,9 +193,6 @@ export default class Inventory extends EventEmitter {
    */
   regist (stocksItemList) {
     return new Promise((resolve, reject) => {
-      for (let item of stocksItemList) {
-        item.gameTime = this.engine.getGameTime()
-      }
       this.store.commit('SET_STORAGES', stocksItemList)
       .then(() => {
         return this.countStorageCost({
