@@ -12,6 +12,7 @@ export default class Account extends EventEmitter {
     this.type = 'Account'
     this._loaded = false
     this._bankrupt = false
+    this.serial = 0
     this.setMaxListeners(10000)
   }
 
@@ -85,10 +86,10 @@ export default class Account extends EventEmitter {
       // check balance
       if (!('unbalance' in accountTransaction) || accountTransaction.unbalance === false) {
         let debitAmount = accountTransaction.debit ? accountTransaction.debit.reduce((acc, item) => {
-          return acc + item.amount
+          return acc + parseFloat(item.amount)
         }, 0) : 0
         let creditAmount = accountTransaction.credit ? accountTransaction.credit.reduce((acc, item) => {
-          return acc + item.amount
+          return acc + parseFloat(item.amount)
         }, 0) : 0
 
         if (debitAmount !== creditAmount) {
@@ -96,15 +97,22 @@ export default class Account extends EventEmitter {
         }
       }
 
+      if (!accountTransaction.time) {
+        accountTransaction.time = Date.now()
+      }
+      accountTransaction.serial = this.serial++
+      let serial = accountTransaction.serial
+
       this.store.dispatch('addTransaction', accountTransaction)
       .then(() => {
         let journal = this.getJournal()
+        let transaction = journal.find(item => item.serial === serial)
         this.emit(ACCOUNT_EVENTS.ACCOUNT_ADD, new AccountEvent({
           isBankrupt: this.isBankrupt(),
-          transaction: journal[journal.length - 1],
+          transaction: transaction,
           type: ACCOUNT_EVENTS.ACCOUNT_ADD,
           target: this,
-          gameTime: accountTransaction.gameTime,
+          gameTime: transaction.gameTime,
           nodeName: this.node.getName(),
           engineId: this.engine.getId()
         }))
@@ -112,7 +120,7 @@ export default class Account extends EventEmitter {
         if (options && options.noRepay === true) {
           return Promise.resolve()
         }
-        return this.repay(accountTransaction)
+        return this.repay(transaction)
       })
       .then(() => { resolve(this) })
       .catch(err => { reject(err) })
