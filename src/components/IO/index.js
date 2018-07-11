@@ -11,7 +11,6 @@ export default class IO extends EventEmitter {
     super()
     this.type = 'IO'
     this._loaded = false
-    this.serial = 0
     this.setMaxListeners(10000)
   }
 
@@ -93,9 +92,6 @@ export default class IO extends EventEmitter {
         throw ResponseErrorMsg.IOInventoryRequired(this.node.getName())
       }
 
-      ij.serial = this.serial++
-      let serial = ij.serial
-
       this.store.commit('ADD_IMPORT', ij)
       .then((store) => {
         return new Promise((resolve, reject) => {
@@ -103,7 +99,8 @@ export default class IO extends EventEmitter {
             let gta = this.engine.gameTimeAdd(ij.gameTime, ij.transportationTime)
 
             let importJournal = store.state.importJournal.toObject()
-            let iji = importJournal.find(item => item.serial === serial)
+            let iji = importJournal[importJournal.length - 1]
+
             this.engine.once(ENGINE_EVENTS.GAME_DAY_X_TIME_Y(gta.day, gta.time), (engineEvent) => {
               this.store.commit('COMPLETE_IMPORT', {id: iji._id.toHexString()})
               .then(() => {
@@ -150,7 +147,7 @@ export default class IO extends EventEmitter {
       })
       .then(() => {
         let importJournal = this.getImportJournal()
-        let iji = importJournal.find(item => item.serial === serial)
+        let iji = importJournal[importJournal.length - 1].toObject()
         this.emit(IO_EVENTS.IO_IMPORT, new IOEvent({
           type: IO_EVENTS.IO_IMPORT,
           gameTime: ij.gameTime,
