@@ -89,7 +89,7 @@ export const ResponseErrorMsg = {
   InventoryOutOfStacks (nodeName, good, hasUnit, needUnit) {
     return ResponseErrorJSON({
       id: 32,
-      message: `Inventory of ${good} has ${hasUnit} but need ${needUnit}, thus it is out of stocks.`,
+      message: `商品 ${good} 的庫存量有 ${hasUnit}個，但需要 ${needUnit}個，所以超出可以供給的量了。`,
       more: nodeName
     })
   },
@@ -111,14 +111,14 @@ export const ResponseErrorMsg = {
   IOUniqueGood (nodeName, good) {
     return ResponseErrorJSON({
       id: 42,
-      message: `Same good '${good}' should not in more than 1 item.`,
+      message: `同樣的商品 '${good}' 只能出現一次，請合併相同的商品。`,
       more: nodeName
     })
   },
   IOImportNotAvailable (nodeName, good, unit) {
     return ResponseErrorJSON({
       id: 43,
-      message: `Goods '${good}' (${unit}) imported is not available.`,
+      message: `商品 '${good}' ${unit}個無法輸入，可能 ${good} 不是這個角色可以接受的商品。`,
       more: nodeName
     })
   },
@@ -132,7 +132,7 @@ export const ResponseErrorMsg = {
   IOExportNotAvailable (nodeName, good, unit) {
     return ResponseErrorJSON({
       id: 45,
-      message: `Goods '${good}' (${unit}) exported is not available.`,
+      message: `商品 '${good}' ${unit}個無法運送，可能庫存量不足。`,
       more: nodeName
     })
   },
@@ -211,7 +211,7 @@ export const ResponseErrorMsg = {
   BiddingMarketCanceledWrongStage (nodeName) {
     return ResponseErrorJSON({
       id: 64,
-      message: `Bidding item could be canceled only when bidding.`,
+      message: `訂單只能在釋出階段下架，你的訂單可能已經和其他人簽約了。`,
       more: nodeName
     })
   },
@@ -225,7 +225,7 @@ export const ResponseErrorMsg = {
   BiddingMarketSignedWrongStage (nodeName) {
     return ResponseErrorJSON({
       id: 66,
-      message: `Bidding item could be signed only when bidding.`,
+      message: `訂單只能釋出階段簽約，你的訂單可能已經被其他人簽約了。`,
       more: nodeName
     })
   },
@@ -246,7 +246,7 @@ export const ResponseErrorMsg = {
   BiddingMarketBreakoffWrongStage (nodeName) {
     return ResponseErrorJSON({
       id: 69,
-      message: `Bidding item could be breakoff only when signed.`,
+      message: `訂單只能在簽約階段解約，你的訂單可能還沒簽約。`,
       more: nodeName
     })
   },
@@ -267,7 +267,7 @@ export const ResponseErrorMsg = {
   BiddingMarketDeliveredWrongStage (nodeName) {
     return ResponseErrorJSON({
       id: 72,
-      message: `Bidding item could be delivered only when signed.`,
+      message: `訂單只能在簽約階段送出，你的訂單可能還沒簽約。`,
       more: nodeName
     })
   },
@@ -318,7 +318,7 @@ export const ResponseErrorMsg = {
   MarketSupplyMoreThanDemand (nodeName, good, demandAmount, supplyAmount) {
     return ResponseErrorJSON({
       id: 84,
-      message: `The supply of good '${good}' is more than demands, market need ${demandAmount}, but the supply is ${supplyAmount}.`,
+      message: `產品 '${good}' 需求量為 ${demandAmount}個，但目前想要供給 ${supplyAmount} 個，所以無法供應。`,
       more: nodeName
     })
   },
@@ -347,14 +347,14 @@ export const ResponseErrorMsg = {
   AssemblyDepartmentNotAvailable (nodeName, receiver, good, unit) {
     return ResponseErrorJSON({
       id: 93,
-      message: `${receiver} is not available for assembling ${unit} of ${good}.`,
+      message: `${receiver} 無法組裝 ${unit} 個 ${good}。`,
       more: nodeName
     })
   },
   AssemblyDepartmentNoBOMForGood (nodeName, good) {
     return ResponseErrorJSON({
       id: 94,
-      message: `No such BOOM for ${good}.`,
+      message: `No such BOM for ${good}.`,
       more: nodeName
     })
   },
@@ -384,22 +384,21 @@ export const ResponseErrorMsg = {
   UserNameHasExisted (name) {
     return ResponseErrorJSON({
       id: 201,
-      message: `User ${name} has existed.`,
+      message: `用戶名稱不可以重複，已經有人叫 ${name} 囉。`,
       more: name
     })
   },
   UserMagiccodeNotFound (magiccode) {
     return ResponseErrorJSON({
       id: 202,
-      message: `User Magiccode '${magiccode}' not found.`,
+      message: `找不到您的MagicCode，'${magiccode}'，請重新載入後至首頁按登出按鈕，然後再進入遊戲一次。`,
       more: magiccode
     })
   },
-  UserHasNotLogin (name) {
+  UserHasNotLogin () {
     return ResponseErrorJSON({
       id: 203,
-      message: `User '${name}' has not logged in.`,
-      more: name
+      message: `您還沒登入，請重新載入後至首頁按登出按鈕，然後再進入遊戲一次。`
     })
   }
 }
