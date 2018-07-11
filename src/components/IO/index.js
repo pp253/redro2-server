@@ -225,15 +225,7 @@ export default class IO extends EventEmitter {
       })
       .then((store) => {
         let exportJournal = store.state.exportJournal.toObject()
-<<<<<<< HEAD
-<<<<<<< HEAD
-        let iji = exportJournal[exportJournal.legnth - 1]
-=======
         let iji = exportJournal[exportJournal.length - 1]
->>>>>>> parent of bab4137... build
-=======
-        let iji = exportJournal[exportJournal.length - 1]
->>>>>>> parent of bab4137... build
 
         if (iji.transportationStatus === TRANSPORTATION_STATUS.DELIVERING) {
           let gta = this.engine.gameTimeAdd(iji.gameTime, iji.transportationTime)
