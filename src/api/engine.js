@@ -101,3 +101,19 @@ export function unhidden (req, res, next) {
     .catch(err => { reject(ResponseErrorJSON(err)) })
   })
 }
+
+export function toResultObject (req, res, next) {
+  return new Promise((resolve, reject) => {
+    reqCheck(req, {
+      engineId: validator.engineId
+    })
+    .then(() => {
+      let engineId = req.body.engineId
+      let engine = Server.getEngine(engineId)
+      resolve(ResponseSuccessJSON({
+        result: engine.toResultObject()
+      }))
+    })
+    .catch(err => { reject(ResponseErrorJSON(err)) })
+  })
+}

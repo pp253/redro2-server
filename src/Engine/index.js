@@ -10,6 +10,7 @@ export default class Engine extends EventEmitter {
     super()
     this.type = 'Engine'
     this._loaded = false
+    this._resultCache = null
     this._timer = {
       startTime: 0,
       timerId: null
@@ -310,6 +311,54 @@ export default class Engine extends EventEmitter {
 
   toObject () {
     return this.store.toObject()
+  }
+
+  toResultObject () {
+    if (this.getStage() !== ENGINE_STAGE.END) {
+      throw new Error('Engine has not go to the end.')
+    }
+    if (this._resultCache) {
+      return this._resultCache
+    }
+    let result = this.toMaskedObject()
+    for (var [key, node] of this.nodes) {
+      let role = key.split('-')[0]
+      let teamIndex = key.split('-')[1] ? parseInt(key.split('-')[1]) - 1 : 0
+      if (!result[role]) {
+        result[role] = []
+      }
+
+      if (role === 'Retailer') {
+        result[role][teamIndex] = {
+          Account: node.Account.toMaskedObject(),
+          Inventory: node.Inventory.toMaskedObject()
+        }
+      } else if (role === 'ComponentsFactory') {
+        result[role][teamIndex] = {
+          Account: node.Account.toMaskedObject(),
+          Inventory: node.Inventory.toMaskedObject()
+        }
+      } else if (role === 'AssemblyFactory') {
+        result[role][teamIndex] = {
+          Account: node.Account.toMaskedObject(),
+          Inventory: node.Inventory.toMaskedObject()
+        }
+      } else if (role === 'CarsBiddingMarket') {
+        result[role] = {
+          BiddingMarket: node.BiddingMarket.toMaskedObject()
+        }
+      } else if (role === 'ComponentsBiddingMarket') {
+        result[role] = {
+          BiddingMarket: node.BiddingMarket.toMaskedObject()
+        }
+      } else if (role === 'Market') {
+        result[role] = {
+          Market: node.Market.toMaskedObject()
+        }
+      }
+    }
+    this._resultCache = result
+    return result
   }
 
   getId () {
